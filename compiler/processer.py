@@ -37,9 +37,6 @@ def process_imports(initial_ast_nodes, base_directory, stdlib_path="stdlib", pro
     for node in initial_ast_nodes:
         if isinstance(node, KeenNode):
             module_name = node.filename.strip('"\'')
-            # Hagaaji waddooyin caadi ah: oggolow "stdlib/foo" oo u beddel "foo"
-            if module_name.startswith("stdlib/"):
-                module_name = module_name.split("/", 1)[1]
             if module_name.endswith(".tus"):
                 file_to_import = module_name
             else:

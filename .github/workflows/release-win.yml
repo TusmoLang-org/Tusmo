@@ -54,6 +54,7 @@ jobs:
       - name: Collect bundle
         shell: bash
         run: |
+          zig_path=$(which zig)
           mkdir -p bundle/lib bundle/include bundle/bin bundle/runtime bundle/stdlib bundle/toolchain
           cp -r runtime stdlib bundle/
           cp dist/tusmo.exe bundle/bin/
@@ -62,7 +63,7 @@ jobs:
           if [ -f /mingw64/include/gc/gc.h ]; then cp -r /mingw64/include/gc bundle/include/; fi
           if [ -f /usr/lib/libgc.a ]; then cp /usr/lib/libgc.a bundle/lib/; fi
           if [ -d /usr/include/gc ]; then cp -r /usr/include/gc bundle/include/; fi
-          cp /c/ProgramData/chocolatey/lib/zig/tools/zig.exe bundle/toolchain/zig.exe
+          cp "$zig_path" bundle/toolchain/zig.exe
           cat > bundle/toolchain/cc.bat <<'EOS'
           @echo off
           "%~dp0\zig.exe" cc %*

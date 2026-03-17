@@ -7,7 +7,7 @@ $temp = New-TemporaryFile
 Remove-Item $temp
 New-Item -ItemType Directory -Force -Path $temp | Out-Null
 
-Write-Host "Downloading $asset..."
+Write-Host "La soo dejinnayo $asset..."
 Invoke-WebRequest -Uri "https://github.com/$repo/releases/latest/download/$asset" -OutFile "$temp\$asset"
 
 tar -xf "$temp\$asset" -C $temp
@@ -26,4 +26,4 @@ if (-not ($env:Path -split ';' | Where-Object { $_ -eq $binPath })) {
 [Environment]::SetEnvironmentVariable("TUSMO_LIB_DIR", "$tusmoHome\lib", "User")
 [Environment]::SetEnvironmentVariable("TUSMO_INCLUDE_DIR", "$tusmoHome\runtime", "User")
 
-Write-Host "Installed to $tusmoHome. Open a new shell and run 'tusmo'."
+Write-Host "Waxaa lagu shubay $tusmoHome. Mar kale fur terminal-ka (shell) ka dibna qor 'tusmo'."

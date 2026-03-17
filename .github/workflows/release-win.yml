@@ -47,10 +47,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pyinstaller ply
 
-      - name: Build tusmo CLI
+      - name: Build tusmo CLI (onedir)
         shell: pwsh
         run: |
-          pyinstaller --onefile tusmo.py `
+          pyinstaller --onedir tusmo.py `
             --hidden-import compiler `
             --hidden-import compiler.frontend `
             --hidden-import compiler.midend `
@@ -75,7 +75,7 @@ jobs:
           zig_path=$(which zig)
           mkdir -p bundle/lib bundle/include bundle/bin bundle/runtime bundle/stdlib bundle/toolchain
           cp -r runtime stdlib bundle/
-          cp dist/tusmo.exe bundle/bin/
+          cp -r dist/tusmo bundle/bin/
           # try both mingw and msys paths for libgc
           if [ -f /mingw64/lib/libgc.a ]; then cp /mingw64/lib/libgc.a bundle/lib/; fi
           if [ -f /mingw64/include/gc/gc.h ]; then cp -r /mingw64/include/gc bundle/include/; fi

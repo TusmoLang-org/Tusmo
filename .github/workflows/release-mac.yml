@@ -30,9 +30,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pyinstaller ply
 
-      - name: Build tusmo CLI
+      - name: Build tusmo CLI (onedir)
         run: |
-          pyinstaller --onefile tusmo.py \
+          pyinstaller --onedir tusmo.py \
             --hidden-import compiler \
             --hidden-import compiler.frontend \
             --hidden-import compiler.midend \
@@ -58,7 +58,7 @@ jobs:
           GC_ROOT=$(brew --prefix boehmgc)
           cp "$GC_ROOT/lib/libgc.a" bundle/lib/
           cp -r "$GC_ROOT/include/gc" bundle/include/
-          cp dist/tusmo bundle/bin/
+          cp -r dist/tusmo bundle/bin/
           cp "$(which zig)" bundle/toolchain/zig
           cat > bundle/toolchain/cc <<'EOS'
           #!/usr/bin/env bash

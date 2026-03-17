@@ -36,9 +36,9 @@ jobs:
           tar -xf zig.tar.xz --strip-components=1 -C zig
           echo "ZIG=$(pwd)/zig/zig" >> $GITHUB_ENV
 
-      - name: Freeze tusmo CLI
+      - name: Build tusmo CLI (onedir)
         run: |
-          pyinstaller --onefile tusmo.py \
+          pyinstaller --onedir tusmo.py \
             --hidden-import compiler \
             --hidden-import compiler.frontend \
             --hidden-import compiler.midend \
@@ -63,7 +63,7 @@ jobs:
           cp -r runtime stdlib bundle/
           cp /usr/lib/x86_64-linux-gnu/libgc.a bundle/lib/
           cp -r /usr/include/gc bundle/include/
-          cp dist/tusmo bundle/bin/
+          cp -r dist/tusmo bundle/bin/
           cp "$ZIG" bundle/toolchain/zig
           printf '%s\n' '#!/usr/bin/env bash' 'exec "$(dirname "$0")/toolchain/zig" cc "$@"' > bundle/toolchain/cc
           chmod +x bundle/toolchain/cc

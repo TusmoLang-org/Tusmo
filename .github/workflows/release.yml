@@ -1,5 +1,8 @@
 name: release
 
+permissions:
+  contents: write
+
 on:
   push:
     tags: ["v*"]
@@ -12,16 +15,8 @@ jobs:
         include:
           - os: ubuntu-latest
             triplet: linux-x86_64
-            zig_url: https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz
-          - os: macos-12
-            triplet: macos-x86_64
-            zig_url: https://ziglang.org/download/0.11.0/zig-macos-x86_64-0.11.0.tar.xz
-          - os: macos-14
-            triplet: macos-arm64
-            zig_url: https://ziglang.org/download/0.11.0/zig-macos-aarch64-0.11.0.tar.xz
           - os: windows-2022
             triplet: windows-x86_64
-            zig_url: https://ziglang.org/download/0.11.0/zig-windows-x86_64-0.11.0.zip
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -30,22 +25,15 @@ jobs:
           python-version: "3.11"
 
       - name: Install deps (Linux)
-        if: startsWith(matrix.os, 'ubuntu')
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgc-dev xz-utils unzip
-          python -m pip install --upgrade pip
-          python -m pip install pyinstaller
-
-      - name: Install deps (macOS)
-        if: startsWith(matrix.os, 'macos')
-        run: |
-          brew install boehmgc
+          sudo apt-get install -y libgc-dev zig
           python -m pip install --upgrade pip
           python -m pip install pyinstaller
 
       - name: Install deps (Windows)
-        if: startsWith(matrix.os, 'windows')
+        if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
           release: true
@@ -55,44 +43,31 @@ jobs:
             mingw-w64-x86_64-toolchain
             mingw-w64-x86_64-libgc
 
+      - name: Install zig (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: choco install -y zig
+
       - name: Install PyInstaller (Windows)
-        if: startsWith(matrix.os, 'windows')
+        if: runner.os == 'Windows'
         run: |
           python -m pip install --upgrade pip
           python -m pip install pyinstaller
 
-      - name: Download zig
-        run: |
-          mkdir zig
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            curl --retry 5 --retry-delay 5 --retry-connrefused -L "${{ matrix.zig_url }}" -o zig.zip
-            tar -xf zig.zip --strip-components=1 -C zig
-          else
-            curl --retry 5 --retry-delay 5 --retry-connrefused -L "${{ matrix.zig_url }}" -o zig.tar.xz
-            tar -xf zig.tar.xz --strip-components=1 -C zig
-          fi
-
       - name: Freeze tusmo CLI
         run: pyinstaller --onefile tusmo.py
 
-      - name: Collect bundle (Linux/macOS)
-        if: runner.os != 'Windows'
+      - name: Collect bundle (Linux)
+        if: runner.os == 'Linux'
         shell: bash
         run: |
           mkdir -p bundle/lib bundle/include bundle/bin bundle/runtime bundle/stdlib bundle/toolchain
           cp -r runtime stdlib bundle/
-          if [[ "$RUNNER_OS" == "Linux" ]]; then
-            cp /usr/lib/x86_64-linux-gnu/libgc.a bundle/lib/
-            cp -r /usr/include/gc bundle/include/
-            cp dist/tusmo bundle/bin/
-          else
-            GC_ROOT=$(brew --prefix boehmgc)
-            cp "$GC_ROOT/lib/libgc.a" bundle/lib/
-            cp -r "$GC_ROOT/include/gc" bundle/include/
-            cp dist/tusmo bundle/bin/
-          fi
-          cp -r zig bundle/toolchain/zig
-          printf '%s\n' '#!/usr/bin/env bash' 'exec "$(dirname "$0")/toolchain/zig/zig" cc "$@"' > bundle/toolchain/cc
+          cp /usr/lib/x86_64-linux-gnu/libgc.a bundle/lib/
+          cp -r /usr/include/gc bundle/include/
+          cp dist/tusmo bundle/bin/
+          cp "$(which zig)" bundle/toolchain/zig
+          printf '%s\n' '#!/usr/bin/env bash' 'exec "$(dirname "$0")/toolchain/zig" cc "$@"' > bundle/toolchain/cc
           chmod +x bundle/toolchain/cc
 
       - name: Collect bundle (Windows)
@@ -104,11 +79,11 @@ jobs:
           cp dist/tusmo.exe bundle/bin/
           cp /c/msys64/mingw64/lib/libgc.a bundle/lib/ || true
           cp -r /c/msys64/mingw64/include/gc bundle/include/ || true
-          cp -r zig bundle/toolchain/zig
-          cat > bundle/toolchain/cc.bat <<'EOF'
+          cp /c/ProgramData/chocolatey/lib/zig/tools/zig.exe bundle/toolchain/zig.exe
+          cat > bundle/toolchain/cc.bat <<'EOS'
           @echo off
-          "%~dp0\zig\zig.exe" cc %*
-          EOF
+          "%~dp0\zig.exe" cc %*
+          EOS
 
       - name: Package
         shell: bash

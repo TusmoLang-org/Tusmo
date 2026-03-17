@@ -65,7 +65,7 @@ jobs:
           cp -r /usr/include/gc bundle/include/
           cp -r dist/tusmo/* bundle/bin/
           cp "$ZIG" bundle/toolchain/zig
-          printf '%s\n' '#!/usr/bin/env bash' 'exec "$(dirname "$0")/toolchain/zig" cc "$@"' > bundle/toolchain/cc
+          printf '%s\n' '#!/usr/bin/env bash' 'exec "$(dirname "$0")/zig" cc "$@"' > bundle/toolchain/cc
           chmod +x bundle/toolchain/cc
 
       - name: Package

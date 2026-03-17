@@ -24,7 +24,7 @@ from compiler.midend.docstring_utils import (
 def main():
     remove_c_code = True
     if len(sys.argv) not in [2, 3]:
-        print("Isticmaalka: python tusmo.py <magaca_faylka.tus> [--c]")
+        print("Isticmaalka: tusmo <magaca_faylka.tus> ")
         sys.exit(1)
 
     if len(sys.argv) == 3 and sys.argv[2] == "--c":

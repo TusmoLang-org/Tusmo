@@ -7,7 +7,7 @@ $temp = New-TemporaryFile
 Remove-Item $temp
 New-Item -ItemType Directory -Force -Path $temp | Out-Null
 
-Write-Host "La soo dejinnayo $asset..."
+Write-Host "Waxaa la soo dejinnaa $asset..."
 Invoke-WebRequest -Uri "https://github.com/$repo/releases/latest/download/$asset" -OutFile "$temp\$asset"
 
 tar -xf "$temp\$asset" -C $temp
@@ -18,7 +18,7 @@ Move-Item "$temp\*" $tusmoHome
 # Optional VS Code extension
 $vsix = "tusmo-vscode.vsix"
 if (Get-Command code -ErrorAction SilentlyContinue) {
-  Write-Host "La soo dejinnayo VS Code extension..."
+  Write-Host "Waxaa la soo dejinnaa VS Code extension..."
   $vsixPath = "$temp\$vsix"
   try {
     Invoke-WebRequest -Uri "https://github.com/$repo/releases/latest/download/$vsix" -OutFile $vsixPath -ErrorAction Stop
@@ -39,3 +39,24 @@ if (-not ($env:Path -split ';' | Where-Object { $_ -eq $binPath })) {
 [Environment]::SetEnvironmentVariable("TUSMO_INCLUDE_DIR", "$tusmoHome\runtime", "User")
 
 Write-Host "Waxaa lagu shubay $tusmoHome. Mar kale fur terminal-ka (shell) ka dibna qor 'tusmo'."
+
+# Nadiifi shaashadda
+Clear-Host
+
+# Farshaxanka ASCII ee magaca "TUSMO"
+$asciiArt = @"
+  _______ _    _  _____ __  __  ____  
+
+ |__   __| |  | |/ ____|  \/  |/ __ \ 
+    | |  | |  | | (___ | \  / | |  | |
+    | |  | |  | |\___ \| |\/| | |  | |
+    | |  | |__| |____) | |  | | |__| |
+    |_|   \____/|_____/|_|  |_|\____/ 
+"@
+
+# Ku daabac midab buluug ah (Cyan)
+Write-Host $asciiArt -ForegroundColor Cyan
+
+Write-Host "==========================================" -ForegroundColor Gray
+Write-Host "      Ku soo dhawaaw Luuqada Tusmo" -ForegroundColor Green -Object
+Write-Host "==========================================" -ForegroundColor Gray

@@ -55,6 +55,8 @@ jobs:
             --hidden-import compiler.frontend `
             --hidden-import compiler.midend `
             --hidden-import compiler.backend `
+            --hidden-import ply.lex `
+            --hidden-import ply.yacc `
             --add-data "compiler;compiler" `
             --add-data "runtime;runtime" `
             --add-data "stdlib;stdlib"

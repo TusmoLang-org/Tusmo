@@ -105,72 +105,81 @@ def update_tusmo(command=None):
 
 def download_libraries(all_args):
     import shutil
-    import requests
     import zipfile
-    import io
-    import time
+    import tempfile
+    import requests
 
-    # Hubi in doodu tahay 3 (tusmo download library_name)
-    if len(all_args) == 3:
-        command = all_args[1].lower()
-        if command in ["download", "dagso", "soo_degso", "soo_dajiso", "soo_daji"]:
-            library_name = all_args[2]
-            
-            # 🔗 Link-ga rasmiga ah ee Tusmo Organization
-            base_url = f"https://github.com{library_name}"
-            target_path = f"./tusmo_modules/{library_name}"
+    if len(all_args) != 3:
+        return
 
-            print(f"\n[Tusmo] Waxaa la bilaabay soo dajinta: {library_name}...")
-            print(f"Source: {base_url}")
-            time.sleep(0.5)
+    command = all_args[1].lower()
+    if command not in ["download", "dagso", "soo_degso", "soo_dajiso", "soo_daji"]:
+        return
 
-            # --- 1. ISKU DAY GIT CLONE ---
-            if shutil.which("git"):
-                print(f"[Git] Waxaa la helay git, waxaa la bilaabayaa 'cloning' repo-ka...")
-                try:
-                    # 'capture_output=True' waxay naga caawinaysaa inaan log-ga nadiifino
-                    subprocess.run(["git", "clone", base_url, target_path], check=True, capture_output=True)
-                    print(f"✅ Guul! {library_name} hadda waa diyaar (via Git).")
-                    return
-                except subprocess.CalledProcessError:
-                    print(f"⚠️  [Git] Git wuu ku fashilmay (maga laga yaabaa in repo-gu jirin).")
+    raw_name = all_args[2]
+    if "=" in raw_name:
+        library_name, version = raw_name.split("=", 1)
+        version = version.strip()
+    else:
+        library_name, version = raw_name, None
 
-            # --- 2. ISKU DAY MANUAL DOWNLOAD (HADDII GIT UU MAQAN YAHAY) ---
-            print(f"📡 [System] Waxaa la isku dayayaa soo dejin toos ah (Manual Download)...")
-            
-            # GitHub ZIP link (inta badan waa 'main' ama 'master')
-            zip_url = f"{base_url}/archive/refs/heads/main.zip"
-            
-            try:
-                # Progress bar yar oo 'fake' ah si loo dareemo in wax dhacayaan
-                for i in range(1, 6):
-                    sys.stdout.write(f"\r🔥 [Cooking] Soo dejinta: [{'#' * i}{'.' * (5-i)}] {i*20}%")
-                    sys.stdout.flush()
-                    time.sleep(0.2)
-                print("\n")
+    # Repo resolution: allow owner/repo, otherwise default owner
+    default_owner = "tusmo-libs"
+    if "/" in library_name:
+        owner, repo = library_name.split("/", 1)
+    else:
+        owner, repo = default_owner, library_name
 
-                r = requests.get(zip_url, stream=True)
-                
-                # Haddii 'main' la waayo, isku day 'master'
-                if r.status_code != 200:
-                    zip_url = f"{base_url}/archive/refs/heads/master.zip"
-                    r = requests.get(zip_url, stream=True)
+    repo_url = f"https://github.com/{owner}/{repo}"
+    target_dir = os.path.abspath(os.path.join(os.getcwd(), ".lib", repo))
+    os.makedirs(os.path.dirname(target_dir), exist_ok=True)
 
-                r.raise_for_status()
+    print(f"\n[Tusmo] Downloading '{repo}' "
+          f"{'(latest)' if not version else f'version {version}'} "
+          f"from {repo_url}")
 
-                # Kala fur faylka
-                with zipfile.ZipFile(io.BytesIO(r.content)) as z:
-                    # GitHub ZIP wuxuu leeyahay folder dheeri ah (tusmo-lib-main)
-                    # Waxaan u soo saaraynaa galka aan rabno
-                    z.extractall(path="./tusmo_modules")
-                
-                print(f"✅ Guul! {library_name} hadda waa diyaar (Manual).")
-            
-            except Exception as e:
-                print(f"❌ Cilad: Ma suurtagalin in la soo dejiyo '{library_name}'.")
-                print(f"   Hubi in magaca maktabaddu sax yahay: {base_url}")
+    # Prefer git if available
+    if shutil.which("git"):
+        try:
+            if os.path.exists(target_dir):
+                shutil.rmtree(target_dir)
+            clone_cmd = ["git", "clone", "--depth", "1"]
+            if version:
+                clone_cmd += ["--branch", version]
+            clone_cmd += [repo_url, target_dir]
+            subprocess.run(clone_cmd, check=True, capture_output=True)
+            print("✅ Installed via git into .lib/")
+            return
+        except subprocess.CalledProcessError as e:
+            print(f"⚠️ Git clone failed: {e}. Falling back to zip download.")
 
-            sys.exit(0)
+    # Fallback: download ZIP (tag if specified, else main)
+    if version:
+        zip_url = f"{repo_url}/archive/refs/tags/{version}.zip"
+    else:
+        zip_url = f"{repo_url}/archive/refs/heads/main.zip"
+
+    try:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            zip_path = os.path.join(tmpdir, "lib.zip")
+            r = requests.get(zip_url, stream=True, timeout=30)
+            r.raise_for_status()
+            with open(zip_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+
+            with zipfile.ZipFile(zip_path, "r") as zf:
+                zf.extractall(tmpdir)
+                # GitHub zips root as repo-<branch/tag>
+                extracted_root = next(Path(tmpdir).glob(f"{repo}-*"))
+                if os.path.exists(target_dir):
+                    shutil.rmtree(target_dir)
+                shutil.move(str(extracted_root), target_dir)
+            print("✅ Installed via zip into .lib/")
+    except Exception as e:
+        print(f"❌ Failed to download '{library_name}': {e}")
+        print(f"   Tried: {zip_url}")
 
 def update_libraries(command=None):
     pass

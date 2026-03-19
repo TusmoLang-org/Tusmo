@@ -27,7 +27,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgc-dev xz-utils curl
           python -m pip install --upgrade pip
-          python -m pip install pyinstaller ply
+          python -m pip install pyinstaller ply requests
 
       - name: Download zig (Linux)
         run: |
@@ -45,6 +45,7 @@ jobs:
             --hidden-import compiler.backend \
             --hidden-import ply.lex \
             --hidden-import ply.yacc \
+            --hidden-import requests \
             --add-data "compiler:compiler" \
             --add-data "runtime:runtime" \
             --add-data "stdlib:stdlib"

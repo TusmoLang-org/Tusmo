@@ -3,7 +3,7 @@
   "displayName": "Tusmo Language Support",
   "publisher": "tusmo-official",
   "description": "Syntax highlighting and icons for the Tusmo programming language.",
-  "version": "0.0.3",
+  "version": "0.0.27",
   "engines": {
     "vscode": "^1.75.0"
   },

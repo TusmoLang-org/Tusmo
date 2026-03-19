@@ -45,7 +45,7 @@ jobs:
         shell: pwsh
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pyinstaller ply
+          python -m pip install pyinstaller ply requests
 
       - name: Build tusmo CLI (onedir)
         shell: pwsh
@@ -57,6 +57,7 @@ jobs:
             --hidden-import compiler.backend `
             --hidden-import ply.lex `
             --hidden-import ply.yacc `
+              --hidden-import requests `
             --add-data "compiler;compiler" `
             --add-data "runtime;runtime" `
             --add-data "stdlib;stdlib"

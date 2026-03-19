@@ -8,9 +8,21 @@ Tusmo is a statically-typed programming language that uses Somali keywords and s
 
 ## Quick Start
 
+### Linux/macOS
+
 ```bash
 # Install
 curl -fsSL https://raw.githubusercontent.com/Tusmolang/Tusmo/main/install.sh | bash
+
+# Run
+tusmo hello.tus
+```
+
+### Windows
+
+```powershell
+# Install (run in PowerShell as Administrator)
+irm https://raw.githubusercontent.com/Tusmolang/Tusmo/main/install.ps1 | iex
 
 # Run
 tusmo hello.tus

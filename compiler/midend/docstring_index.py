@@ -48,7 +48,7 @@ class DocstringIndex:
     def items(self):
         return self._entries.items()
 
-    def merge(self, other: DocstringIndex) -> None:
+    def merge(self, other: "DocstringIndex") -> None:
         for key, entries in other.items():
             for entry in entries:
                 self.add(key, entry)

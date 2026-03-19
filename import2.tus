@@ -1,0 +1,5 @@
+hawl import2():waxbo {
+    """"Test function to check variable scope
+    """
+    qor("Inside import2");
+}

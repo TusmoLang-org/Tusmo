@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$repo = "tusmo-official/Tusmo"
+$repo = "Tusmolang/Tusmo"
 $asset = "tusmo-windows-x86_64.tar.gz"
 $tusmoHome = "$env:LOCALAPPDATA\Tusmo"
 $temp = New-TemporaryFile

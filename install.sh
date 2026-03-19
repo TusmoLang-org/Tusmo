@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="tusmo-official/Tusmo"
+REPO="Tusmolang/Tusmo"
 OS=$(uname -s)
 ARCH=$(uname -m)
 

@@ -20,8 +20,8 @@ from compiler.midend.docstring_utils import (
     attach_docstrings,
 )
 
-LOCAL_VERSION = "0.0.34"
-REPO_URL = "https://api.github.com/repos/tusmo-official/Tusmo/releases/latest"
+LOCAL_VERSION = "0.0.35"
+REPO_URL = "https://api.github.com/repos/Tusmolang/Tusmo/releases/latest"
 
 def help(command=None):
     if command in ["-h", "--help", "-c", "--caawimaad"]:
@@ -88,12 +88,12 @@ def update_tusmo(command=None):
             # Linux and MacOS share very similar command structures
             if os_type == "Linux" or os_type == "Darwin":
                 print("Tusmo waxay isku dayaysaa inay is casriyeyso (Unix)...")
-                cmd = "sudo rm -rf ~/.tusmo /usr/local/bin/tusmo 2>/dev/null && curl -fsSL https://raw.githubusercontent.com/tusmo-official/Tusmo/main/install.sh | bash"
+                cmd = "sudo rm -rf ~/.tusmo /usr/local/bin/tusmo 2>/dev/null && curl -fsSL https://raw.githubusercontent.com/Tusmolang/Tusmo/main/install.sh | bash"
                 subprocess.run(cmd, shell=True, check=True)
             
             elif os_type == "Windows":
                 print("Tusmo waxay isku dayaysaa inay is casriyeyso (Windows)...")
-                cmd = "irm https://raw.githubusercontent.com/tusmo-official/Tusmo/main/install.ps1 | iex"
+                cmd = "irm https://raw.githubusercontent.com/Tusmolang/Tusmo/main/install.ps1 | iex"
                 subprocess.run(["powershell", "-Command", cmd], check=True)
             
             print("\nTusmo waa la cusboonaysiiyay!")
@@ -113,7 +113,7 @@ def download_libraries(all_args):
         return
 
     command = all_args[1].lower()
-    if command not in ["download", "dagso", "soo_degso", "soo_dajiso", "soo_daji"]:
+    if command not in ["install", "-i", "-d", "dagso", "soo_degso", "soo_dajiso", "soo_daji"]:
         return
 
     raw_name = all_args[2]
@@ -134,7 +134,7 @@ def download_libraries(all_args):
     target_dir = os.path.abspath(os.path.join(os.getcwd(), ".lib", repo))
     os.makedirs(os.path.dirname(target_dir), exist_ok=True)
 
-    print(f"\n[Tusmo] Waxaa la soo dejinayaa '{repo}' "
+    print(f"\n[Tusmo] Waxaa la soo dejinayaa '{repo}' ... "
           f"{'(nooca ugu dambeeya)' if not version else f'nooca {version}'} "
           f"ka socda {repo_url}")
 
@@ -148,10 +148,10 @@ def download_libraries(all_args):
                 clone_cmd += ["--branch", version]
             clone_cmd += [repo_url, target_dir]
             subprocess.run(clone_cmd, check=True, capture_output=True)
-            print("✅ Waxaa lagu rakibay git gudaha .lib/")
+            print("Waxaa lagu rakibay git gudaha .lib/")
             return
         except subprocess.CalledProcessError as e:
-            print(f"⚠️ Git clone wuu fashilmay: {e}. Waxaa la isku dayayaa ZIP.")
+            print(f"Git clone wuu fashilmay: {e}. Waxaa la isku dayayaa ZIP.")
 
     # Fallback: download ZIP (tag if specified, else main)
     if version:
@@ -176,9 +176,9 @@ def download_libraries(all_args):
                 if os.path.exists(target_dir):
                     shutil.rmtree(target_dir)
                 shutil.move(str(extracted_root), target_dir)
-            print("✅ Waxaa lagu rakibay ZIP gudaha .lib/")
+            print("Waxaa laguu soo dajiyaya ZIP gudaha .lib/")
     except Exception as e:
-        print(f"❌ Ku guuldareystay soo dejinta '{library_name}': {e}")
+        print(f"Waa lagu guuldareystay soo dejinta '{library_name}': {e}")
         print(f"   URL la isku dayay: {zip_url}")
 
 def update_libraries(command=None):

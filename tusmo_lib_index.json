@@ -1,0 +1,11 @@
+{
+  "packages": [
+    {
+      "name": "tusmo_calc",
+      "repo": "https://github.com/tusmo-libs/tusmo_calc",
+      "description": "Tusaale: xisaab fudud",
+      "latest": "1.0.0",
+      "versions": ["1.0.0"]
+    }
+  ]
+}

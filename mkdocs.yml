@@ -23,26 +23,4 @@ markdown_extensions:
   - toc:
       permalink: true
 
-nav:
-  - Home: index.md
-  - Getting Started:
-      - getting-started.md
-      - how-it-works.md
-  - Language:
-      - variables.md
-      - strings.md
-      - arrays.md
-      - dictionaries.md
-      - conditions.md
-      - loops.md
-      - functions.md
-      - classes.md
-      - operators.md
-  - Standard Library:
-      - stdlib.md
-      - stdlib-os.md
-      - stdlib-wakhti.md
-      - stdlib-nasiib.md
-      - stdlib-xiriiriye.md
-      - stdlib-webxiriiriye.md
-      - stdlib-http.md
+# Navigation auto-generated from docs-src/

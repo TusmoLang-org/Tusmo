@@ -20,7 +20,7 @@ from compiler.midend.docstring_utils import (
     attach_docstrings,
 )
 
-LOCAL_VERSION = "1.0.25"
+LOCAL_VERSION = "1.0.26"
 REPO_URL = "https://api.github.com/repos/tusmo-official/Tusmo/releases/latest"
 
 def help(command=None):
@@ -51,7 +51,7 @@ update / cusboonaysiin / casriye    Tusmo waxay isku dayaysaa inay is casriyeyso
 def check_for_updates():
     import requests
     try:
-        # Headers help avoid GitHub API rate limits
+        # Si loo yareeyo in la xannibo
         headers = {'User-Agent': 'Tusmo-Update-Checker'}
         response = requests.get(REPO_URL, headers=headers, timeout=5)
         
@@ -88,7 +88,7 @@ def update_tusmo(command=None):
             # Linux and MacOS share very similar command structures
             if os_type == "Linux" or os_type == "Darwin":
                 print("Tusmo waxay isku dayaysaa inay is casriyeyso (Unix)...")
-                cmd = "rm -rf ~/.tusmo /usr/local/bin/tusmo 2>/dev/null && curl -fsSL https://raw.githubusercontent.com/tusmo-official/Tusmo/main/install.sh | bash"
+                cmd = "sudo rm -rf ~/.tusmo /usr/local/bin/tusmo 2>/dev/null && curl -fsSL https://raw.githubusercontent.com/tusmo-official/Tusmo/main/install.sh | bash"
                 subprocess.run(cmd, shell=True, check=True)
             
             elif os_type == "Windows":
@@ -96,7 +96,7 @@ def update_tusmo(command=None):
                 cmd = "irm https://raw.githubusercontent.com/tusmo-official/Tusmo/main/install.ps1 | iex"
                 subprocess.run(["powershell", "-Command", cmd], check=True)
             
-            print("\n✅ Tusmo waa la cusboonaysiiyay!")
+            print("\nTusmo waa la cusboonaysiiyay!")
             
         except subprocess.CalledProcessError as e:
             print(f"\n❌ Khalad ayaa dhacay: {e}")
@@ -194,7 +194,7 @@ def list_libraries(command=None):
 def main():
     remove_c_code = True
 
-    if len(sys.argv) not in [2, 3]:
+    if len(sys.argv) < 2:
         print("Isticmaalka: tusmo <magaca_faylka.tus> ")
         sys.exit(1)
  

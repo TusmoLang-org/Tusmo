@@ -62,14 +62,6 @@ jobs:
             --add-data "runtime;runtime" `
             --add-data "stdlib;stdlib"
 
-      - name: Build VS Code extension (VSIX)
-        shell: pwsh
-        run: |
-          cd Extension
-          npm ci
-          npm install -g @vscode/vsce
-          vsce package --out ../tusmo-vscode.vsix
-
       - name: Build hover server (onefile)
         shell: pwsh
         run: |
@@ -116,7 +108,6 @@ jobs:
         with:
           files: |
             tusmo-windows-x86_64.tar.gz
-            tusmo-vscode.vsix
           tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

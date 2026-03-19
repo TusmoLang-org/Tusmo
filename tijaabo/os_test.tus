@@ -1,0 +1,17 @@
+keen "os.tus";
+
+keyd:Os os = Os();
+keyd:eray cwd = os.halkee();
+qor("Goobta hadda: " + cwd);
+keyd:tix:eray liis = os.itus(cwd);
+qor("Waxa ku jira tijaabo/: ");
+soco item kasta laga helo liis {
+    qor(item);
+}
+keyd:eray file_path = os.isku_dar_waddo(cwd, "tijaabo_out.txt");
+os.qor_fayl(file_path, "Tani waa tijaabada Tusmo OS stdlib\n", been);
+keyd:tiro cabbir = os.cabbir_fayl(file_path);
+qor("Cabbirka faylka: " + cabbir);
+haddii (os.majiraa(file_path)) {
+    qor("Fayl la helay");
+}

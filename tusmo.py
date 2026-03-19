@@ -6,7 +6,7 @@ import traceback
 import subprocess
 
 sys.path.append(os.path.dirname(__file__))
-
+from pathlib import Path
 
 from compiler.frontend.lexer.lexer import lexer
 from compiler.frontend.parser.parser import parser
@@ -20,13 +20,190 @@ from compiler.midend.docstring_utils import (
     attach_docstrings,
 )
 
+LOCAL_VERSION = "1.0.25"
+REPO_URL = "https://api.github.com/repos/tusmo-official/Tusmo/releases/latest"
+
+def help(command=None):
+    if command in ["-h", "--help", "-c", "--caawimaad"]:
+        msg = r"""
+  _______ _    _  _____ __  __  ____  
+ |__   __| |  | |/ ____|  \/  |/ __ \ 
+    | |  | |  | | (___ | \  / | |  | |
+    | |  | |  | |\___ \| |\/| | |  | |
+    | |  | |__| |____) | |  | | |__| |
+    |_|   \____/|_____/|_|  |_|\____/ 
+
+-c --caawimaad / -h, --help         Tusmo waxay bixisaa caawimaad iyo macluumaad ku saabsan isticmaalka iyo astaamaha Tusmo.
+
+-n --nooc / -v, --version           Tusmo waxay soo bandhigtaa macluumaadka nooca hadda jira ee Tusmo.
+
+-m --maktabadaha / -l, --libraries  Tusmo waxay liis garaynaysaa maktabadaha la taageerayo iyo astaamahooda.
+
+--c                                 Tusmo waxay ilaalisaa faylka C ee la soo saaray kadib marka la isku daro, halkii laga tirt
+
+download / dagso / soo_degso / soo_dajiso <magaca_maktabadda>  Tusmo waxay soo dejinaysaa maktabadda la cayimay iyadoo la adeegsanayo magaca maktabadda.
+update / cusboonaysiin / casriye    Tusmo waxay isku dayaysaa inay is casriyeyso iyadoo soo dejinaysa nooca ugu dambeeya ee Tusmo.
+
+"""
+        print(msg)
+        sys.exit(0)
+
+def check_for_updates():
+    import requests
+    try:
+        # Headers help avoid GitHub API rate limits
+        headers = {'User-Agent': 'Tusmo-Update-Checker'}
+        response = requests.get(REPO_URL, headers=headers, timeout=5)
+        
+        if response.status_code == 200:
+            latest_release = response.json()
+            remote_version = latest_release["tag_name"]
+
+            if remote_version.lstrip('v') != LOCAL_VERSION.lstrip('v'):
+                print("\n")
+                print("-" * 15, "Casriyeen Cusub Ayaa Lahelay", "-" * 15)
+                print(f"Nooc cusub ayaa la helay: {remote_version}")
+                print(f"Nooca aad haysato: {LOCAL_VERSION}")
+                print("run-dheh 'tusmo cusboonaysii' si aad u cusbooneysiiso.")
+         
+    except Exception:
+        # si aamusan ha u fail-garoowdo in case hadii user-ka uu san internet haysan si uu ogaan karo version-kiisa bilaa erro bilaa internet
+        pass
+
+def version(command=None):
+    if command in ["-v", "--version", "-n", "--nooca"]:
+        print(f"Tusmo Version: {LOCAL_VERSION}-beta")
+        
+        check_for_updates()
+        sys.exit(0)
+
+
+def update_tusmo(command=None):
+    import platform
+    if command in ["update", "cusboonaysii", "casriyee"]:
+        os_type = platform.system() # Linux, Windows, or Darwin
+        print(f"Nidaamkaaga waa: {os_type}")
+        
+        try:
+            # Linux and MacOS share very similar command structures
+            if os_type == "Linux" or os_type == "Darwin":
+                print("Tusmo waxay isku dayaysaa inay is casriyeyso (Unix)...")
+                cmd = "rm -rf ~/.tusmo /usr/local/bin/tusmo 2>/dev/null && curl -fsSL https://raw.githubusercontent.com/tusmo-official/Tusmo/main/install.sh | bash"
+                subprocess.run(cmd, shell=True, check=True)
+            
+            elif os_type == "Windows":
+                print("Tusmo waxay isku dayaysaa inay is casriyeyso (Windows)...")
+                cmd = "irm https://raw.githubusercontent.com/tusmo-official/Tusmo/main/install.ps1 | iex"
+                subprocess.run(["powershell", "-Command", cmd], check=True)
+            
+            print("\n✅ Tusmo waa la cusboonaysiiyay!")
+            
+        except subprocess.CalledProcessError as e:
+            print(f"\n❌ Khalad ayaa dhacay: {e}")
+        
+        sys.exit(0)
+
+def download_libraries(all_args):
+    import shutil
+    import requests
+    import zipfile
+    import io
+    import time
+
+    # Hubi in doodu tahay 3 (tusmo download library_name)
+    if len(all_args) == 3:
+        command = all_args[1].lower()
+        if command in ["download", "dagso", "soo_degso", "soo_dajiso", "soo_daji"]:
+            library_name = all_args[2]
+            
+            # 🔗 Link-ga rasmiga ah ee Tusmo Organization
+            base_url = f"https://github.com{library_name}"
+            target_path = f"./tusmo_modules/{library_name}"
+
+            print(f"\n[Tusmo] Waxaa la bilaabay soo dajinta: {library_name}...")
+            print(f"Source: {base_url}")
+            time.sleep(0.5)
+
+            # --- 1. ISKU DAY GIT CLONE ---
+            if shutil.which("git"):
+                print(f"[Git] Waxaa la helay git, waxaa la bilaabayaa 'cloning' repo-ka...")
+                try:
+                    # 'capture_output=True' waxay naga caawinaysaa inaan log-ga nadiifino
+                    subprocess.run(["git", "clone", base_url, target_path], check=True, capture_output=True)
+                    print(f"✅ Guul! {library_name} hadda waa diyaar (via Git).")
+                    return
+                except subprocess.CalledProcessError:
+                    print(f"⚠️  [Git] Git wuu ku fashilmay (maga laga yaabaa in repo-gu jirin).")
+
+            # --- 2. ISKU DAY MANUAL DOWNLOAD (HADDII GIT UU MAQAN YAHAY) ---
+            print(f"📡 [System] Waxaa la isku dayayaa soo dejin toos ah (Manual Download)...")
+            
+            # GitHub ZIP link (inta badan waa 'main' ama 'master')
+            zip_url = f"{base_url}/archive/refs/heads/main.zip"
+            
+            try:
+                # Progress bar yar oo 'fake' ah si loo dareemo in wax dhacayaan
+                for i in range(1, 6):
+                    sys.stdout.write(f"\r🔥 [Cooking] Soo dejinta: [{'#' * i}{'.' * (5-i)}] {i*20}%")
+                    sys.stdout.flush()
+                    time.sleep(0.2)
+                print("\n")
+
+                r = requests.get(zip_url, stream=True)
+                
+                # Haddii 'main' la waayo, isku day 'master'
+                if r.status_code != 200:
+                    zip_url = f"{base_url}/archive/refs/heads/master.zip"
+                    r = requests.get(zip_url, stream=True)
+
+                r.raise_for_status()
+
+                # Kala fur faylka
+                with zipfile.ZipFile(io.BytesIO(r.content)) as z:
+                    # GitHub ZIP wuxuu leeyahay folder dheeri ah (tusmo-lib-main)
+                    # Waxaan u soo saaraynaa galka aan rabno
+                    z.extractall(path="./tusmo_modules")
+                
+                print(f"✅ Guul! {library_name} hadda waa diyaar (Manual).")
+            
+            except Exception as e:
+                print(f"❌ Cilad: Ma suurtagalin in la soo dejiyo '{library_name}'.")
+                print(f"   Hubi in magaca maktabaddu sax yahay: {base_url}")
+
+            sys.exit(0)
+
+def update_libraries(command=None):
+    pass
+
+def remove_libraries(command=None):
+    pass
+
+def list_libraries(command=None):
+    if command in ["-l", "--libraries", "-m","--maktabadaha"]:
+        print("Tusmo waxay taageertaa maktabadahan soo socda:")
+        print("- nasiib: Maktabadan waa mid lagu talagalay in .")
+        print("- wakhti: Waxay la xiriirtaa waqtiga iyo taariikhda.")
+        print("- os: Waxay la xiriirtaa nidaamka computer-ka.")
+        print("- http: Waxay la xiriira codsiyada HTTP iyo server-yada webka.")
+        print("- Xiriiriye: Waxay la xiriirtaa isgaarsiinta shabakadda ee heerka socket-ka.")
+        print("- webxiriiriye: Waxay la xiriirtaa isgaarsiinta web-ka ee heerka websocket-ka.")
+        sys.exit(0)
+   
+
 
 def main():
     remove_c_code = True
+
     if len(sys.argv) not in [2, 3]:
         print("Isticmaalka: tusmo <magaca_faylka.tus> ")
         sys.exit(1)
-
+ 
+    help(sys.argv[1])
+    version(sys.argv[1])
+    list_libraries(sys.argv[1])
+    download_libraries(sys.argv[1:])
+    update_tusmo(sys.argv[1])
+    
     if len(sys.argv) == 3 and sys.argv[2] == "--c":
         remove_c_code = False
 

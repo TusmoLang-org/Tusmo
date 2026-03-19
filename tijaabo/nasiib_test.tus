@@ -1,0 +1,17 @@
+keen "nasiib.tus";
+
+bilaab_nasiib();
+keyd:tiro isku = 0;
+keyd:tiro tir = 0;
+keyd:tiro i = 0;
+inta ay (i < 5) {
+    tir = nasiib_tiro(1, 10);
+    isku = isku + tir;
+    qor("Tiro: " + tir);
+    i = i + 1;
+}
+keyd:tiro celcelis = isku / 5;
+qor("Isku darka: " + isku);
+qor("Celcelis: " + celcelis);
+keyd:jajab x = nasiib_jajab(0.0, 1.0);
+qor("Jajab random ah: " + x);

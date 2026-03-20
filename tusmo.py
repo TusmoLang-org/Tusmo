@@ -111,11 +111,11 @@ def download_libraries(all_args):
     import requests
 
     if len(all_args) != 3:
-        return
+        return False
 
     command = all_args[1].lower()
     if command not in ["install", "-i", "-d", "dagso", "soo_degso", "soo_dajiso", "soo_daji"]:
-        return
+        return False
 
     raw_name = all_args[2]
     if "=" in raw_name:
@@ -132,25 +132,25 @@ def download_libraries(all_args):
         catalog = cat_resp.json().get("packages", [])
     except Exception:
         print("❌ Ma awoodin in aan akhriyo kataloogga rasmiga ah (TusmoLang-org/index).")
-        return
+        return True
 
     pkg = next((p for p in catalog if p.get("name") == library_name), None)
     if not pkg:
         print(f"❌ Maktabadda '{library_name}' lagama helin kataloogga rasmiga ah.")
-        return
+        return True
 
     repo_url = pkg.get("repo")
     available_versions = pkg.get("versions", [])
     if version:
         if version not in available_versions:
             print(f"❌ Nooca '{version}' lagama helin '{library_name}'. Noocyada jira: {', '.join(available_versions)}")
-            return
+            return True
         chosen_version = version
     else:
         chosen_version = pkg.get("latest") or (available_versions[0] if available_versions else None)
         if not chosen_version:
             print(f"❌ '{library_name}' lagama helin nooc sax ah.")
-            return
+            return True
 
     repo = repo_url.rstrip("/").split("/")[-1]
     target_dir = os.path.abspath(os.path.join(os.getcwd(), ".lib", repo))
@@ -170,7 +170,7 @@ def download_libraries(all_args):
             clone_cmd += [repo_url, target_dir]
             subprocess.run(clone_cmd, check=True, capture_output=True)
             print("Waxaa lagu rakibay git gudaha .lib/")
-            return
+            return True
         except subprocess.CalledProcessError as e:
             print(f"Git clone wuu fashilmay: {e}. Waxaa la isku dayayaa ZIP.")
 
@@ -201,6 +201,9 @@ def download_libraries(all_args):
     except Exception as e:
         print(f"Waa lagu guuldareystay soo dejinta '{library_name}': {e}")
         print(f"   URL la isku dayay: {zip_url}")
+        return True
+
+    return True
 
 def update_libraries(command=None):
     pass
@@ -231,7 +234,8 @@ def main():
     help(sys.argv[1])
     version(sys.argv[1])
     list_libraries(sys.argv[1])
-    download_libraries(sys.argv[1:])
+    if download_libraries(sys.argv[0:3]):
+        sys.exit(0)
     update_tusmo(sys.argv[1])
     
     if len(sys.argv) == 3 and sys.argv[2] == "--c":

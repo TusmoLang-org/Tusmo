@@ -1,121 +1,125 @@
 # Tusmo
 
-A Somali programming language that compiles to C.
+Luuqad barnaamij Soomaaliyeed oo u turjunta C.
 
-## What is Tusmo?
+## Waa maxay Tusmo?
 
-Tusmo is a statically-typed programming language that uses Somali keywords and syntax. It compiles to C code, then to a binary using Zig (bundled).
+Tusmo waa luuqad barnaamij oo statically-typed ah taas oo isticmaasha keywords Soomaali ah. Waxaa Tusmo loo badalaa C code ka dib binary fayl, kaas oo la excute-kareen karo.
 
-## Quick Start
+## Bilaabid Degdeg ah
+### Talo 
+Kahor inta aadan la soo dagin tusmo fadlan soo dagso VScode si aad u hesho **syntax highlighter** iyo **DocHover**
 
 ### Linux/macOS
 
 ```bash
-# Install
+# ku soo dagso Tusmo linux-kaada ama macos-kaada
 curl -fsSL https://raw.githubusercontent.com/Tusmolang/Tusmo/main/install.sh | bash
-
-# Run
-tusmo hello.tus
 ```
 
 ### Windows
 
 ```powershell
-# Install (run in PowerShell as Administrator)
+# Soo dagso Tusmo windwon adigoo u maraayo powershel-ka qab administration-ka
 irm https://raw.githubusercontent.com/Tusmolang/Tusmo/main/install.ps1 | iex
-
-# Run
-tusmo hello.tus
 ```
 
 ```tus
 // hello.tus
-qor("Hello, Somaliland!");
+qor("Hello, Somaali developers!");
 ```
 
-## Features
+## Run-karee Tusmo file
+```tus
+# kani wuxuu soo saari donaa binary fayl
+tusmo hello.tus
 
-- **Somali Syntax** - Native Somali keywords (`keyd`, `haddii`, `soco`, `koox`)
-- **Static Typing** - Variables have explicit types
-- **Object-Oriented** - Classes with inheritance
-- **Garbage Collection** - Automatic memory management
-- **Standard Library** - File I/O, HTTP, sockets, time, random
+#kadib run-garee binary fayl-ka
+./hello
+```
 
-## Language Example
+
+## Astaamaha
+
+* **Naxwaha Soomaaliga** - Ereyo Soomaali ah oo dhalad ah (`keyd`, `haddii`, `soco`, `koox`)
+* **Noocyo Sugan (Static Typing)** - Is-beddeleyaasha (Variables) waxay leeyihiin noocyo cad
+* **Ku-salaysnaan Walxeed (Object-Oriented)** - Kooxo (Classes) leh dhaxal
+* **Qashin-gur (Garbage Collection)** - Maareyn xusuuseed oo iskeed u shaqeysa
+* **Maktabadda Caadiga ah (Standard Library)** - Akhrinta/qorista faylasha, HTTP, xiriiriyeyaal (sockets), waqti, iyo nasiib (random)
+
+## Tusaalaha Luuqadda
 
 ```tus
-// Variables
+// variables
 keyd:eray magac = "Tusmo";
 keyd:tiro da = 5;
 
-// Conditionals
+// Shuruudo
 haddii (da > 3) {
     qor("Waa weyn!");
 }
 
-// Loops
+// Wareegyo
 soco i laga bilaabo 0 .. 5 {
     qor(i);
 }
 
-// Functions
+// Hawlo (Functions)
 hawl greet(name: eray) : waxbo {
     qor("Soo dhawow " + name);
 }
 
-// Classes
+// Kooxo (Classes)
 koox Qof {
     keyd:eray name;
     
     dhis(n: eray) : waxbo {
         kan.name = n;
     }
+    hawl sooBandhig() : waxbo {
+        qor("Magacaygu waa " + kan.name);
+    }
 }
 
 keyd:Qof p1 = Qof("Ali") cusub;
+p1.sooBandhig();
+greet("Mubaarak");
 ```
 
-## Documentation
+## Dukumiintiyada
 
-For full documentation, visit: **[Tusmo Docs](https://tusmolang.github.io/Tusmo/)**
+Aqriso Documentation-ka Tusmo oo booqo: **[Dukumiintiyada Tusmo](https://tusmolang.github.io/Tusmo/)**
 
-### Getting Started
-- [Installation](https://tusmolang.github.io/Tusmo/getting-started)
-- [How It Works](https://tusmolang.github.io/Tusmo/how-it-works)
+### Bilaabidda
+* [Rakibidda](https://tusmolang.github.io/Tusmo/getting-started)
+* [Sida ay u shaqeyso](https://tusmolang.github.io/Tusmo/how-it-works)
 
-### Language Reference
-- [Variables](https://tusmolang.github.io/Tusmo/variables)
-- [Strings](https://tusmolang.github.io/Tusmo/strings)
-- [Arrays](https://tusmolang.github.io/Tusmo/arrays)
-- [Dictionaries](https://tusmolang.github.io/Tusmo/dictionaries)
-- [Conditions](https://tusmolang.github.io/Tusmo/conditions)
-- [Loops](https://tusmolang.github.io/Tusmo/loops)
-- [Functions](https://tusmolang.github.io/Tusmo/functions)
-- [Classes](https://tusmolang.github.io/Tusmo/classes)
-- [Operators](https://tusmolang.github.io/Tusmo/operators)
+### Tixraaca Luuqadda
+* [Is-beddeleyaal (Variables)](https://tusmolang.github.io/Tusmo/variables)
+* [Xargo (Strings)](https://tusmolang.github.io/Tusmo/strings)
+* [Tixo (Arrays)](https://tusmolang.github.io/Tusmo/arrays)
+* [Qaamuusyo (Dictionaries)](https://tusmolang.github.io/Tusmo/dictionaries)
+* [Shuruudo (Conditions)](https://tusmolang.github.io/Tusmo/conditions)
+* [Wareegyo (Loops)](https://tusmolang.github.io/Tusmo/loops)
+* [Hawlo (Functions)](https://tusmolang.github.io/Tusmo/functions)
+* [Kooxo (Classes)](https://tusmolang.github.io/Tusmo/classes)
+* [Hawl-galayaal (Operators)](https://tusmolang.github.io/Tusmo/operators)
 
-### Standard Library
-- [Stdlib Overview](https://tusmolang.github.io/Tusmo/stdlib)
-- [OS Module](https://tusmolang.github.io/Tusmo/stdlib-os)
-- [Wakhti (Time)](https://tusmolang.github.io/Tusmo/stdlib-wakhti)
-- [Nasiib (Random)](https://tusmolang.github.io/Tusmo/stdlib-nasiib)
-- [Xiriiriye (Sockets)](https://tusmolang.github.io/Tusmo/stdlib-xiriiriye)
-- [WebXiriiriye (WebSocket)](https://tusmolang.github.io/Tusmo/stdlib-webxiriiriye)
-- [HTTP](https://tusmolang.github.io/Tusmo/stdlib-http)
+### Maktabadda Caadiga ah (Standard Library)
+* [Dulmarka Maktabadda Caadiga ah](https://tusmolang.github.io/Tusmo/stdlib)
+* [Qaybta OS (Nidaamka)](https://tusmolang.github.io/Tusmo/stdlib-os)
+* [Wakhti (Time)](https://tusmolang.github.io/Tusmo/stdlib-wakhti)
+* [Nasiib (Random)](https://tusmolang.github.io/Tusmo/stdlib-nasiib)
+* [Xiriiriye (Sockets)](https://tusmolang.github.io/Tusmo/stdlib-xiriiriye)
+* [WebXiriiriye (WebSocket)](https://tusmolang.github.io/Tusmo/stdlib-webxiriiriye)
+* [HTTP](https://tusmolang.github.io/Tusmo/stdlib-http)
 
-## Requirements
 
-None! The bundled release includes:
-- Zig compiler
-- Boehm GC
-- Runtime libraries
 
-Just download and run.
-
-## License
+## Shatiga (License)
 
 MIT
 
 ---
 
-Made with ❤️ for the Somali developer community.
+Ugu dambeyntii luuqadan Tusmo waxay wali ku jirtaa under development Fadlan wixii cilado ah nooc kastaba ay ahaadaan 

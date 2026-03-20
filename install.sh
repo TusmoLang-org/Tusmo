@@ -40,8 +40,17 @@ if CODE_BIN=$(find_code); then
     "$CODE_BIN" --uninstall-extension "$eid" >/dev/null 2>&1 || true
   done
   rm -rf "$HOME/.vscode/extensions"/tusmo*-language-support-* 2>/dev/null || true
+  ok=0
   if curl -fsSL "https://github.com/$REPO/releases/latest/download/$VSIX" -o "$TMP/$VSIX"; then
-    "$CODE_BIN" --install-extension "$TMP/$VSIX" --force >/dev/null 2>&1 || true
+    if "$CODE_BIN" --install-extension "$TMP/$VSIX" --force >/dev/null 2>&1; then
+      ok=1
+    fi
+  fi
+  if [ $ok -ne 1 ]; then
+    echo "⚠️  Ma suurtagelin in VSIX si toos ah loo rakibo; waxa la keydiyay si gacanta loogu rakibo."
+    if curl -fsSL "https://github.com/$REPO/releases/latest/download/$VSIX" -o "$TUSMO_HOME/$VSIX"; then
+      echo "   Ku rakib: code --install-extension $TUSMO_HOME/$VSIX --force"
+    fi
   fi
 else
   # Haddii code/codium aan laga helin PATH/paths caadi ah, tirtir kuwa hore oo soo dejiso VSIX si gacanta loogu rakibo

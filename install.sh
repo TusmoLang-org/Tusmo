@@ -26,20 +26,30 @@ tar -xzf "$TMP/$ASSET" -C "$TUSMO_HOME"
 # Optional: install VS Code extension if VSIX asset exists and 'code' is available
 VSIX="tusmo-vscode.vsix"
 EXT_IDS=("tusmolang-org.tusmo-language-support" "TusmoLang-org.tusmo-language-support" "tusmo-official.tusmo-language-support")
-if command -v code >/dev/null 2>&1 || command -v codium >/dev/null 2>&1; then
+
+find_code() {
+  for c in "$(command -v code 2>/dev/null)" "$(command -v codium 2>/dev/null)" /usr/bin/code /snap/bin/code /usr/share/code/bin/code; do
+    [ -x "$c" ] && echo "$c" && return 0
+  done
+  return 1
+}
+
+if CODE_BIN=$(find_code); then
   echo "Waxaa la soo dejinnaa VS Code extension..."
-  CODE_BIN=$(command -v code || command -v codium)
   for eid in "${EXT_IDS[@]}"; do
     "$CODE_BIN" --uninstall-extension "$eid" >/dev/null 2>&1 || true
   done
-  # Sidoo kale tirtir galalka haday harsan yihiin
   rm -rf "$HOME/.vscode/extensions"/tusmo*-language-support-* 2>/dev/null || true
   if curl -fsSL "https://github.com/$REPO/releases/latest/download/$VSIX" -o "$TMP/$VSIX"; then
     "$CODE_BIN" --install-extension "$TMP/$VSIX" --force >/dev/null 2>&1 || true
   fi
 else
-  # Haddii code/codium aanu jirin, tirtir galalka extension-ka hore
+  # Haddii code/codium aan laga helin PATH/paths caadi ah, tirtir kuwa hore oo soo dejiso VSIX si gacanta loogu rakibo
   rm -rf "$HOME/.vscode/extensions"/tusmo*-language-support-* 2>/dev/null || true
+  if curl -fsSL "https://github.com/$REPO/releases/latest/download/$VSIX" -o "$TUSMO_HOME/$VSIX"; then
+    echo "⚠️  VSIX waa la soo dejiyey: $TUSMO_HOME/$VSIX"
+    echo "   Ku rakib gacanta: code --install-extension $TUSMO_HOME/$VSIX --force"
+  fi
 fi
 rm -rf "$TMP"
 

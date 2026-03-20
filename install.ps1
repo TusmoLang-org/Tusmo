@@ -29,6 +29,15 @@ if (Get-Command code -ErrorAction SilentlyContinue) {
     Get-ChildItem -Path "$env:USERPROFILE\\.vscode\\extensions" -Directory -Filter "tusmo*-language-support*" -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
     code --install-extension $vsixPath --force | Out-Null
   } catch {}
+} else {
+  # Haddii code aanu jirin, tirtir galalka oo soo dejiso VSIX si gacanta loogu rakibo
+  Get-ChildItem -Path "$env:USERPROFILE\\.vscode\\extensions" -Directory -Filter "tusmo*-language-support*" -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+  $vsixPath = "$env:TUSMO_HOME\\$vsix"
+  try {
+    Invoke-WebRequest -Uri "https://github.com/$repo/releases/latest/download/$vsix" -OutFile $vsixPath -ErrorAction Stop
+    Write-Host "⚠️  VSIX waa la soo dejiyey: $vsixPath"
+    Write-Host "   Ku rakib gacanta: code --install-extension $vsixPath --force"
+  } catch {}
 }
 
 Remove-Item -Recurse -Force $temp

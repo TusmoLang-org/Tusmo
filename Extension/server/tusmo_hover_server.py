@@ -215,19 +215,20 @@ def _determine_search_roots(
 ) -> list[Path]:
     candidates: list[Path] = []
 
+    def add_sets(base: Path) -> None:
+        for name in ("lib", "stdlib", ".lib"):
+            candidates.append(base / name)
+
     workspace_root = getattr(ls.workspace, "root_path", None)
     if workspace_root:
         root_path = Path(workspace_root)
-        for name in ("lib", "stdlib"):
-            candidates.append(root_path / name)
+        add_sets(root_path)
 
-    for name in ("lib", "stdlib"):
-        candidates.append(Path.cwd() / name)
+    add_sets(Path.cwd())
 
     if file_path:
         repo_root = file_path.parent
-        for name in ("lib", "stdlib"):
-            candidates.append(repo_root / name)
+        add_sets(repo_root)
 
     uniq: list[Path] = []
     seen: set[str] = set()

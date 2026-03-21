@@ -110,7 +110,6 @@ def download_libraries(all_args):
     import shutil
     import zipfile
     import tempfile
-    import requests
 
     if len(all_args) != 3:
         return False

@@ -20,7 +20,7 @@ from compiler.midend.docstring_utils import (
     attach_docstrings,
 )
 
-LOCAL_VERSION = "0.0.44"
+LOCAL_VERSION = "0.0.45"
 REPO_URL = "https://api.github.com/repos/TusmoLang-org/Tusmo/releases/latest"
 
 def help(command=None):

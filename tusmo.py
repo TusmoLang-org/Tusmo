@@ -5,6 +5,8 @@ import os
 import traceback
 import subprocess
 import json
+import urllib.request
+import urllib.error
 
 sys.path.append(os.path.dirname(__file__))
 from pathlib import Path
@@ -21,7 +23,7 @@ from compiler.midend.docstring_utils import (
     attach_docstrings,
 )
 
-LOCAL_VERSION = "0.0.47"
+LOCAL_VERSION = "0.0.48"
 REPO_URL = "https://api.github.com/repos/TusmoLang-org/Tusmo/releases/latest"
 
 def help(command=None):

@@ -125,31 +125,44 @@ def download_libraries(all_args):
         library_name, version = raw_name, None
 
     # --- Akhri kataloogga rasmiga ah: TusmoLang-org/index ---
-    catalog_url = "https://raw.githubusercontent.com/TusmoLang-org/index/main/catalog.json"
-    try:
-        cat_resp = requests.get(catalog_url, timeout=10)
-        cat_resp.raise_for_status()
-        catalog = cat_resp.json().get("packages", [])
-    except Exception:
-        print("❌ Ma awoodin in aan akhriyo kataloogga rasmiga ah (TusmoLang-org/index).")
+    catalog_candidates = [
+        os.environ.get("TUSMO_CATALOG_URL"),
+        "https://raw.githubusercontent.com/TusmoLang-org/index/main/catalog.json",
+        "https://raw.githubusercontent.com/TusmoLang-org/index/main/TusmoLang-org/catalog.json",
+    ]
+
+    catalog = []
+    for catalog_url in [c for c in catalog_candidates if c]:
+        try:
+            cat_resp = requests.get(catalog_url, timeout=10)
+            cat_resp.raise_for_status()
+            catalog = cat_resp.json().get("packages", [])
+            break
+        except Exception:
+            continue
+
+    if not catalog:
+        print(
+            f"Ma awoodi in aan akhriyo kataloogga rasmiga ah (TusmoLang-org/index). Fadlan hubi internet-kaaga, ama dejiso TUSMO_CATALOG_URL oo tilmaamaysa catalog.json."
+        )
         return True
 
     pkg = next((p for p in catalog if p.get("name") == library_name), None)
     if not pkg:
-        print(f"❌ Maktabadda '{library_name}' lagama helin kataloogga rasmiga ah.")
+        print(f"Maktabadda '{library_name}' lagama helin central-ka. Fadlan hubi magaca maktabadda ama eeg katalogga TusmoLang-org/index.")
         return True
 
     repo_url = pkg.get("repo")
     available_versions = pkg.get("versions", [])
     if version:
         if version not in available_versions:
-            print(f"❌ Nooca '{version}' lagama helin '{library_name}'. Noocyada jira: {', '.join(available_versions)}")
+            print(f"Nooca '{version}' lagama helin '{library_name}'. Noocyada jira: {', '.join(available_versions)}")
             return True
         chosen_version = version
     else:
         chosen_version = pkg.get("latest") or (available_versions[0] if available_versions else None)
         if not chosen_version:
-            print(f"❌ '{library_name}' lagama helin nooc sax ah.")
+            print(f"'{library_name}' lagama helin version-kan.")
             return True
 
     repo = repo_url.rstrip("/").split("/")[-1]

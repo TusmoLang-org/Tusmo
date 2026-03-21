@@ -129,7 +129,8 @@ def download_libraries(all_args):
     def fetch_catalog(url):
         try:
             with urllib.request.urlopen(url, timeout=10) as resp:
-                if resp.status != 200:
+                status = getattr(resp, "status", None)
+                if status not in (None, 200):
                     return None
                 data = resp.read().decode("utf-8")
                 return json.loads(data).get("packages", [])

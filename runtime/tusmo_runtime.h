@@ -106,6 +106,7 @@ double tusmo_random_double(double min, double max);
 
 // --- Time Functions (from time.c) ---
 double tusmo_time();
+char* tusmo_time_now();
 char* tusmo_format_time(const char* format);
 int tusmo_get_seconds();
 int tusmo_get_minutes();
@@ -113,6 +114,7 @@ int tusmo_get_hours();
 int tusmo_get_day();
 int tusmo_get_month();
 int tusmo_get_year();
+int tusmo_wait(int seconds);
 
 // --- OS Functions (from os.c) ---
 char* tusmo_os_cwd();
@@ -125,6 +127,7 @@ bool tusmo_os_path_exists(char* path);
 bool tusmo_os_is_file(char* path);
 bool tusmo_os_is_dir(char* path);
 char* tusmo_os_getenv(char* name);
+char* tusmo_os_name();
 void tusmo_os_setenv(char* name, char* value);
 int tusmo_os_system(char* command);
 void tusmo_os_copy(char* source, char* destination);

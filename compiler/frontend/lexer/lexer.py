@@ -9,7 +9,7 @@ reserved = {
     'laga': 'LAGA', 'bilaabo': 'BILAABO', 'kasta': 'KASTA', 'helo': 'HELO', 'joog': 'JOOG', 'kasoco':'KASOCO', 
     'ahayn': 'AHAYN', 'iyo': 'IYO', 'lamid': 'LAMID', 'weyn': 'WEYN', 'yar': 'YAR',
     'koox': 'KOOX', 'cusub': 'CUSUB', 'kan': 'KAN', 'dhis': 'DHIS', 'burbur': 'BURBUR', 'gali': 'GALI',
-     'ama':'AMA', 'keen':'KEEN', 'waxbo':'WAXBO', '___c__call_': 'C_CALL', '___c__code_': 'C_CODE', 'nooc':'NOOC', 'dherer':'DHERER',
+     'ama':'AMA', 'keen':'KEEN', 'isticmaal':'ISTICMAAL', 'waxbo':'WAXBO', '___c__call_': 'C_CALL', '___c__code_': 'C_CODE', 'nooc':'NOOC', 'dherer':'DHERER',
      'dhaxlaya': 'DHAXLAYA', 'waalid': 'WAALID'
 }
 
@@ -53,7 +53,15 @@ t_AMPERSANDAMPERSAND = r'&&'
 t_BARBAR = r'\|\|'
 
 # Token Functions
-def t_COMMENT(t): r'//.*'; pass
+# Token Functions
+def t_COMMENT(t):
+    r'(//.*)|(\#.*)'  # Regex-ka waa inuu ahaado midka ugu horreeya (docstring)
+    pass
+
+def t_ML_COMMENT(t):
+    r'/\*(.|\n)*?\*/'
+    t.lexer.lineno += t.value.count('\n')
+    pass
 
 def t_FLOAT_LITERAL(t):
     r'\d+\.\d+'

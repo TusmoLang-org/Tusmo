@@ -116,4 +116,10 @@ koox Os {
         """Soo celi cabbirka faylka (bytes)."""
         soo_celi ___c__call_("tusmo_os_file_size", path);
     }
+
+    
+    hawl nidaamkee() : eray {
+        """Soo celi nooca nidaamka (OS) ee barnaamijka ku socdo (tusaale: linux, windows, macos)."""
+        soo_celi ___c__call_("tusmo_os_name");
+    }
 }

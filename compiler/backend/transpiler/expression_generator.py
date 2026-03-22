@@ -76,6 +76,7 @@ class ExpressionGenerator:
                 temp_var = self.main_generator.get_temp_var()
                 # Evaluate once so we can branch based on runtime type
                 self.main_generator.c_code += f"    TusmoValue {temp_var} = {base_expr_c};\n"
+                
                 if str(index_type) == 'eray':
                     self.main_generator.used_features.add("dictionary")
                     return f"tusmo_qaamuus_get({temp_var}.value.as_qaamuus, {index_c})"
@@ -96,7 +97,15 @@ class ExpressionGenerator:
         elif isinstance(node, MemberAccessNode):
             object_c = self.generate_expression(node.object_node)
             object_type = self.get_expression_type(node.object_node)
-            
+
+            # NEW: Handle dynamic_value (dictionary from mixed array)
+            if str(object_type) == "dynamic_value":
+                # Check if it's coming from an array access (tix:qaamuus element)
+                if isinstance(node.object_node, ArrayAccessNode):
+                    self.main_generator.used_features.add("dictionary")
+                    key_c = f'"{node.member_name}"'
+                    return f"tusmo_qaamuus_get({object_c}.value.as_qaamuus, {key_c})"
+           
             # Resolve inheritance depth
             class_info = self.symbol_table.get(str(object_type))
             depth = 0
@@ -328,7 +337,7 @@ class ExpressionGenerator:
     def _ensure_string_operand(self, expr_code, expr_type):
         
         expr_type_str = str(expr_type)
-        print(expr_type_str)
+       
 
         if expr_type_str == 'eray':
             return expr_code

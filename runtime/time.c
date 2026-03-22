@@ -20,6 +20,23 @@ int tusmo_wait(int number) {
     }
 }
 
+char* tusmo_time_now() {
+    static char buffer[20]; // Meesha lagu kaydinayo qoraalka taariikhda
+    time_t rawtime;
+    struct tm *timeinfo;
+
+    // 1. Hel Unix timestamp-ka hadda
+    time(&rawtime);
+    
+    // 2. U beddel waqtiga deegaanka (Local Time)
+    timeinfo = localtime(&rawtime);
+
+    // 3. U qaabee sidii: YYYY-MM-DD HH:MM:SS (tusaale: 2026-03-22 14:45:01)
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
+    
+    return buffer;
+}
+
 char* tusmo_format_time(const char* format) {
     time_t rawtime;
     struct tm * timeinfo;

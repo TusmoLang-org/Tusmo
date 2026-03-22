@@ -2,7 +2,8 @@
 from compiler.frontend.parser.ast_nodes import KeenNode
 
 def p_keen(p):
-    '''keen_import : KEEN STRING SEMICOLON'''
+    '''keen_import : KEEN STRING SEMICOLON 
+                   | ISTICMAAL STRING SEMICOLON'''
     line = p.lineno(1)
     
     # Kani waa magaca faylka la rabo in la soo dejiyo (tusaale, "math.tus")

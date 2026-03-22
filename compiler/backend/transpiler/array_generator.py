@@ -81,6 +81,7 @@ class ArrayGenerator:
         base_expr_c = self.expr_generator.generate_expression(node.array_name_node)
         index_c = self.expr_generator.generate_expression(node.index_expression)
         base_tusmo_type = self.expr_generator.get_expression_type(node.array_name_node)
+
         checked_index = f"tusmo_bounds_check({index_c}, {base_expr_c}->size)"
 
         # Accessing a dynamic array returns a TusmoValue, not a primitive

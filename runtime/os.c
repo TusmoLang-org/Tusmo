@@ -178,3 +178,19 @@ int tusmo_os_file_size(char* path) {
     perror("stat");
     return -1; // Return -1 on error
 }
+
+// Get OS name
+
+char* tusmo_os_name() {
+    #ifdef _WIN32
+        return "windows";
+    #elif __linux__
+        return "linux";
+    #elif __APPLE__
+        return "macos";
+    #elif __unix__
+        return "unix";
+    #else
+        return "unknown";
+    #endif
+}

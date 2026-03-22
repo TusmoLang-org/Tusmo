@@ -346,7 +346,7 @@ def main():
 
         include_flag = f'-I"{include_override}"' if include_override else f'-I"{runtime_dir}"'
         lib_flag = f' -L"{lib_dir_override}"' if lib_dir_override else ""
-
+        
         # The final, dynamic compile command
         compile_command = (
             f'"{cc}" -O3 -march=native -flto -o "{binary}" '

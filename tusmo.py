@@ -5,6 +5,7 @@ import os
 import traceback
 import subprocess
 import json
+import platform
 import urllib.request
 import urllib.error
 
@@ -22,6 +23,7 @@ from compiler.midend.docstring_utils import (
     preprocess_docstrings,
     attach_docstrings,
 )
+
 
 LOCAL_VERSION = "0.0.51"
 REPO_URL = "https://api.github.com/repos/TusmoLang-org/Tusmo/releases/latest"
@@ -262,6 +264,33 @@ def main():
     runtime_dir = os.path.join(project_root, "runtime")
     stdlib_dir = os.path.join(project_root, "stdlib")
 
+
+# --- QAYBTA CUSUB: C-INTERFACE (STATIC LIBS & HEADERS) ---
+    os_type = platform.system()
+    
+    # Extension-ka saxda ah ee library-ga C
+    static_ext = ".a" if os_type != "Windows" else ".lib"
+    
+    # Folder-ka kaliya ee aan u aqoonsanray dunida C
+    c_bridge_folder = os.path.join(os.getcwd(), ".include")
+    
+    c_static_libs = []
+    c_include_flag = ""
+
+    if os.path.exists(c_bridge_folder):
+        # 1. Ku dar folder-ka liiska "Include Path" ee GCC
+        c_include_flag = f' -I"{c_bridge_folder}"'
+        
+        # 2. Si recursive ah u raadi dhammaan .a ama .lib files
+        for root, dirs, files in os.walk(c_bridge_folder):
+            for file in files:
+                if file.endswith(static_ext):
+                    full_path = os.path.join(root, file)
+                    c_static_libs.append(f'"{full_path}"')
+    
+    c_libs_str = " ".join(c_static_libs)
+
+
     # Map features to their source files
     feature_to_source_map = {
         "string": os.path.join(runtime_dir, "string.c"),
@@ -348,9 +377,14 @@ def main():
         lib_flag = f' -L"{lib_dir_override}"' if lib_dir_override else ""
         
         # The final, dynamic compile command
+        # ---------------------------------------------------------
+
+        # Amarka kama dambaysta ah ee Compiler-ka
         compile_command = (
             f'"{cc}" -O3 -march=native -flto -o "{binary}" '
-            f'{all_sources_str} {include_flag}{lib_flag} -lgc'
+            f'{all_sources_str} {c_libs_str} '      # .a files ka yimid .include
+            f'{include_flag}{c_include_flag} '      # -I runtime iyo -I .include
+            f'{lib_flag} -lgc'                      # Boehm GC
         )
 
         compile_result = os.system(compile_command)

@@ -8,6 +8,7 @@ import json
 import platform
 import urllib.request
 import urllib.error
+import requests
 
 sys.path.append(os.path.dirname(__file__))
 from pathlib import Path
@@ -54,9 +55,6 @@ update / cusboonaysiin / casriye    Tusmo waxay isku dayaysaa inay is casriyeyso
         sys.exit(0)
 
 def check_for_updates():
-    import urllib.request
-    import urllib.error
-    import json
     try:
         # Si loo yareeyo in la xannibo
         headers = {'User-Agent': 'Tusmo-Update-Checker'}

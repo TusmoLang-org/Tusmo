@@ -47,7 +47,7 @@ if CODE_BIN=$(find_code); then
     fi
   fi
   if [ $ok -ne 1 ]; then
-    echo "⚠️  Ma suurtagelin in VSIX si toos ah loo rakibo; waxa la keydiyay si gacanta loogu rakibo."
+    echo "Ma suurtagelin in VSIX si toos ah loo rakibo; waxa la keydiyay si gacanta loogu rakibo."
     if curl -fsSL "https://github.com/$REPO/releases/latest/download/$VSIX" -o "$TUSMO_HOME/$VSIX"; then
       echo "   Ku rakib: code --install-extension $TUSMO_HOME/$VSIX --force"
     fi
@@ -56,7 +56,7 @@ else
   # Haddii code/codium aan laga helin PATH/paths caadi ah, tirtir kuwa hore oo soo dejiso VSIX si gacanta loogu rakibo
   rm -rf "$HOME/.vscode/extensions"/tusmo*-language-support-* 2>/dev/null || true
   if curl -fsSL "https://github.com/$REPO/releases/latest/download/$VSIX" -o "$TUSMO_HOME/$VSIX"; then
-    echo "⚠️  VSIX waa la soo dejiyey: $TUSMO_HOME/$VSIX"
+    echo "VSIX waa la soo dejiyey: $TUSMO_HOME/$VSIX"
     echo "   Ku rakib gacanta: code --install-extension $TUSMO_HOME/$VSIX --force"
   fi
 fi

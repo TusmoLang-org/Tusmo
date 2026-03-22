@@ -93,7 +93,7 @@ def update_tusmo(command=None):
             # Linux and MacOS share very similar command structures
             if os_type == "Linux" or os_type == "Darwin":
                 print("Tusmo waxay isku dayaysaa inay is casriyeyso (Unix)...")
-                cmd = "sudo rm -rf ~/.tusmo /usr/local/bin/tusmo 2>/dev/null && curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash"
+                cmd = "curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash"
                 subprocess.run(cmd, shell=True, check=True)
             
             elif os_type == "Windows":
@@ -104,7 +104,7 @@ def update_tusmo(command=None):
             print("\nTusmo waa la cusboonaysiiyay!")
             
         except subprocess.CalledProcessError as e:
-            print(f"\n❌ Khalad ayaa dhacay: {e}")
+            print(f"\nKhalad ayaa dhacay: {e}")
         
         sys.exit(0)
 

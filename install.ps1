@@ -33,7 +33,7 @@ if (Get-Command code -ErrorAction SilentlyContinue) {
       # fallback: keep the VSIX for manual install
       $fallback = "$env:TUSMO_HOME\\$vsix"
       Copy-Item $vsixPath $fallback -Force
-      Write-Host "⚠️  Ma suurtagelin in VSIX si toos ah loo rakibo. Ku rakib: code --install-extension $fallback --force"
+      Write-Host "Ma suurtagelin in VSIX si toos ah loo rakibo. Ku rakib: code --install-extension $fallback --force"
     }
   } catch {}
 } else {
@@ -42,7 +42,7 @@ if (Get-Command code -ErrorAction SilentlyContinue) {
   $vsixPath = "$env:TUSMO_HOME\\$vsix"
   try {
     Invoke-WebRequest -Uri "https://github.com/$repo/releases/latest/download/$vsix" -OutFile $vsixPath -ErrorAction Stop
-    Write-Host "⚠️  VSIX waa la soo dejiyey: $vsixPath"
+    Write-Host "VSIX waa la soo dejiyey: $vsixPath"
     Write-Host "   Ku rakib gacanta: code --install-extension $vsixPath --force"
   } catch {}
 }

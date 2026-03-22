@@ -25,7 +25,7 @@ from compiler.midend.docstring_utils import (
 )
 
 
-LOCAL_VERSION = "0.0.51"
+LOCAL_VERSION = "0.0.52"
 REPO_URL = "https://api.github.com/repos/TusmoLang-org/Tusmo/releases/latest"
 
 def help(command=None):

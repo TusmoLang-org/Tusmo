@@ -16,12 +16,30 @@
 // ==========================================================================
 // --- DATA STRUCTURES
 // ==========================================================================
+// --- 1D Typed Arrays (base types) ---
 typedef struct TusmoTixTiro { int* data; size_t size; size_t capacity; } TusmoTixTiro;
 typedef struct TusmoTixEray { char** data; size_t size; size_t capacity; } TusmoTixEray;
 typedef struct TusmoTixJajab { double* data; size_t size; size_t capacity; } TusmoTixJajab;
 typedef struct TusmoTixMiyaa { bool* data; size_t size; size_t capacity; } TusmoTixMiyaa;
+typedef struct TusmoTixXaraf { char* data; size_t size; size_t capacity; } TusmoTixXaraf;
 typedef struct TusmoTixMixed { TusmoValue* data; size_t size; size_t capacity; } TusmoTixMixed;
-typedef struct TusmoTixGeneric { void** data; size_t size; size_t capacity; } TusmoTixGeneric;// This holds an array of pointers to other Tusmo array structs.
+typedef struct TusmoTixGeneric { void** data; size_t size; size_t capacity; } TusmoTixGeneric;
+
+// --- 2D Nested Arrays (hold pointers to 1D arrays - GC can trace these!) ---
+// Why separate structs? Because GC needs to trace the pointers inside.
+// If we use void**, GC can't see what's inside and loses track of nested arrays.
+typedef struct TusmoTixTiroNested { TusmoTixTiro** data; size_t size; size_t capacity; } TusmoTixTiroNested;
+typedef struct TusmoTixErayNested { TusmoTixEray** data; size_t size; size_t capacity; } TusmoTixErayNested;
+typedef struct TusmoTixJajabNested { TusmoTixJajab** data; size_t size; size_t capacity; } TusmoTixJajabNested;
+typedef struct TusmoTixMiyaaNested { TusmoTixMiyaa** data; size_t size; size_t capacity; } TusmoTixMiyaaNested;
+typedef struct TusmoTixXarafNested { TusmoTixXaraf** data; size_t size; size_t capacity; } TusmoTixXarafNested;
+
+// --- 3D Nested Arrays (hold pointers to 2D arrays) ---
+typedef struct TusmoTixTiroNested2 { TusmoTixTiroNested** data; size_t size; size_t capacity; } TusmoTixTiroNested2;
+typedef struct TusmoTixErayNested2 { TusmoTixErayNested** data; size_t size; size_t capacity; } TusmoTixErayNested2;
+typedef struct TusmoTixJajabNested2 { TusmoTixJajabNested** data; size_t size; size_t capacity; } TusmoTixJajabNested2;
+typedef struct TusmoTixMiyaaNested2 { TusmoTixMiyaaNested** data; size_t size; size_t capacity; } TusmoTixMiyaaNested2;
+typedef struct TusmoTixXarafNested2 { TusmoTixXarafNested** data; size_t size; size_t capacity; } TusmoTixXarafNested2;
 
 #include "dictionary.h"
 #include "type_conversion.h"
@@ -34,22 +52,55 @@ TusmoTixTiro* tusmo_hp_tix_tiro_create(size_t cap);
 TusmoTixEray* tusmo_hp_tix_eray_create(size_t cap);
 TusmoTixJajab* tusmo_hp_tix_jajab_create(size_t cap);
 TusmoTixMiyaa* tusmo_hp_tix_miyaa_create(size_t cap);
+TusmoTixXaraf* tusmo_hp_tix_xaraf_create(size_t cap);
 TusmoTixMixed* tusmo_tix_mixed_create(size_t initial_capacity);
 TusmoTixGeneric* tusmo_tix_generic_create(size_t cap);
+
+// --- 2D Nested Array Creation (GC-tracked pointers) ---
+// These use GC_MALLOC so pointers are visible to GC
+TusmoTixTiroNested* tusmo_tix_tiro_nested_create(size_t cap);
+TusmoTixErayNested* tusmo_tix_eray_nested_create(size_t cap);
+TusmoTixJajabNested* tusmo_tix_jajab_nested_create(size_t cap);
+TusmoTixMiyaaNested* tusmo_tix_miyaa_nested_create(size_t cap);
+TusmoTixXarafNested* tusmo_tix_xaraf_nested_create(size_t cap);
+
+// --- 3D Nested Array Creation ---
+TusmoTixTiroNested2* tusmo_tix_tiro_nested2_create(size_t cap);
+TusmoTixErayNested2* tusmo_tix_eray_nested2_create(size_t cap);
+TusmoTixJajabNested2* tusmo_tix_jajab_nested2_create(size_t cap);
+TusmoTixMiyaaNested2* tusmo_tix_miyaa_nested2_create(size_t cap);
+TusmoTixXarafNested2* tusmo_tix_xaraf_nested2_create(size_t cap);
 
 // --- Array Append (from array.c) ---
 void tusmo_hp_tix_tiro_append(TusmoTixTiro* tix, int value);
 void tusmo_hp_tix_eray_append(TusmoTixEray* tix, char* value);
 void tusmo_hp_tix_jajab_append(TusmoTixJajab* tix, double value);
 void tusmo_hp_tix_miyaa_append(TusmoTixMiyaa* tix, bool value);
+void tusmo_hp_tix_xaraf_append(TusmoTixXaraf* tix, char value);
 void tusmo_tix_mixed_append(TusmoTixMixed* tix, TusmoValue value);
 size_t tusmo_bounds_check(size_t idx, size_t size);
+
+// --- 2D Nested Array Append ---
+// These append typed array pointers, GC will trace them
+void tusmo_tix_tiro_nested_append(TusmoTixTiroNested* tix, TusmoTixTiro* value);
+void tusmo_tix_eray_nested_append(TusmoTixErayNested* tix, TusmoTixEray* value);
+void tusmo_tix_jajab_nested_append(TusmoTixJajabNested* tix, TusmoTixJajab* value);
+void tusmo_tix_miyaa_nested_append(TusmoTixMiyaaNested* tix, TusmoTixMiyaa* value);
+void tusmo_tix_xaraf_nested_append(TusmoTixXarafNested* tix, TusmoTixXaraf* value);
+
+// --- 3D Nested Array Append ---
+void tusmo_tix_tiro_nested2_append(TusmoTixTiroNested2* tix, TusmoTixTiroNested* value);
+void tusmo_tix_eray_nested2_append(TusmoTixErayNested2* tix, TusmoTixErayNested* value);
+void tusmo_tix_jajab_nested2_append(TusmoTixJajabNested2* tix, TusmoTixJajabNested* value);
+void tusmo_tix_miyaa_nested2_append(TusmoTixMiyaaNested2* tix, TusmoTixMiyaaNested* value);
+void tusmo_tix_xaraf_nested2_append(TusmoTixXarafNested2* tix, TusmoTixXarafNested* value);
 
 // --- Array Insert (from array.c) ---
 void tusmo_hp_tix_tiro_insert(TusmoTixTiro* tix, size_t index, int value);
 void tusmo_hp_tix_eray_insert(TusmoTixEray* tix, size_t index, char* value);
 void tusmo_hp_tix_jajab_insert(TusmoTixJajab* tix, size_t index, double value);
 void tusmo_hp_tix_miyaa_insert(TusmoTixMiyaa* tix, size_t index, bool value);
+void tusmo_hp_tix_xaraf_insert(TusmoTixXaraf* tix, size_t index, char value);
 void tusmo_tix_mixed_insert(TusmoTixMixed* tix, size_t index, TusmoValue value);
 
 // --- Array Remove (from array.c) ---
@@ -57,13 +108,20 @@ int tusmo_hp_tix_tiro_pop(TusmoTixTiro* tix, size_t index);
 char* tusmo_hp_tix_eray_pop(TusmoTixEray* tix, size_t index);
 double tusmo_hp_tix_jajab_pop(TusmoTixJajab* tix, size_t index);
 bool tusmo_hp_tix_miyaa_pop(TusmoTixMiyaa* tix, size_t index);
+char tusmo_hp_tix_xaraf_pop(TusmoTixXaraf* tix, size_t index);
 TusmoValue tusmo_tix_mixed_pop(TusmoTixMixed* tix, size_t index);
 
 bool tusmo_hp_tix_tiro_remove(TusmoTixTiro* tix, int value);
 bool tusmo_hp_tix_eray_remove(TusmoTixEray* tix, char* value);
 bool tusmo_hp_tix_jajab_remove(TusmoTixJajab* tix, double value);
 bool tusmo_hp_tix_miyaa_remove(TusmoTixMiyaa* tix, bool value);
+bool tusmo_hp_tix_xaraf_remove(TusmoTixXaraf* tix, char value);
 bool tusmo_tix_mixed_remove(TusmoTixMixed* tix, TusmoValue value);
+TusmoValue tusmo_tix_mixed_get(TusmoTixMixed* tix, size_t index);
+
+// --- Generic Nested Array Access (from array.c) ---
+// Handles type-switching for accessing elements of arrays stored in TusmoValue
+TusmoValue tusmo_tix_mixed_get_nested(TusmoValue arr_val, size_t index);
 
 // --- String Formatting (from string.c) ---
 char* tusmo_str_format(const char* format, ...);
@@ -76,26 +134,61 @@ char* hel_str();
 void tusmo_qor_dynamic_value(TusmoValue val);
 
 // --- Generic Printing (from io.c) ---
+void tusmo_qor_dynamic_value(TusmoValue val);
+
+// --- Generic Printing (from io.c) ---
+// 1D arrays
 void prints_tix_tiro(TusmoTixTiro* tix);
 void prints_tix_eray(TusmoTixEray* tix);
 void prints_tix_jajab(TusmoTixJajab* tix);
 void prints_tix_miyaa(TusmoTixMiyaa* tix);
+void prints_tix_xaraf(TusmoTixXaraf* tix);
 void prints_tix_mixed(TusmoTixMixed* tix);
+void prints_tix_generic(void* tix);
 
-//NEW: Prototypes for the Generic Array (in a new array_generic.c file)
+// 2D Nested array printing
+void prints_tix_tiro_nested(TusmoTixTiroNested* tix);
+void prints_tix_eray_nested(TusmoTixErayNested* tix);
+void prints_tix_jajab_nested(TusmoTixJajabNested* tix);
+void prints_tix_miyaa_nested(TusmoTixMiyaaNested* tix);
+void prints_tix_xaraf_nested(TusmoTixXarafNested* tix);
+
+// 3D Nested array printing
+void prints_tix_tiro_nested2(TusmoTixTiroNested2* tix);
+void prints_tix_eray_nested2(TusmoTixErayNested2* tix);
+void prints_tix_jajab_nested2(TusmoTixJajabNested2* tix);
+void prints_tix_miyaa_nested2(TusmoTixMiyaaNested2* tix);
+void prints_tix_xaraf_nested2(TusmoTixXarafNested2* tix);
+
+// --- Generic Array functions ---
 void tusmo_tix_generic_append(TusmoTixGeneric* tix, void* value);
 void tusmo_tix_generic_insert(TusmoTixGeneric* tix, size_t index, void* value);
 void* tusmo_tix_generic_pop(TusmoTixGeneric* tix, size_t index);
 bool tusmo_tix_generic_remove(TusmoTixGeneric* tix, void* value);
 // ==========================================================================
-// --- GENERIC PRINTING MACRO (This is the fix) ---
+// --- GENERIC PRINTING MACRO ---
+// Supports 1D, 2D, and 3D arrays through type-specific structs
 // ==========================================================================
 #define prints(x) _Generic((x), \
-    TusmoTixTiro*:  prints_tix_tiro, \
-    TusmoTixEray*:  prints_tix_eray, \
-    TusmoTixJajab*: prints_tix_jajab, \
-    TusmoTixMiyaa*: prints_tix_miyaa, \
-    TusmoTixMixed*: prints_tix_mixed  \
+    TusmoTixTiro*:        prints_tix_tiro, \
+    TusmoTixEray*:        prints_tix_eray, \
+    TusmoTixJajab*:       prints_tix_jajab, \
+    TusmoTixMiyaa*:       prints_tix_miyaa, \
+    TusmoTixXaraf*:       prints_tix_xaraf, \
+    TusmoTixMixed*:       prints_tix_mixed, \
+    TusmoTixGeneric*:     prints_tix_generic, \
+    /* 2D Nested Arrays (GC-tracked pointers) */ \
+    TusmoTixTiroNested*:  prints_tix_tiro_nested, \
+    TusmoTixErayNested*:  prints_tix_eray_nested, \
+    TusmoTixJajabNested*: prints_tix_jajab_nested, \
+    TusmoTixMiyaaNested*: prints_tix_miyaa_nested, \
+    TusmoTixXarafNested*: prints_tix_xaraf_nested, \
+    /* 3D Nested Arrays */ \
+    TusmoTixTiroNested2*: prints_tix_tiro_nested2, \
+    TusmoTixErayNested2*: prints_tix_eray_nested2, \
+    TusmoTixJajabNested2*:prints_tix_jajab_nested2, \
+    TusmoTixMiyaaNested2*:prints_tix_miyaa_nested2, \
+    TusmoTixXarafNested2*:prints_tix_xaraf_nested2  \
 )(x)
 
 
@@ -176,7 +269,14 @@ int tusmo_ws_send_ping(const char* socket_handle);
 int tusmo_ws_send_pong(const char* socket_handle);
 int tusmo_ws_send_close(const char* socket_handle, int code, const char* reason);
 
-
-
+// --- Math Functions (from math.c) ---
+double tusmo_sin(double x);
+double tusmo_cos(double x);
+double tusmo_sqrt(double x);
+double tusmo_abs_d(double x);
+double tusmo_pow(double base, double exp);
+double tusmo_floor(double x);
+double tusmo_ceil(double x);
+double tusmo_round(double x);
 
 #endif // TUSMO_RUNTIME_H

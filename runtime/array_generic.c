@@ -1,25 +1,10 @@
 #include "tusmo_runtime.h"
 
-// Generic finalizer and grow helpers can be shared if they are not static,
-// or you can copy them here. For simplicity, we'll assume they are available
-// or redefined here.
-// Dhamaystirka guud iyo caawiyayaasha koray waa la wadaagi karaa haddi aanay fadhiyin,
-// ama waad koobi kartaa iyaga halkan. Si ay u fududaato, waxaanu u qaadan doonaa inay diyaar yihiin
-// ama halkan lagu qeexay.
-static void tusmo_tix_data_finalizer(void* obj, void* client_data) {
-    void** data_ptr = (void**)obj;
-    if (*data_ptr) {
-        free(*data_ptr);
-        *data_ptr = NULL;
-    }
-}
-
 static inline void tusmo_hp_grow_if_needed(void** data, size_t* capacity, size_t new_size, size_t elem_size) {
     if (__builtin_expect(new_size > *capacity, 0)) {
         size_t new_capacity = (*capacity == 0) ? 8 : *capacity * 2;
         if (new_capacity < new_size) new_capacity = new_size;
-        *data = realloc(*data, new_capacity * elem_size);
-        if (!*data) { perror("realloc failed"); exit(1); }
+        *data = GC_REALLOC(*data, new_capacity * elem_size);
         *capacity = new_capacity;
     }
 }
@@ -29,11 +14,9 @@ static inline void tusmo_hp_grow_if_needed(void** data, size_t* capacity, size_t
 
 TusmoTixGeneric* tusmo_tix_generic_create(size_t cap) {
     TusmoTixGeneric* tix = GC_MALLOC(sizeof(TusmoTixGeneric));
-    // The data it holds are pointers to other GC-managed objects.
-    tix->data = malloc(cap * sizeof(void*));
+    tix->data = GC_MALLOC(cap * sizeof(void*));
     tix->size = 0;
     tix->capacity = cap;
-    GC_REGISTER_FINALIZER(tix, tusmo_tix_data_finalizer, NULL, NULL, NULL);
     return tix;
 }
 
@@ -65,13 +48,11 @@ void* tusmo_tix_generic_pop(TusmoTixGeneric* tix, size_t index) {
         memmove(&tix->data[index], &tix->data[index + 1], (tix->size - 1 - index) * sizeof(void*));
     }
     tix->size--;
-    // Optional: shrink if capacity is much larger than size
     return val;
 }
 
 bool tusmo_tix_generic_remove(TusmoTixGeneric* tix, void* value) {
     for (size_t i = 0; i < tix->size; i++) {
-        // Checking for pointer equality for nested arrays
         if (tix->data[i] == value) {
             tusmo_tix_generic_pop(tix, i);
             return true;

@@ -39,17 +39,19 @@ def help(command=None):
     | |  | |__| |____) | |  | | |__| |
     |_|   \____/|_____/|_|  |_|\____/ 
 
--c --caawimaad / -h, --help         Tusmo waxay bixisaa caawimaad iyo macluumaad ku saabsan isticmaalka iyo astaamaha Tusmo.
+tusmo <fayl.tus> [doorashooyin] | tusmo <fayl.tus> | tusmo [doorashooyin]
 
--n --nooc / -v, --version           Tusmo waxay soo bandhigtaa macluumaadka nooca hadda jira ee Tusmo.
+Doorashooyinka (Options):
+-c, --caawimaad / -h, --help:         waxay soo bandhigtaa macluumaadka doorashooyin-ka(options) (tusaale: tusmo -h ama tusmo -c).
 
--m --maktabadaha / -l, --libraries  Tusmo waxay liis garaynaysaa maktabadaha la taageerayo iyo astaamahooda.
+-n, --nooc / -v, --version:           waxay soo bandhigtaa macluumaadka nooca/version aad heysato (tusaale: tusmo -v ama tusmo -n).
 
---c                                 Tusmo waxay ilaalisaa faylka C ee la soo saaray kadib marka la isku daro, halkii laga tirt
+-m, --maktabadaha / -l, --libraries:  waxay tirinaysaa dhamaan maktabadaha (libararies) la heli karo (tusaale: tusmo -l ama tusmo -m).
 
-download / dagso / soo_degso / soo_dajiso <magaca_maktabadda>  Tusmo waxay soo dejinaysaa maktabadda la cayimay iyadoo la adeegsanayo magaca maktabadda.
-update / cusboonaysiin / casriye    Tusmo waxay isku dayaysaa inay is casriyeyso iyadoo soo dejinaysa nooca ugu dambeeya ee Tusmo.
+--c:                                  Waxay keydinaysaa fayl-ka `C` ee la sameeyay, halkii laga tiri lahaa (tusaale: tusmo <*.tus> --c).
 
+download / dagso / soo_degso / soo_dajiso:   waxay soo dejinaysaa maktabadda(libararies) aad rabto (tusaale: tusmo download <libarary_name> ama tusmo dagso <magaca_maktabada>)
+update / cusboonaysii / casriye:    waxay isku dayaysaa inay is casriyeyso iyadoo soo dejinaysa nooca ugu dambeeya ee Tusmo (tusaale: tusmo update ama tusmo cusboonaysii).
 """
         print(msg)
         sys.exit(0)
@@ -301,6 +303,7 @@ def main():
         "http": os.path.join(runtime_dir, "http.c"),
         "socket": os.path.join(runtime_dir, "socket.c"),
         "websocket": os.path.join(runtime_dir, "websocket.c"),
+        "math": os.path.join(runtime_dir, "math.c"),
         "array": [
             os.path.join(runtime_dir, "array.c"),
             os.path.join(runtime_dir, "array_generic.c"),
@@ -377,12 +380,15 @@ def main():
         # The final, dynamic compile command
         # ---------------------------------------------------------
 
+        # Add -lm for math functions if math feature is used
+        math_flag = " -lm" if "math" in used_features else ""
+
         # Amarka kama dambaysta ah ee Compiler-ka
         compile_command = (
             f'"{cc}" -O3 -march=native -flto -o "{binary}" '
             f'{all_sources_str} {c_libs_str} '      # .a files ka yimid .include
             f'{include_flag}{c_include_flag} '      # -I runtime iyo -I .include
-            f'{lib_flag} -lgc'                      # Boehm GC
+            f'{lib_flag} -lgc{math_flag}'           # Boehm GC + math lib
         )
 
         compile_result = os.system(compile_command)

@@ -1,11 +1,12 @@
 # Varaibles
 
-Tusmo waa luqad statically-typed ah oo leh noocyo si cad loo sheego.
+Tusmo waa luqad statically-typed ah taasi oo macnaheedu yahay in si cad loo muujiyo nooc-yada data-da.
 
 ## Syntax-ka Sheegista
 
 ```tus
 keyd:<nooca> <magaca>;
+ ama
 keyd:<nooca> <magaca> = <qiimaha>;
 ```
 
@@ -20,7 +21,7 @@ keyd:<nooca> <magaca> = <qiimaha>;
 | `miyaa` | Boolean | `haa` (haa), `maya` (maya) |
 | `tix:<nooca>` | Array | `[1, 2, 3]` |
 | `qaamuus` | Dictionary | `{"fure": "qiimo"}` |
-| `waxbo` | Void/null | Qiimo ma leh |
+| `waxbo` | Void | Qiimo ma leh |
 
 ## Tusaalooyin
 
@@ -30,6 +31,8 @@ keyd:<nooca> <magaca> = <qiimaha>;
 keyd:tiro a = 10;
 keyd:tiro b;
 keyd:tiro c = 5 + 3;
+b = 10;
+b = b + a;
 ```
 
 ### Float (jajab)
@@ -42,8 +45,8 @@ keyd:jajab x = 2.5 * 4.2;
 ### String (eray)
 
 ```tus
-keyd:eray magac = "Hello";
-keyd:eray salaam = magac + " World";
+keyd:eray magac = "Somali";
+keyd:eray salaan = "Hellow "+magac+" developers";
 ```
 
 ### Character (xaraf)
@@ -60,13 +63,17 @@ keyd:miyaa flag1 = haa;
 keyd:miyaa flag2 = maya;
 keyd:miyaa flag3 = a > 5;
 ```
+Keyword-ka `miyaa` wuxuu ka turjumaa badanaa in response-ka ay noqoto **haa** ama **maya** taasi waa sababta aan u dooranay.
 
 ### Array (tix)
 
 ```tus
 keyd:tix:tiro tirooyin = [1, 2, 3, 4, 5];
-keyd:tix:eray erayo = ["aa", "bb", "cc"];
+keyd:tix:eray erayo = ["aa", "ee", "ii", "oo", "uu"];
+keyd:tix:xaraf xarfo = ['a', 'e', 'i', 'o', 'u'];
 keyd:tix:tiro eber = [];
+
+//eber[0] = 1;
 ```
 
 ### Dictionary (qaamuus)

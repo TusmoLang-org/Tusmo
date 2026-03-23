@@ -1,0 +1,57 @@
+// xisaab.tus - Maktabadda Xisaabta (Math Library)
+// Luqadda Soomaaliga ee xisaabta
+
+"""
+Maktabadda Xisaabta waxay bixisaa hawlaha xisaabta ee caadiga ah.
+Waxaad isticmaali kartaa hawlahaas si aad u sameyso xisaabo kala duwan.
+
+Tusaale:
+    keen "xisaab";
+    
+    keyd:Xisaab math = Xisaab() cusub;
+    keyd:jajab result = math.la_sin(3.14159);
+    keyd:jajab result2 = math.la_cos(0);
+    keyd:jajab result3 = math.la_sqrt(16);
+"""
+
+koox Xisaab {
+    // Sin - trigonometry
+    shaqo la_sin(x:jajab) => jajab {
+        soo_celi ___c__call_("tusmo_sin", x);
+    }
+    
+    // Cos - trigonometry
+    shaqo la_cos(x:jajab) => jajab {
+        soo_celi ___c__call_("tusmo_cos", x);
+    }
+    
+    // Square root - xisaab dhibic
+    shaqo la_sqrt(x:jajab) => jajab {
+        soo_celi ___c__call_("tusmo_sqrt", x);
+    }
+    
+    // Absolute value - qiimaha adag
+    shaqo la_abs(x:jajab) => jajab {
+        soo_celi ___c__call_("tusmo_abs_d", x);
+    }
+    
+    // Power - awood
+    shaqo la_pow(base:jajab, exp:jajab) => jajab {
+        soo_celi ___c__call_("tusmo_pow", base, exp);
+    }
+    
+    // Floor - hoos u dhig
+    shaqo la_floor(x:jajab) => jajab {
+        soo_celi ___c__call_("tusmo_floor", x);
+    }
+    
+    // Ceiling - sare u qaad
+    shaqo la_ceil(x:jajab) => jajab {
+        soo_celi ___c__call_("tusmo_ceil", x);
+    }
+    
+    // Round - wareega
+    shaqo la_round(x:jajab) => jajab {
+        soo_celi ___c__call_("tusmo_round", x);
+    }
+}

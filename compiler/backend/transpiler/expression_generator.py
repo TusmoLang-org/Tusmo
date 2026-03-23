@@ -71,7 +71,7 @@ class ExpressionGenerator:
                 self.main_generator.used_features.add("dictionary")
                 return f"tusmo_qaamuus_get({base_expr_c}, {index_c})"
 
-            # Case 2: It's a value from a mixed array. Unwrap it, then do a get() call.
+            # Case 2: It's a value from a mixed array. Use tusmo_tix_mixed_get_nested for proper type-switching.
             elif str(base_type) == 'dynamic_value':
                 temp_var = self.main_generator.get_temp_var()
                 # Evaluate once so we can branch based on runtime type
@@ -82,7 +82,8 @@ class ExpressionGenerator:
                     return f"tusmo_qaamuus_get({temp_var}.value.as_qaamuus, {index_c})"
                 else:
                     self.main_generator.used_features.add("array")
-                    return f"({temp_var}.value.as_tix->data[tusmo_bounds_check({index_c}, {temp_var}.value.as_tix->size)])"
+                    # Use tusmo_tix_mixed_get_nested which handles type-switching for typed nested arrays
+                    return f"tusmo_tix_mixed_get_nested({temp_var}, {index_c})"
 
             # Case 3: It's a string. Generate C string indexing.
             elif str(base_type) == 'eray':
@@ -330,6 +331,9 @@ class ExpressionGenerator:
             self.main_generator.used_features.add("websocket")
             self.main_generator.used_features.add("socket")  # WebSocket needs socket
             self.main_generator.used_features.add("dictionary")  # For decode_frame result
+        elif c_function_name in ["tusmo_sin", "tusmo_cos", "tusmo_sqrt", "tusmo_abs_d", 
+                                  "tusmo_pow", "tusmo_floor", "tusmo_ceil", "tusmo_round"]:
+            self.main_generator.used_features.add("math")
         c_args = [self.generate_expression(arg) for arg in node.args]
 
         return f'{c_function_name}({", ".join(c_args)})'

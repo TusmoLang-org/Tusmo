@@ -147,12 +147,24 @@ class ArrayTypeNode(ASTNode):
                 self.element_type == other.element_type)
 
     def __str__(self):
-        # --- MAKE THIS RECURSIVE ---
-        if self.element_type:
-            # Recursively call str() on the element_type
+        if isinstance(self.element_type, ArrayTypeNode):
+            return f"tix:{str(self.element_type)}"
+        elif self.element_type:
             return f"tix:{self.element_type}"
         else:
             return "tix"
+
+    def get_base_type(self):
+        if isinstance(self.element_type, ArrayTypeNode):
+            return self.element_type.get_base_type()
+        return self.element_type
+
+    def get_array_depth(self):
+        if isinstance(self.element_type, ArrayTypeNode):
+            return 1 + self.element_type.get_array_depth()
+        elif self.element_type:
+            return 1
+        return 0
 
 class FunctionTypeNode(ASTNode):
     def __init__(self, line, param_types, return_type, filename=None):

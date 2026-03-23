@@ -1,6 +1,6 @@
-# Bilaabista
+# Bilaabista kooban
 
-## Rakibidda (Installation)
+## Dagsasho (Installation)
 
 ### Linux/macOS
 
@@ -14,69 +14,88 @@ curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh
 irm https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.ps1 | iex
 ```
 ## Talo Muhiim ah
-Markaad la soo dagto tusmo waa inaad isticmaasho ***VScode*** si aad u hesho **syntax highlighter** iyo **hover documentation** kuwaaso si automatic ah kugu soo dagi doono xiliga installation-ka haddii vscode uu kugu jiray horey.
+Markaad la soo dagto tusmo waa inaad isticmaasho ***VScode*** si aad u hesho **syntax highlighter** iyo **hover documentation** kuwaaso si automatic ah kugu soo dagi doono xiliga installation-ka Tusmo haddii vscode uu kugu jiray horey.
 
 ## Barnaamijkaagii ugu Horreeyay
 
-Sameey `hello.tus`:
+Sameey `hello.tus`,  fayl extension-ka tusmo waa `.tus`
 
 ```tus
 qor("Hello, Soomali Developers!");
 ```
 
-## Sida loo run loo dhaho Tusmo
+## Sida run loo dhaho Tusmo
 
-Kaliya u gudbi faylka `.tus` amarka tusmo:
+Kaliya u gudbi faylka `.tus` compiler-ka Tusmo:
 
 ```bash
 tusmo hello.tus
 ```
+Kadib compiler-ka `tusmo` wuxuu sameyn donaa soo saari donaa fayl binary ah kaaso oo wata isla magacii faylkii aad run kareysay tusaale annaga hadda waxaa run-gareenay fayl tusmo ah oo lagu magacaabo `hello.tus` anagoo adeegsaneyna `tusmo hello.tus` waxaa la soosaari donaa binary fayl lagu magacaabo `hello`
 
-## Isticmaalka (Usage)
-
+### Run-dheh fayl-ka binary
 ```
-tusmo <fayl.tus> [doorashooyin]
-
-Doorashooyinka (Options):
-  --c           Hayso faylka code-ka C ee la sameeyay
-  -h, --help    Kutusinaysa cawimaad (help)
-  -v, --version Kutusinaysa version-ka aad haysato iyo in uu jiro version cusub
-  -l, --libraries Liiska maktabadaha (libraries) ee la taageero
-  update        Cusboonaysiinta Tusmo oo soo dajinaysa version-kii ugu dambeeyay
-  install <lib> soo dajinta (install) maktabadaha (library)
+./hello
+```
+kadib waxaa terminal-ka ka soo bixi dooono output-ka
+```output
+Hello, Soomali Developers!
 ```
 
-## Sida ay u Shaqeyso
+## 📋 Isticmaalka (Usage)
+
+Qaabka guud ee amarka: 
+`tusmo <fayl.tus> [doorashooyin]`
+
+### Doorashooyinka (Options)
+
+| Amarka (Short/Long) | Shaqada (Description) | Tusaale |
+| :--- | :--- | :--- |
+| `-h`, `--help` / `-c` | Bandhigga macluumaadka caawimaadda | `tusmo -c` |
+| `-v`, `--version` / `-n` | Tusidda nooca (version) aad haysato | `tusmo -n` |
+| `-l`, `--libraries` / `-m` | Tirinta dhamaan maktabadaha la heli karo | `tusmo -m` |
+| `--c` | Keydinta faylka **C** ee la sameeyay | `tusmo hello.tus --c` |
+| `dagso` / `download` | Soo dejinta maktabad (library) cusub | `tusmo dagso [magac]` |
+| `update` / `cusboonaysii` | Inaad is-casriyeyso (Tusmo update) | `tusmo update` |
+
+## Sida ay u Shaqeyso Compilerka Tusmo
 
 ```
-hello.tus  →  tusmo (parser)  →  hello.c  →  zig cc  →  hello (binary)  →  ./hello
-                       ↓  
-              ↓      iyadoo la isticmaalayo python
-         AST → semantic analysis → C code generation
-              ↓
-         runtime/*.c + stdlib/*.tus → la xiriiriyay (linked)
+hello.tus
+   ↓
+tusmo(lexer)
+   ↓
+tusmo (parser)
+   ↓
+AST(Abstract Syntax Tree)
+   ↓
+semantic analysis
+   ↓
+C code generation 
+   ↓
+hello.c + runtime/*.c + stdlib/*.tus
+   ↓  
+zig cc
+   ↓
+hello (binary)  →  ./hello
+
+
 ```
 
 ### Pipeline-ka Turjumidda (Compilation Pipeline)
 
-1. **Lexing** - Token-ka laga soosaraya code-ka Tusmo
-2. **Parsing** - Dhis AST (Abstract Syntax Tree)
-3. **Semantic Analysis** - Hubinta nooca (type checking), xallinta astaanta (symbol resolution)
-4. **Code Generation** - Samee code-ka C iyadoo la isticmaalayo AST
-5. **Compilation** - Zig wuxuu u beddelaa C-code-ka binary la fulin karo
+1. **Lexing** -  Code-ka Tusmo ayaa loo badalayaa token
+2. **Parsing** - Waxaa la Dhisayaa AST (Abstract Syntax Tree)
+3. **Semantic Analysis** - Hubinta noocyadda (type checking), hubinta variable-da, functions-ka scope-yadooda
+4. **Code Generation** - Sameynta code-ka C.
+5. **Compilation** - Zig wuxuu u beddelaa C-code-ka binary la fulin karo (Excuteable)
 6. **Execution** - Run-kareynta binary-ga
 
-Siidaynta (release) la socota waxaa ku jira:
-- **Zig compiler** - Wuxuu C u beddelaa binary
-- **Boehm GC** - Qashin-ururiye (Garbage collector) (horay loo dhisay)
-- **Runtime library** - Taageerada erayga (string), tixda (array), qaamuuska (dictionary)
-- **Standard library** - OS, HTTP, sockets, iwm.
 
-Uma baahnid inaad soo dagsato GCC ama libgc gacantaada.
 
 ### Hayso Code-ka C (Keep C Code)
 
-U isticmaal calanka (flag) `--c` si aad u haysato faylka C ee la sameeyay:
+U isticmaal `--c` flag si aad u haysato faylka C ee la sameeyay haddii aad rabto, madaama compiler-ka tusmo uu tirtiri doono fayl-ka C aadan arki karin:
 
 ```bash
 tusmo hello.tus --c
@@ -89,34 +108,20 @@ Tani waxay soo saaraysaa `hello.c` isla directory-ga dhexdiisa.
 ```tus
 // Barnaamijkaygii ugu horreeyay ee Tusmo
 keyd:eray magac = "Tusmo";
-keyd:tiro da'da = 5;
+keyd:tiro version = 20;
 
 qor($"Hello, {magac}!");
-qor($"Da'da: {da'da}");
+qor($"Version: V{version}");
 ```
 
 Natiijada (Output):
 ```
 Hello, Tusmo!
-Da'da: 5
+Version: V20
 ```
+## sharxidda Code-ka
+`keyd` keyword-kan waa sida `var` , `let` ama `const` oo kale, waxaa loola jeedaa *keedin* si uu u muujiyo in wax la keydinaayo
+`eray` keyword-kan waa sida `string` oo kale kaaasi oo sheegaya nooca xogta la keydinaayo.  
+`tiro` keyword-kan waa sida `int` oo kale kaaasi oo sheegaya nooca xogta la keydinaayo.
 
-## Shuruudaha (Requirements)
 
-Haddii aad ula soo dageyso luqadan adigoo umaraayo install.sh ama install.ps1 uma baahnid:
-- Zig compiler
-- Boehm GC
-- Maktabadaha Runtime (Runtime libraries)
-
-Kaliya soo dagso luuqada adigoo u maraayo 
-### Windows / MacOs
-```bash
-curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash
-```
-
-### Windows
-
-```powershell
-irm https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.ps1 | iex
-```
-kadib horey ugal qorista code-ka tusmo 

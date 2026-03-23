@@ -369,7 +369,7 @@ class SemanticChecker:
 
             base_type = self.get_expression_type(node.array_name_node, skip_context_check)
 
-            if not skip_context_check and not isinstance(base_type, ArrayTypeNode) and str(base_type) != 'eray' and str(base_type) != 'qaamuus':
+            if not skip_context_check and not isinstance(base_type, ArrayTypeNode) and str(base_type) != 'eray' and str(base_type) != 'qaamuus' and str(base_type) != 'dynamic_value':
 
                 raise SemanticError(f"Cilad Nooca Xogta: Isku day inaad u isticmaasho wax sidii tix, laakiin maaha.\n\t\tFaylka: '{node.filename}', Sadarka: {node.line}")
 
@@ -388,6 +388,10 @@ class SemanticChecker:
                 return 'xaraf'
 
             if str(base_type) == 'qaamuus':
+                return "dynamic_value"
+
+            # dynamic_value is a TusmoValue from a mixed array - accessing it returns another dynamic_value
+            if str(base_type) == 'dynamic_value':
                 return "dynamic_value"
 
             return None

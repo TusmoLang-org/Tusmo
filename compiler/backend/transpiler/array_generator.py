@@ -1,5 +1,5 @@
 from compiler.frontend.parser.ast_nodes import (
- ArrayTypeNode, 
+  ArrayTypeNode, 
     ArrayAccessNode, MethodCallNode, ArrayAssignmentNode, NamedArgument
 )
 from compiler.midend.symbol_table import SymbolTable
@@ -10,48 +10,168 @@ class ArrayGenerator:
         self.expr_generator = expr_generator
         self.symbol_table = main_generator.symbol_table
 
+    # Mapping from base element type string to type suffix for nested arrays
+    # Used to build type names like TusmoTixTiroNested, TusmoTixTiroNested2
+    TYPE_SUFFIX_MAP = {
+        'tiro': 'Tiro',
+        'jajab': 'Jajab',
+        'eray': 'Eray',
+        'miyaa': 'Miyaa',
+        'xaraf': 'Xaraf',
+    }
 
     def get_c_type_map(self):
         return {'tiro': 'int', 'jajab': 'double', 'eray': 'char*', 'miyaa': 'bool', 'xaraf': 'char', 'waxbo': 'void', 'qaamuus': 'TusmoQaamuus*'}
 
     def get_tix_struct_name(self, element_type_str):
-        # --- FIX #1 IS HERE ---
         # If the element type string is None or 'None', it's a dynamic array.
         if element_type_str is None or element_type_str == 'None':
             return "TusmoTixMixed"
             
-        type_map = {'tiro': 'Tiro', 'jajab': 'Jajab', 'eray': 'Eray', 'miyaa': 'Miyaa', 'qaamuus': 'Mixed'}
+        type_map = {'tiro': 'Tiro', 'jajab': 'Jajab', 'eray': 'Eray', 'miyaa': 'Miyaa', 'qaamuus': 'Mixed', 'xaraf': 'Xaraf'}
         return f"TusmoTix{type_map.get(element_type_str)}"
+
+    def get_nested_depth_and_base_type(self, tusmo_type_node, depth=0):
+        """
+        Calculate the nesting depth and find the base element type.
+        Returns (depth, base_type_str) where base_type_str is the innermost type.
+        
+        Examples:
+            tix:tiro -> (1, 'tiro')      # 1D array of int
+            tix:tix:tiro -> (2, 'tiro')  # 2D array of int
+            tix:tix:tix:tiro -> (3, 'tiro')  # 3D array of int
+        """
+        if isinstance(tusmo_type_node, ArrayTypeNode):
+            element = tusmo_type_node.element_type
+            if isinstance(element, ArrayTypeNode):
+                return self.get_nested_depth_and_base_type(element, depth + 1)
+            else:
+                return (depth + 1, str(element))
+        else:
+            return (1, str(tusmo_type_node))
 
     def get_c_type_from_tusmo_type(self, tusmo_type_node):
         if not isinstance(tusmo_type_node, ArrayTypeNode):
             return self.get_c_type_map().get(str(tusmo_type_node), "void*")
         
-        element_type = tusmo_type_node.element_type
-        if isinstance(element_type, ArrayTypeNode):
-            return "TusmoTixGeneric*"
-        else:
-            struct_name = self.get_tix_struct_name(str(element_type))
-            return f"{struct_name}*"
+        depth, base_type = self.get_nested_depth_and_base_type(tusmo_type_node)
+        
+        # For dynamic/mixed arrays (depth 1 but base_type is 'None' or 'qaamuus')
+        if depth == 1 and (base_type == 'None' or base_type == 'qaamuus'):
+            return "TusmoTixMixed*"
+        
+        # For typed nested arrays
+        if base_type in self.TYPE_SUFFIX_MAP:
+            type_suffix = self.TYPE_SUFFIX_MAP[base_type]
+            if depth == 1:
+                # 1D array
+                return f"TusmoTix{type_suffix}*"
+            elif depth == 2:
+                # 2D array - use nested type
+                return f"TusmoTix{type_suffix}Nested*"
+            elif depth == 3:
+                # 3D array - use nested2 type
+                return f"TusmoTix{type_suffix}Nested2*"
+            else:
+                # depth >= 4: use generic for unlimited dimensions
+                return "TusmoTixGeneric*"
+        
+        # Fallback for unknown types - use generic
+        return "TusmoTixGeneric*"
 
     def _generate_recursive_initializer(self, type_node, element_nodes):
+        """
+        Generate C code for array initialization.
+        Uses typed nested arrays (TusmoTixTiroNested, TusmoTixTiroNested2, etc.)
+        so that GC can trace pointers properly.
+        """
         self.main_generator.used_features.add("array")
         temp_var = self.main_generator.get_temp_var()
         c_type = self.get_c_type_from_tusmo_type(type_node)
         capacity = len(element_nodes) if element_nodes else 8
 
+        # Check if this is a nested array (element is another ArrayTypeNode)
         if isinstance(type_node.element_type, ArrayTypeNode):
-            create_func = "tusmo_tix_generic_create"
-            append_func = "tusmo_tix_generic_append"
+            # Calculate depth and base type for this nested array
+            depth, base_type = self.get_nested_depth_and_base_type(type_node)
+            
+            # Determine which create/append functions to use based on depth
+            original_depth = depth  # Track original depth for wrap enum
+            if base_type in self.TYPE_SUFFIX_MAP:
+                type_suffix = self.TYPE_SUFFIX_MAP[base_type]
+                if depth == 1:
+                    # 1D array - use typed array functions
+                    create_func = f"tusmo_hp_tix_{type_suffix.lower()}_create"
+                    append_func = f"tusmo_hp_tix_{type_suffix.lower()}_append"
+                elif depth == 2:
+                    # 2D array - use nested type functions
+                    create_func = f"tusmo_tix_{type_suffix.lower()}_nested_create"
+                    append_func = f"tusmo_tix_{type_suffix.lower()}_nested_append"
+                elif depth == 3:
+                    # 3D array - use nested2 type functions
+                    create_func = f"tusmo_tix_{type_suffix.lower()}_nested2_create"
+                    append_func = f"tusmo_tix_{type_suffix.lower()}_nested2_append"
+                else:
+                    # For depth >= 4, limit to 3D - deeper nesting uses TusmoTixMixed
+                    original_depth = depth  # Save original for wrap enum
+                    depth = 3  # Cap at 3D
+                    c_type = "TusmoTixMixed*"
+                    create_func = "tusmo_tix_mixed_create"
+                    append_func = "tusmo_tix_mixed_append"
+            else:
+                # Fallback to generic for unknown types
+                create_func = "tusmo_tix_generic_create"
+                append_func = "tusmo_tix_generic_append"
+            
             self.main_generator.c_code += f"    {c_type} {temp_var} = {create_func}({capacity});\n"
+            # For typed nested arrays (2D, 3D), we need to wrap in TusmoValue when appending to mixed
+            needs_wrap = depth >= 2 and create_func == "tusmo_tix_mixed_create"
+            
+            # Determine the correct type enum for wrapping based on the ACTUAL depth of the sub-array
+            # When storing typed arrays in TusmoValue, we need to use the correct enum:
+            # - 1D sub-array -> TUSMO_TIX_XXX (e.g., TUSMO_TIX_TIRO)
+            # - 2D sub-array -> TUSMO_TIX_XXX_NESTED (e.g., TUSMO_TIX_TIRO_NESTED)
+            # - 3D sub-array -> TUSMO_TIX_XXX_NESTED2 (e.g., TUSMO_TIX_TIRO_NESTED2)
+            # - 4D+ sub-array -> TUSMO_TIX (generic, use as_tix) - can't express 4D+ as typed
+            wrap_enum = "TUSMO_TIX"
+            wrap_union = "as_tix"
+            if base_type in self.TYPE_SUFFIX_MAP:
+                type_suffix = self.TYPE_SUFFIX_MAP[base_type]
+                if original_depth == 2:
+                    # 1D array: use TUSMO_TIX_XXX (e.g., TUSMO_TIX_TIRO)
+                    wrap_enum = f"TUSMO_TIX_{type_suffix.upper()}"
+                    wrap_union = f"as_{type_suffix.lower()}_tix"
+                elif original_depth == 3:
+                    # 2D array: use TUSMO_TIX_XXX_NESTED
+                    wrap_enum = f"TUSMO_TIX_{type_suffix.upper()}_NESTED"
+                    wrap_union = f"as_{type_suffix.lower()}_nested"
+                elif original_depth == 4:
+                    # 3D array: use TUSMO_TIX_XXX_NESTED2
+                    wrap_enum = f"TUSMO_TIX_{type_suffix.upper()}_NESTED2"
+                    wrap_union = f"as_{type_suffix.lower()}_nested2"
+                # For original_depth >= 5: use TUSMO_TIX with as_tix (can't express 4D+ as typed)
+                # wrap_enum and wrap_union already set to TUSMO_TIX and as_tix
+            
+            # Recursively initialize each sub-array
             for sub_array_literal_node in element_nodes:
                 sub_array_type = type_node.element_type
                 sub_array_elements = sub_array_literal_node.elements
                 sub_init_var = self._generate_recursive_initializer(sub_array_type, sub_array_elements)
-                self.main_generator.c_code += f"    {append_func}({temp_var}, {sub_init_var});\n"
+                
+                if needs_wrap:
+                    # Wrap typed nested arrays in TusmoValue with correct type enum
+                    wrap_var = self.main_generator.get_temp_var()
+                    if wrap_union == "as_tix":
+                        # For generic mixed (4D+), cast sub-array to TusmoTixMixed*
+                        self.main_generator.c_code += f"    TusmoValue {wrap_var} = (TusmoValue){{.type = {wrap_enum}, .value.{wrap_union} = (TusmoTixMixed*){sub_init_var}}};\n"
+                    else:
+                        # For typed arrays (1D, 2D, 3D), use as-is
+                        self.main_generator.c_code += f"    TusmoValue {wrap_var} = (TusmoValue){{.type = {wrap_enum}, .value.{wrap_union} = {sub_init_var}}};\n"
+                    self.main_generator.c_code += f"    tusmo_tix_mixed_append({temp_var}, {wrap_var});\n"
+                else:
+                    self.main_generator.c_code += f"    {append_func}({temp_var}, {sub_init_var});\n"
         
-        # --- FIX #2 IS HERE ---
-        # Handle dynamic vs. homogeneous arrays
+        # Handle 1D arrays (not nested)
         else:
             element_type_str = str(type_node.element_type)
 
@@ -65,7 +185,7 @@ class ArrayGenerator:
                 for element_node in element_nodes:
                     self.generate_mixed_append_call(temp_var, element_node)
             
-            # Otherwise, it's a normal homogeneous array
+            # Otherwise, it's a normal homogeneous 1D array
             else:
                 create_func = f"tusmo_hp_tix_{element_type_str}_create"
                 append_func = f"tusmo_hp_tix_{element_type_str}_append"
@@ -82,18 +202,42 @@ class ArrayGenerator:
         index_c = self.expr_generator.generate_expression(node.index_expression)
         base_tusmo_type = self.expr_generator.get_expression_type(node.array_name_node)
 
+        base_type_str = str(base_tusmo_type)
+
+        # For dynamic_value (TusmoValue from a mixed array), we use tusmo_tix_mixed_get_nested
+        # which handles type-switching for typed nested arrays (2D, 3D) stored in TusmoValue.
+        if base_type_str == 'dynamic_value':
+            temp_var = self.main_generator.get_temp_var()
+            self.main_generator.c_code += f"    TusmoValue {temp_var} = {base_expr_c};\n"
+            return f"tusmo_tix_mixed_get_nested({temp_var}, {index_c})"
+
+        # For regular array types, the bounds check uses the base pointer
         checked_index = f"tusmo_bounds_check({index_c}, {base_expr_c}->size)"
 
-        # Accessing a dynamic array returns a TusmoValue, not a primitive
-        if isinstance(base_tusmo_type, ArrayTypeNode) and base_tusmo_type.element_type is None:
-            return f"({base_expr_c}->data[{checked_index}])"
+        # For dynamic arrays (tix with element_type = None or string "None")
+        is_dynamic = False
+        if isinstance(base_tusmo_type, ArrayTypeNode):
+            if base_tusmo_type.element_type is None or str(base_tusmo_type.element_type) == 'None':
+                is_dynamic = True
+            elif isinstance(base_tusmo_type.element_type, ArrayTypeNode):
+                inner = base_tusmo_type.element_type
+                while isinstance(inner, ArrayTypeNode):
+                    if inner.element_type is None or str(inner.element_type) == 'None':
+                        is_dynamic = True
+                        break
+                    inner = inner.element_type
+        
+        if is_dynamic:
+            return f"tusmo_tix_mixed_get({base_expr_c}, {checked_index})"
 
+        # For typed nested arrays (2D, 3D), need to cast to proper pointer type
         if isinstance(base_tusmo_type, ArrayTypeNode) and isinstance(base_tusmo_type.element_type, ArrayTypeNode):
             element_tusmo_type = base_tusmo_type.element_type
             element_c_type = self.get_c_type_from_tusmo_type(element_tusmo_type)
             return f"(({element_c_type})({base_expr_c}->data[{checked_index}]))"
-        else:
-            return f"({base_expr_c}->data[{checked_index}])"
+        
+        # For typed 1D arrays
+        return f"({base_expr_c}->data[{checked_index}])"
 
     def generate_assignment(self, node: ArrayAssignmentNode):
         access_c = self.generate_access(node.array_access_node)
@@ -191,6 +335,66 @@ class ArrayGenerator:
             return f"{remove_func}({array_c_name}, {element_c_code})"
         return "false"
 
+    def _calculate_array_depth(self, type_node, depth=0):
+        """Calculate the nesting depth of an array type."""
+        if isinstance(type_node, ArrayTypeNode):
+            element = type_node.element_type
+            if isinstance(element, ArrayTypeNode):
+                return self._calculate_array_depth(element, depth + 1)
+            else:
+                return depth + 1
+        return depth
+
+    def _is_array_type(self, type_node):
+        """Check if a type node is an array type (returns depth, or 0 if not an array)."""
+        if isinstance(type_node, ArrayTypeNode):
+            return self._calculate_array_depth(type_node)
+        return 0
+
+    def _get_nested_array_type_info(self, type_node, depth=0):
+        """
+        Get the type info for nested arrays.
+        Returns (enum_name, union_member) for the innermost type.
+        """
+        if isinstance(type_node, ArrayTypeNode):
+            element = type_node.element_type
+            if isinstance(element, ArrayTypeNode):
+                # Nested deeper - get info from inner type
+                return self._get_nested_array_type_info(element, depth + 1)
+            else:
+                # Base type found - determine the right enum/union member based on depth
+                base_type = str(element)
+                if depth == 1:
+                    # 2D array
+                    enum_map = {
+                        'tiro': 'TUSMO_TIX_TIRO_NESTED', 'jajab': 'TUSMO_TIX_JAJAB_NESTED',
+                        'eray': 'TUSMO_TIX_ERAY_NESTED', 'miyaa': 'TUSMO_TIX_MIYAA_NESTED',
+                        'xaraf': 'TUSMO_TIX_XARAF_NESTED'
+                    }
+                    union_map = {
+                        'tiro': 'as_tiro_nested', 'jajab': 'as_jajab_nested',
+                        'eray': 'as_eray_nested', 'miyaa': 'as_miyaa_nested',
+                        'xaraf': 'as_xaraf_nested'
+                    }
+                elif depth >= 2:
+                    # 3D+ array
+                    enum_map = {
+                        'tiro': 'TUSMO_TIX_TIRO_NESTED2', 'jajab': 'TUSMO_TIX_JAJAB_NESTED2',
+                        'eray': 'TUSMO_TIX_ERAY_NESTED2', 'miyaa': 'TUSMO_TIX_MIYAA_NESTED2',
+                        'xaraf': 'TUSMO_TIX_XARAF_NESTED2'
+                    }
+                    union_map = {
+                        'tiro': 'as_tiro_nested2', 'jajab': 'as_jajab_nested2',
+                        'eray': 'as_eray_nested2', 'miyaa': 'as_miyaa_nested2',
+                        'xaraf': 'as_xaraf_nested2'
+                    }
+                else:
+                    # depth 0 - shouldn't happen
+                    return (None, None)
+                
+                return (enum_map.get(base_type), union_map.get(base_type))
+        return (None, None)
+
     def _generate_tusmo_value(self, element_node):
         """Helper to generate a TusmoValue struct initialization code."""
         element_c_code = self.expr_generator.generate_expression(element_node)
@@ -203,9 +407,59 @@ class ArrayGenerator:
         temp_var = self.main_generator.get_temp_var()
         
         self.main_generator.c_code += f"    TusmoValue {temp_var};\n"
-        self.main_generator.c_code += f"    {temp_var}.type = {type_enum_map.get(type_str, 'TUSMO_WAXBA')};\n"
-        if type_str in union_member_map:
+        
+        # Check if this is an array type
+        is_array = isinstance(element_tusmo_type, ArrayTypeNode)
+        
+        if is_array:
+            # For arrays in dynamic arrays, use typed nested enum/union
+            depth = element_tusmo_type.get_array_depth()
+            base_type = element_tusmo_type.get_base_type()
+            if depth >= 4:
+                # 4D+ arrays - use generic TUSMO_TIX with cast
+                self.main_generator.c_code += f"    {temp_var}.type = TUSMO_TIX;\n"
+                self.main_generator.c_code += f"    {temp_var}.value.as_tix = (TusmoTixMixed*){element_c_code};\n"
+            elif depth >= 2:
+                # 2D or 3D nested array
+                enum_name, union_member = self._get_nested_array_type_info(element_tusmo_type)
+                if enum_name and union_member:
+                    self.main_generator.c_code += f"    {temp_var}.type = {enum_name};\n"
+                    self.main_generator.c_code += f"    {temp_var}.value.{union_member} = {element_c_code};\n"
+                else:
+                    self.main_generator.c_code += f"    {temp_var}.type = TUSMO_WAXBA;\n"
+            else:
+                # 1D array in dynamic array - use typed 1D array enum
+                # base_type is already computed above
+                enum_map = {
+                    'tiro': 'TUSMO_TIX_TIRO', 'jajab': 'TUSMO_TIX_JAJAB',
+                    'eray': 'TUSMO_TIX_ERAY', 'miyaa': 'TUSMO_TIX_MIYAA',
+                    'xaraf': 'TUSMO_TIX_XARAF'
+                }
+                union_map = {
+                    'tiro': 'as_tiro_tix', 'jajab': 'as_jajab_tix',
+                    'eray': 'as_eray_tix', 'miyaa': 'as_miyaa_tix',
+                    'xaraf': 'as_xaraf_tix'
+                }
+                enum_name = enum_map.get(base_type)
+                union_member = union_map.get(base_type)
+                if enum_name and union_member:
+                    self.main_generator.c_code += f"    {temp_var}.type = {enum_name};\n"
+                    self.main_generator.c_code += f"    {temp_var}.value.{union_member} = {element_c_code};\n"
+                else:
+                    # Fallback to generic TUSMO_TIX
+                    self.main_generator.c_code += f"    {temp_var}.type = TUSMO_TIX;\n"
+                    self.main_generator.c_code += f"    {temp_var}.value.as_tix = {element_c_code};\n"
+        elif type_str in type_enum_map:
+            self.main_generator.c_code += f"    {temp_var}.type = {type_enum_map[type_str]};\n"
             self.main_generator.c_code += f"    {temp_var}.value.{union_member_map[type_str]} = {element_c_code};\n"
+        elif type_str == 'qaamuus':
+            self.main_generator.c_code += f"    {temp_var}.type = TUSMO_QAAMUUS;\n"
+            self.main_generator.c_code += f"    {temp_var}.value.as_qaamuus = {element_c_code};\n"
+        elif type_str == 'tix' or type_str == 'None':
+            self.main_generator.c_code += f"    {temp_var}.type = TUSMO_TIX;\n"
+            self.main_generator.c_code += f"    {temp_var}.value.as_tix = {element_c_code};\n"
+        else:
+            self.main_generator.c_code += f"    {temp_var}.type = TUSMO_WAXBA;\n"
             
         return temp_var
 

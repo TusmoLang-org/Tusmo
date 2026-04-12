@@ -60,3 +60,9 @@ bool tusmo_tix_generic_remove(TusmoTixGeneric* tix, void* value) {
     }
     return false;
 }
+
+void tusmo_tix_generic_extend(TusmoTixGeneric* dest, TusmoTixGeneric* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_tix_generic_append(dest, src->data[i]);
+    }
+}

@@ -29,9 +29,11 @@ class CCodeGenerator:
 
         self.c_code = ""
         self.temp_var_counter = 0
+        self.global_declarations = ""
         self.function_definitions = ""
         self.class_definitions = ""
         self.current_class = None
+        self.inside_function = False
         self.used_features = used_features
         self.embedded_c_chunks = []
 
@@ -87,6 +89,7 @@ class CCodeGenerator:
 
     def generate(self, ast):
         self.c_code = ""
+        self.global_declarations = ""
         self.function_definitions = ""
         self.class_definitions = ""
         self.embedded_c_chunks = []
@@ -109,6 +112,7 @@ class CCodeGenerator:
             f"{header_include}"
             f"{embedded_section}"
             f"{self.class_definitions}"
+            f"{self.global_declarations}"
             f"{self.function_definitions}"
             f"int main(void) {{\n"
             f"    GC_INIT();\n"
@@ -137,7 +141,8 @@ class CCodeGenerator:
             expr_c = self.expr_generator.generate_expression(node)
             self.c_code += f"    {expr_c};\n"
         else:
-            print(f"Digniin: Ma jiro hab-turjun loogu talagalay nooca '{type(node).__name__}' ee ku jira jirka ugu weyn.")
+            print(f"\033[1;33m[!] DIGNIIN:\033[0m Ma jiro hab-turjun loogu talagalay nooca '{type(node).__name__}'")
+            print(f"\033[90m" + ("-" * 35) + "\033[0m")
 
     def _generate_classnode(self, node: ClassNode):
         self.class_generator.generate(node)
@@ -180,3 +185,4 @@ class CCodeGenerator:
     def _generate_forrangenode(self, node: ForRangeNode): self.loop_generator.generate_for_range(node)
     def _generate_foreachnode(self, node: ForEachNode): self.loop_generator.generate_for_each(node)
     def _generate_keennode(self, node: KeenNode): pass
+    def _generate_isticmaalnode(self, node: IsticmaalNode): pass

@@ -1,0 +1,74 @@
+keen "wakhti";
+
+"""
+Logger midab leh oo Somali ah (nooca 0.2)
+- heerar: info, digniin, khalad, debug
+- timestamps ikhtiyaari ah
+- midabyo ANSI ikhtiyaari ah (cagaar, huruud, casaan, cyan)
+
+Dhisme (constructor):
+    Logger(magac: eray = "APP", midab: miyaa = run, muujiso_wakhti: miyaa = run)
+        - magac: sumadda app/servis
+        - midab: haddii run → ku dar ANSI colors; haddii maya → qoraal caadi ah
+        - muujiso_wakhti: haddii run → ku dar timestamp "%Y-%m-%d %H:%M:%S"
+
+Tusaale:
+    keyd:Logger log = Logger("StoreAPI", midab=run, muujiso_wakhti=run) cusub;
+    log.info("Bilow");
+    log.khalad("DB ma xiriirsana");
+"""
+
+koox Logger {
+    keyd:eray magac;
+    keyd:miyaa midab;
+    keyd:miyaa wqorsad;
+    keyd:Wakhti w;
+
+    dhis(magac: eray = "APP", midab: miyaa = run, muujiso_wakhti: miyaa = run) : waxbo {
+        kan.magac = magac;
+        kan.midab = midab;
+        kan.wqorsad = muujiso_wakhti;
+        kan.w = Wakhti() cusub;
+    }
+
+    hawl _midab_heer(heer: eray) : eray {
+        haddii (heer == "INFO") { soo_celi "\033[32m"; }   // cagaar
+        haddii (heer == "DEBUG") { soo_celi "\033[36m"; }  // cyan
+        haddii (heer == "DIGI") { soo_celi "\033[33m"; }   // huruud
+        haddii (heer == "KHALAD") { soo_celi "\033[31m"; } // casaan
+        soo_celi "";
+    }
+
+    hawl _daabac(heer: eray, fariin: eray) : waxbo {
+        keyd:eray line = "[" + kan.magac + "][" + heer + "] " + fariin;
+        haddii (kan.wqorsad) {
+            keyd:eray ts = kan.w.qaab("%Y-%m-%d %H:%M:%S");
+            line = "[" + ts + "] " + line;
+        }
+        haddii (kan.midab) {
+            keyd:eray code = kan._midab_heer(heer);
+            haddii (dherer(code) > 0) {
+                qor(code + line + "\033[0m");
+                soo_celi;
+            }
+        }
+        qor(line);
+    }
+
+    hawl info(fariin: eray) : waxbo {
+        kan._daabac("INFO", fariin);
+    }
+
+    hawl digniin(fariin: eray) : waxbo {
+        kan._daabac("DIGI", fariin);
+    }
+
+    hawl khalad(fariin: eray) : waxbo {
+        kan._daabac("KHALAD", fariin);
+    }
+
+    hawl debug(fariin: eray) : waxbo {
+        kan._daabac("DEBUG", fariin);
+    }
+
+}

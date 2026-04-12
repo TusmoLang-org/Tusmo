@@ -65,6 +65,11 @@ class LoopGenerator:
                 iterator_c_type = "TusmoValue"
                 self.symbol_table.set(item_var, 'dynamic_value')
                 self.main_generator.c_code += f"        {iterator_c_type} {item_var} = {array_c}->data[{index_var}];\n"
+            elif str(element_tusmo_type) == 'qaamuus':
+                tmp_value_var = self.main_generator.get_temp_var() + "_val"
+                self.symbol_table.set(item_var, 'qaamuus')
+                self.main_generator.c_code += f"        TusmoValue {tmp_value_var} = {array_c}->data[{index_var}];\n"
+                self.main_generator.c_code += f"        TusmoQaamuus* {item_var} = {tmp_value_var}.value.as_qaamuus;\n"
             
             elif isinstance(element_tusmo_type, ArrayTypeNode):
                 iterator_c_type = self.main_generator.array_generator.get_c_type_from_tusmo_type(element_tusmo_type)

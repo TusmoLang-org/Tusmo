@@ -26,8 +26,36 @@ from compiler.midend.docstring_utils import (
 )
 
 
-LOCAL_VERSION = "0.0.53"
+LOCAL_VERSION = "0.0.54"
 REPO_URL = "https://api.github.com/repos/TusmoLang-org/Tusmo/releases/latest"
+
+
+def _normalize_arch(raw_arch: str) -> str:
+    arch = (raw_arch or "").lower()
+    if arch in ("x86_64", "amd64"):
+        return "x64"
+    if arch in ("aarch64", "arm64"):
+        return "arm64"
+    return arch or "unknown"
+
+
+def _platform_key(os_type: str) -> str:
+    if os_type == "Windows":
+        return "windows"
+    if os_type == "Darwin":
+        return "macos"
+    return "linux"
+
+
+def _collect_static_lib_paths(root_dir: str, static_ext: str) -> list[str]:
+    libs: list[str] = []
+    if not os.path.exists(root_dir):
+        return libs
+    for root, _, files in os.walk(root_dir):
+        for file in files:
+            if file.endswith(static_ext):
+                libs.append(os.path.join(root, file))
+    return libs
 
 def help(command=None):
     if command in ["-h", "--help", "-c", "--caawimaad"]:
@@ -233,6 +261,7 @@ def list_libraries(command=None):
         print("- http: Waxay la xiriira codsiyada HTTP iyo server-yada webka.")
         print("- Xiriiriye: Waxay la xiriirtaa isgaarsiinta shabakadda ee heerka socket-ka.")
         print("- webxiriiriye: Waxay la xiriirtaa isgaarsiinta web-ka ee heerka websocket-ka.")
+        print("- opengl: Waxay la xiriirtaa sawirid (graphics), daaqad, iyo game-loop.")
         sys.exit(0)
    
 
@@ -282,11 +311,8 @@ def main():
         c_include_flag = f' -I"{c_bridge_folder}"'
         
         # 2. Si recursive ah u raadi dhammaan .a ama .lib files
-        for root, dirs, files in os.walk(c_bridge_folder):
-            for file in files:
-                if file.endswith(static_ext):
-                    full_path = os.path.join(root, file)
-                    c_static_libs.append(f'"{full_path}"')
+        for full_path in _collect_static_lib_paths(c_bridge_folder, static_ext):
+            c_static_libs.append(f'"{full_path}"')
     
     c_libs_str = " ".join(c_static_libs)
 
@@ -322,10 +348,46 @@ def main():
             sys.exit(0)
 
         main_file_directory = os.path.dirname(os.path.abspath(filename))
-        final_ast = process_imports(initial_ast, base_directory=main_file_directory, stdlib_path=stdlib_dir)
+        all_imported_files = {os.path.abspath(filename)}
+        final_ast = process_imports(initial_ast, base_directory=main_file_directory, stdlib_path=stdlib_dir, processed_files=all_imported_files)
 
         if not final_ast:
             sys.exit(0)
+
+        # Resolve OS and Architecture for linking
+        os_name = _platform_key(os_type)
+        arch_name = _normalize_arch(platform.machine())
+        static_ext = ".a" if os_type != "Windows" else ".lib"
+
+        # Dynamic Linker Flags and Feature Detection
+        dynamic_include_flags = []
+        dynamic_static_libs = []
+        dynamic_lib_paths = []
+        used_features = set()
+
+        for file_path in all_imported_files:
+            if "opengl" in file_path:
+                used_features.add("opengl")
+
+            module_dir = os.path.dirname(file_path)
+            include_root = os.path.join(module_dir, ".include")
+            platform_arch_root = os.path.join(include_root, os_name, arch_name)
+
+            if os.path.exists(platform_arch_root):
+                inc_path = os.path.join(platform_arch_root, "include")
+                lib_path = os.path.join(platform_arch_root, "lib")
+
+                if os.path.exists(inc_path):
+                    dynamic_include_flags.append(f' -I"{inc_path}"')
+
+                if os.path.exists(lib_path):
+                    dynamic_lib_paths.append(f' -L"{lib_path}"')
+                    for lib_file in _collect_static_lib_paths(lib_path, static_ext):
+                        dynamic_static_libs.append(f'"{lib_file}"')
+
+        dynamic_inc_str = "".join(dynamic_include_flags)
+        dynamic_libs_str = " ".join(dynamic_static_libs)
+        dynamic_lib_path_str = "".join(dynamic_lib_paths)
 
         resolve_fstrings(final_ast)
         attach_docstrings(final_ast)
@@ -333,10 +395,14 @@ def main():
         checker = SemanticChecker(shared_symbol_table)
         checker.check(final_ast)
 
-    
-        # Pass the 'checker' instance to the Transpiler
+        # Pass the 'checker' instance and detected features to the Transpiler
         transpiler = Transpiler(shared_symbol_table, checker)
-        c_code, used_features = transpiler.transpile(final_ast)                
+        # Merge detected features with transpiler features
+        transpiler.used_features.update(used_features)
+
+        c_code, final_used_features = transpiler.transpile(final_ast)
+        used_features.update(final_used_features)
+                
         out_file = filename.replace(".tus", ".c")
         with open(out_file, "w") as f:
             f.write(c_code)
@@ -345,52 +411,47 @@ def main():
 
         # Dynamically build the list of source files to compile
         source_files_to_compile = [out_file]
-        
-        
-
 
         for feature in used_features:
             if feature in feature_to_source_map:
                 source_path = feature_to_source_map[feature]
-                # Check if the path is a list (like for 'array') or a single string
                 if isinstance(source_path, list):
                     for path in source_path:
                         if os.path.exists(path):
                             source_files_to_compile.append(path)
-                else:  # It's a single string
+                else:
                     if os.path.exists(source_path):
                         source_files_to_compile.append(source_path)
 
-        # Implicit dependency: Array (mixed) might use Dictionary printing
-        if "array" in used_features and "dictionary" not in used_features:
-            dict_path = feature_to_source_map["dictionary"]
-            if os.path.exists(dict_path):
-                source_files_to_compile.append(dict_path)
-
         all_sources_str = " ".join([f'"{path}"' for path in source_files_to_compile])
 
-        # Allow overriding compiler/lib/include via env vars (for bundled installs)
+        # Compiler and Flags
         cc = os.environ.get("TUSMO_CC", "gcc")
         lib_dir_override = os.environ.get("TUSMO_LIB_DIR")
         include_override = os.environ.get("TUSMO_INCLUDE_DIR")
 
         include_flag = f'-I"{include_override}"' if include_override else f'-I"{runtime_dir}"'
         lib_flag = f' -L"{lib_dir_override}"' if lib_dir_override else ""
-        
-        # The final, dynamic compile command
-        # ---------------------------------------------------------
 
-        # Add -lm for math functions if math feature is used
         math_flag = " -lm" if "math" in used_features else ""
 
-        # Amarka kama dambaysta ah ee Compiler-ka
+        # Extra Linker Flags for OpenGL (Legacy fallback or manual overrides)
+        opengl_flag = ""
+        if "opengl" in used_features:
+            if os_type == "Windows":
+                opengl_flag = " -lglfw3 -lopengl32 -lgdi32"
+            elif os_type == "Darwin":
+                opengl_flag = " -lglfw -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo"
+            else:
+                opengl_flag = " -lglfw -lGL -ldl -lpthread -lX11 -lXrandr -lXi -lXxf86vm -lXinerama -lXcursor"
+
+        # Final Compilation Command
         compile_command = (
             f'"{cc}" -O3 -march=native -flto -o "{binary}" '
-            f'{all_sources_str} {c_libs_str} '      # .a files ka yimid .include
-            f'{include_flag}{c_include_flag} '      # -I runtime iyo -I .include
-            f'{lib_flag} -lgc{math_flag}'           # Boehm GC + math lib
+            f'{all_sources_str} {c_libs_str} {dynamic_libs_str} '      # static libs
+            f'{include_flag} {c_include_flag} {dynamic_inc_str} '      # include paths
+            f'{lib_flag} {dynamic_lib_path_str} -lgc {math_flag} {opengl_flag}' # system libs
         )
-
         compile_result = os.system(compile_command)
 
         if compile_result == 1:

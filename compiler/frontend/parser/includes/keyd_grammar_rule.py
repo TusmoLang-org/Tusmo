@@ -1,9 +1,6 @@
 # keyd_grammar_rule.py (Corrected - Based on Your Original)
+from compiler.frontend.parser.ast_nodes import KeydNode
 
-from compiler.frontend.parser.ast_nodes import KeydNode, AssignmentNode
-import sys
-
-# This 'p_declaration' rule is your original one and remains unchanged.
 def p_declaration(p):
     '''declaration : KEYD COLON type_specifier IDENTIFIER SEMICOLON
                    | KEYD COLON type_specifier IDENTIFIER EQUALS expression SEMICOLON

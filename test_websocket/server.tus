@@ -1,0 +1,36 @@
+keen "xiriiriye";
+keen "webxiriiriye";
+
+keyd:Xiriiriye server = Xiriiriye() cusub;
+keyd:eray handle = server.samee_server("8080");
+
+haddii (handle != "") {
+    qor("WebSocket server created on port 8080");
+    
+    keyd:tiro listen_result = server.dhageyso(5);
+    
+    haddii (listen_result == 0) {
+        qor("Waiting for client connection...");
+        
+        keyd:eray client_handle = server.aqbal();
+        
+        haddii (client_handle != "") {
+            qor("Client connected!");
+            
+            keyd:WebXiriiriye ws = WebXiriiriye() cusub;
+            ws.kor_u_qaad(client_handle, "test_key");
+            
+            qor("WebSocket upgraded!");
+            qor("Sending JSON message...");
+            
+            keyd:eray json_msg = "{\"message\": \"Hello from Tusmo!\"}";
+            keyd:tiro sent = ws.dir_qoraal(json_msg);
+            
+            qor("Sent bytes: ");
+            qor(sent);
+        }
+    }
+    
+    server.xir();
+    qor("Server closed");
+}

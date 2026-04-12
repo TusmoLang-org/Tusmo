@@ -88,6 +88,13 @@ void tusmo_tix_jajab_nested_append(TusmoTixJajabNested* tix, TusmoTixJajab* valu
 void tusmo_tix_miyaa_nested_append(TusmoTixMiyaaNested* tix, TusmoTixMiyaa* value);
 void tusmo_tix_xaraf_nested_append(TusmoTixXarafNested* tix, TusmoTixXaraf* value);
 
+// --- 2D Nested Array Extend ---
+void tusmo_tix_tiro_nested_extend(TusmoTixTiroNested* dest, TusmoTixTiroNested* src);
+void tusmo_tix_eray_nested_extend(TusmoTixErayNested* dest, TusmoTixErayNested* src);
+void tusmo_tix_jajab_nested_extend(TusmoTixJajabNested* dest, TusmoTixJajabNested* src);
+void tusmo_tix_miyaa_nested_extend(TusmoTixMiyaaNested* dest, TusmoTixMiyaaNested* src);
+void tusmo_tix_xaraf_nested_extend(TusmoTixXarafNested* dest, TusmoTixXarafNested* src);
+
 // --- 3D Nested Array Append ---
 void tusmo_tix_tiro_nested2_append(TusmoTixTiroNested2* tix, TusmoTixTiroNested* value);
 void tusmo_tix_eray_nested2_append(TusmoTixErayNested2* tix, TusmoTixErayNested* value);
@@ -119,6 +126,14 @@ bool tusmo_hp_tix_xaraf_remove(TusmoTixXaraf* tix, char value);
 bool tusmo_tix_mixed_remove(TusmoTixMixed* tix, TusmoValue value);
 TusmoValue tusmo_tix_mixed_get(TusmoTixMixed* tix, size_t index);
 
+// --- Extend: Add all elements from another array ---
+void tusmo_hp_tix_tiro_extend(TusmoTixTiro* dest, TusmoTixTiro* src);
+void tusmo_hp_tix_eray_extend(TusmoTixEray* dest, TusmoTixEray* src);
+void tusmo_hp_tix_jajab_extend(TusmoTixJajab* dest, TusmoTixJajab* src);
+void tusmo_hp_tix_miyaa_extend(TusmoTixMiyaa* dest, TusmoTixMiyaa* src);
+void tusmo_hp_tix_xaraf_extend(TusmoTixXaraf* dest, TusmoTixXaraf* src);
+void tusmo_tix_mixed_extend(TusmoTixMixed* dest, TusmoTixMixed* src);
+
 // --- Generic Nested Array Access (from array.c) ---
 // Handles type-switching for accessing elements of arrays stored in TusmoValue
 TusmoValue tusmo_tix_mixed_get_nested(TusmoValue arr_val, size_t index);
@@ -126,6 +141,17 @@ TusmoValue tusmo_tix_mixed_get_nested(TusmoValue arr_val, size_t index);
 // --- String Formatting (from string.c) ---
 char* tusmo_str_format(const char* format, ...);
 char* tusmo_concat_cstr(const char* left, const char* right);
+
+// --- String Methods (from string.c) ---
+char* tusmo_str_upper(const char* str);
+char* tusmo_str_lower(const char* str);
+char* tusmo_str_trim(const char* str);
+char* tusmo_str_ltrim(const char* str);
+char* tusmo_str_rtrim(const char* str);
+char* tusmo_str_replace(const char* str, const char* old_str, const char* new_str);
+int tusmo_str_find(const char* str, const char* substr);
+bool tusmo_str_contains(const char* str, const char* substr);
+TusmoTixEray* tusmo_str_split(const char* str, const char* delimiter);
 
 // hel
 char* hel_str();
@@ -165,6 +191,7 @@ void tusmo_tix_generic_append(TusmoTixGeneric* tix, void* value);
 void tusmo_tix_generic_insert(TusmoTixGeneric* tix, size_t index, void* value);
 void* tusmo_tix_generic_pop(TusmoTixGeneric* tix, size_t index);
 bool tusmo_tix_generic_remove(TusmoTixGeneric* tix, void* value);
+void tusmo_tix_generic_extend(TusmoTixGeneric* dest, TusmoTixGeneric* src);
 // ==========================================================================
 // --- GENERIC PRINTING MACRO ---
 // Supports 1D, 2D, and 3D arrays through type-specific structs
@@ -278,5 +305,15 @@ double tusmo_pow(double base, double exp);
 double tusmo_floor(double x);
 double tusmo_ceil(double x);
 double tusmo_round(double x);
+
+// --- Safety Macros ---
+#define TUSMO_SAFE_DIV(a, b, f, l) \
+    ((b) == 0 ? (fprintf(stderr, "\n\033[1;31m[!] CILAD SOCDAALKA:\033[0m Isku day inaad u qaybiso 0! (Division by zero)\n\033[90m" "---------------------------------------------" "\033[0m\n\033[94mFaylka:\033[0m   %s\n\033[94mSaddarka:\033[0m %d\n\033[1;35m// Xisaabtaada dib u baro! Sidee 0 wax ugu qaybin kartaa?\033[0m\n", f, l), exit(1), (a)) : ((a) / (b)))
+
+#define TUSMO_SAFE_MOD(a, b, f, l) \
+    ((b) == 0 ? (fprintf(stderr, "\n\033[1;31m[!] CILAD SOCDAALKA:\033[0m Isku day inaad %s (modulo) ka qaado 0! (Modulo by zero)\n\033[90m" "---------------------------------------------" "\033[0m\n\033[94mFaylka:\033[0m   %s\n\033[94mSaddarka:\033[0m %d\n\033[1;35m// 0 waxba kama soo haro marka la qaybiyo! Dib u eeg.\033[0m\n", "%", f, l), exit(1), (a)) : ((a) % (b)))
+
+#define TUSMO_SAFE_ACCESS(p, f, l) \
+    ((p) == NULL ? (fprintf(stderr, "\n\033[1;31m[!] CILAD SOCDAALKA:\033[0m Isku day inaad gasho xogta wax maran (null) ah!\n\033[90m" "---------------------------------------------" "\033[0m\n\033[94mFaylka:\033[0m   %s\n\033[94mSaddarka:\033[0m %d\n\033[1;35m// Ma waxaan jirin baad rabtaa inaad xog ka keento? Horta hubi inay jirto.\033[0m\n", f, l), exit(1), (p)) : (p))
 
 #endif // TUSMO_RUNTIME_H

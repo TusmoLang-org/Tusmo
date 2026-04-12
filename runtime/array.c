@@ -558,3 +558,72 @@ void tusmo_tix_xaraf_nested2_append(TusmoTixXarafNested2* tix, TusmoTixXarafNest
     }
     tix->data[tix->size++] = value;
 }
+
+// --- 2D Nested Array Extend ---
+void tusmo_tix_tiro_nested_extend(TusmoTixTiroNested* dest, TusmoTixTiroNested* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_tix_tiro_nested_append(dest, src->data[i]);
+    }
+}
+
+void tusmo_tix_eray_nested_extend(TusmoTixErayNested* dest, TusmoTixErayNested* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_tix_eray_nested_append(dest, src->data[i]);
+    }
+}
+
+void tusmo_tix_jajab_nested_extend(TusmoTixJajabNested* dest, TusmoTixJajabNested* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_tix_jajab_nested_append(dest, src->data[i]);
+    }
+}
+
+void tusmo_tix_miyaa_nested_extend(TusmoTixMiyaaNested* dest, TusmoTixMiyaaNested* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_tix_miyaa_nested_append(dest, src->data[i]);
+    }
+}
+
+void tusmo_tix_xaraf_nested_extend(TusmoTixXarafNested* dest, TusmoTixXarafNested* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_tix_xaraf_nested_append(dest, src->data[i]);
+    }
+}
+
+// --- Extend: Add all elements from another array ---
+
+void tusmo_hp_tix_tiro_extend(TusmoTixTiro* dest, TusmoTixTiro* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_hp_tix_tiro_append(dest, src->data[i]);
+    }
+}
+
+void tusmo_hp_tix_eray_extend(TusmoTixEray* dest, TusmoTixEray* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_hp_tix_eray_append(dest, src->data[i]);
+    }
+}
+
+void tusmo_hp_tix_jajab_extend(TusmoTixJajab* dest, TusmoTixJajab* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_hp_tix_jajab_append(dest, src->data[i]);
+    }
+}
+
+void tusmo_hp_tix_miyaa_extend(TusmoTixMiyaa* dest, TusmoTixMiyaa* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_hp_tix_miyaa_append(dest, src->data[i]);
+    }
+}
+
+void tusmo_hp_tix_xaraf_extend(TusmoTixXaraf* dest, TusmoTixXaraf* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_hp_tix_xaraf_append(dest, src->data[i]);
+    }
+}
+
+void tusmo_tix_mixed_extend(TusmoTixMixed* dest, TusmoTixMixed* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_tix_mixed_append(dest, src->data[i]);
+    }
+}

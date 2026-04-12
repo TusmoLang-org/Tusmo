@@ -211,7 +211,7 @@
         },
         {
           "name": "keyword.other.import.tusmo",
-          "match": "\\b(keen|isticmaal)\\b"
+          "match": "\\b(keen|isticmaal|kujira)\\b"
         },
         {
           "name": "keyword.declaration.tusmo",
@@ -324,7 +324,7 @@
         },
         {
           "name": "entity.name.function.tusmo",
-          "match": "\\b(?!(?:haddii|ama_haddii|haddii_kale|inta|samay|soco|joog|kasoco|kasta|laga|bilaabo|ay|helo|keyd|hawl|shaqo|koox|dhaxlaya|dhis|burbur|cusub|hel|qor|show|gali|nooc|dherer|tix|qaamuus|tix_cayiman|tiro|jajab|eray|xaraf|miyaa|waxbo|run|haa|been|maya|keen|isticmaal|waalid|soo_celi|kan|ahayn|iyo|lamid|lamid_maaha|weyn|yar|weyn_lamid|yar_lamid|___c__call_|___c__code_)\\b)([a-z_][a-zA-Z0-9_]*)(?=\\s*\\()",
+          "match": "\\b(?!(?:haddii|ama_haddii|haddii_kale|inta|samay|soco|joog|kasoco|kasta|laga|bilaabo|ay|helo|keyd|hawl|shaqo|koox|dhaxlaya|dhis|burbur|cusub|hel|qor|show|gali|nooc|dherer|tix|qaamuus|tix_cayiman|tiro|jajab|eray|xaraf|miyaa|waxbo|run|haa|been|maya|keen|isticmaal|kujira|waalid|soo_celi|kan|ahayn|iyo|lamid|lamid_maaha|weyn|yar|weyn_lamid|yar_lamid|___c__call_|___c__code_)\\b)([a-z_][a-zA-Z0-9_]*)(?=\\s*\\()",
           "captures": {
             "1": {
               "name": "entity.name.function.tusmo"

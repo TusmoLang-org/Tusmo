@@ -1,6 +1,15 @@
-# Bilaabista kooban
+---
+title: Getting Started
+description: Install Tusmo, write your first Somali program, and understand the Tusmo CLI workflow.
+---
 
-## Dagsasho (Installation)
+# Getting Started with Tusmo
+
+This page helps you go from zero to running your first Tusmo program in a few minutes.
+
+Tusmo is a **Somali programming language** that compiles to C and then to a native binary.
+
+## 1. Install Tusmo
 
 ### Linux/macOS
 
@@ -8,120 +17,90 @@
 curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash
 ```
 
-### Windows
+### Windows (PowerShell)
 
 ```powershell
 irm https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.ps1 | iex
 ```
-## Talo Muhiim ah
-Markaad la soo dagto tusmo waa inaad isticmaasho ***VScode*** si aad u hesho **syntax highlighter** iyo **hover documentation** kuwaaso si automatic ah kugu soo dagi doono xiliga installation-ka Tusmo haddii vscode uu kugu jiray horey.
 
-## Barnaamijkaagii ugu Horreeyay
+## 2. Verify Installation
 
-Sameey `hello.tus`,  fayl extension-ka tusmo waa `.tus`
-
-```tus
-qor("Hello, Soomali Developers!");
+```bash
+tusmo --version
 ```
 
-## Sida run loo dhaho Tusmo
+You should see a Tusmo version printed in the terminal.
 
-Kaliya u gudbi faylka `.tus` compiler-ka Tusmo:
+## 3. Create Your First Program
+
+Create `hello.tus`:
+
+```tus
+qor("Hello, Somali Developers!");
+```
+
+Run it:
 
 ```bash
 tusmo hello.tus
-```
-Kadib compiler-ka `tusmo` wuxuu sameyn donaa soo saari donaa fayl binary ah kaaso oo wata isla magacii faylkii aad run kareysay tusaale annaga hadda waxaa run-gareenay fayl tusmo ah oo lagu magacaabo `hello.tus` anagoo adeegsaneyna `tusmo hello.tus` waxaa la soosaari donaa binary fayl lagu magacaabo `hello`
-
-### Run-dheh fayl-ka binary
-```
 ./hello
 ```
-kadib waxaa terminal-ka ka soo bixi dooono output-ka
-```output
-Hello, Soomali Developers!
+
+Expected output:
+
+```text
+Hello, Somali Developers!
 ```
 
-## 📋 Isticmaalka (Usage)
+## 4. Understand the CLI
 
-Qaabka guud ee amarka: 
-`tusmo <fayl.tus> [doorashooyin]`
+General format:
 
-### Doorashooyinka (Options)
-
-| Amarka (Short/Long) | Shaqada (Description) | Tusaale |
-| :--- | :--- | :--- |
-| `-h`, `--help` / `-c` | Bandhigga macluumaadka caawimaadda | `tusmo -c` |
-| `-v`, `--version` / `-n` | Tusidda nooca (version) aad haysato | `tusmo -n` |
-| `-l`, `--libraries` / `-m` | Tirinta dhamaan maktabadaha la heli karo | `tusmo -m` |
-| `--c` | Keydinta faylka **C** ee la sameeyay | `tusmo hello.tus --c` |
-| `dagso` / `download` | Soo dejinta maktabad (library) cusub | `tusmo dagso [magac]` |
-| `update` / `cusboonaysii` | Inaad is-casriyeyso (Tusmo update) | `tusmo update` |
-
-## Sida ay u Shaqeyso Compilerka Tusmo
-
-```
-hello.tus
-   ↓
-tusmo(lexer)
-   ↓
-tusmo (parser)
-   ↓
-AST(Abstract Syntax Tree)
-   ↓
-semantic analysis
-   ↓
-C code generation 
-   ↓
-hello.c + runtime/*.c + stdlib/*.tus
-   ↓  
-zig cc
-   ↓
-hello (binary)  →  ./hello
-
-
+```bash
+tusmo <file.tus> [options]
 ```
 
-### Pipeline-ka Turjumidda (Compilation Pipeline)
+Common commands:
 
-1. **Lexing** -  Code-ka Tusmo ayaa loo badalayaa token
-2. **Parsing** - Waxaa la Dhisayaa AST (Abstract Syntax Tree)
-3. **Semantic Analysis** - Hubinta noocyadda (type checking), hubinta variable-da, functions-ka scope-yadooda
-4. **Code Generation** - Sameynta code-ka C.
-5. **Compilation** - Zig wuxuu u beddelaa C-code-ka binary la fulin karo (Excuteable)
-6. **Execution** - Run-kareynta binary-ga
+- `tusmo -h` / `tusmo --help`: Show help
+- `tusmo -v` / `tusmo --version`: Show installed version
+- `tusmo -l` / `tusmo --libraries`: List supported libraries
+- `tusmo app.tus --c`: Keep generated C file
+- `tusmo update`: Update Tusmo
+- `tusmo dagso <library>`: Install a library package
 
+## 5. Keep Generated C Code
 
-
-### Hayso Code-ka C (Keep C Code)
-
-U isticmaal `--c` flag si aad u haysato faylka C ee la sameeyay haddii aad rabto, madaama compiler-ka tusmo uu tirtiri doono fayl-ka C aadan arki karin:
+To inspect what Tusmo generates:
 
 ```bash
 tusmo hello.tus --c
 ```
 
-Tani waxay soo saaraysaa `hello.c` isla directory-ga dhexdiisa.
+This leaves `hello.c` in your working directory.
 
-## Tusaale Code
+## 6. Example: Variables + Interpolation
 
 ```tus
-// Barnaamijkaygii ugu horreeyay ee Tusmo
 keyd:eray magac = "Tusmo";
-keyd:tiro version = 20;
+keyd:tiro version = 1;
 
 qor($"Hello, {magac}!");
-qor($"Version: V{version}");
+qor($"Version: {version}");
 ```
 
-Natiijada (Output):
-```
-Hello, Tusmo!
-Version: V20
-```
-## sharxidda Code-ka
-`keyd` keyword-kan waa sida `var` , `let` ama `const` oo kale, waxaa loola jeedaa *keedin* si uu u muujiyo in wax la keydinaayo
-`eray` keyword-kan waa sida `string` oo kale kaaasi oo sheegaya nooca xogta la keydinaayo.  
-`tiro` keyword-kan waa sida `int` oo kale kaaasi oo sheegaya nooca xogta la keydinaayo.
+## 7. Recommended Editor Setup
 
+Use VS Code for better productivity:
 
+- Syntax highlighting
+- Hover documentation
+- Better readability for Tusmo files
+
+## 8. What to Read Next
+
+- [How Tusmo Works](how-it-works.md)
+- [Variables](variables.md)
+- [Functions](functions.md)
+- [Classes](classes.md)
+- [Standard Library](stdlib.md)

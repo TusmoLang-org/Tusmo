@@ -1,8 +1,4 @@
 # grammar_rules.py (Corrected Formatting)
-
-import sys
-
-# Your existing imports
 from .includes.keyd_grammar_rule import *
 from .includes.qor_grammar_rule import *
 from .includes.hel_grammer_rule import *
@@ -15,19 +11,17 @@ from .includes.array_grammer_rule import *
 from .includes.keen_grammer_rule import *
 from .includes.class_grammer_rule import *
 from .includes.embedded_c_grammar_rule import *
-
-
+from .includes.dictionary_grammar_rule import *
 from .ast_nodes import (
     NumberNode, FloatNode, IdentifierNode, StringNode, CharNode,
     BinaryOpNode, FStringNode, BooleanNode, TernaryOpNode,
     ThisNode, DictionaryInitializationNode,
-    FunctionTypeNode, TypeLiteralNode
+    FunctionTypeNode, TypeLiteralNode, AssignmentNode
 )
 
 # Start rule
 start = 'program'
 
-# --- Program Structure ---
 def p_program(p):
     '''program : statement_list'''
     p[0] = p[1]
@@ -49,14 +43,24 @@ def p_top_level_item(p):
     p[0] = p[1]
 
 def p_body_statements(p):
-    '''body_statements : LBRACE statement_list RBRACE'''
-    p[0] = p[2]
+    '''body_statements : LBRACE docstring_opt statement_list RBRACE'''
+    if p[2]:
+        p[0] = [p[2]] + p[3]
+    else:
+        p[0] = p[3]
+
+def p_docstring_opt(p):
+    '''docstring_opt : STRING
+                     | empty'''
+    if p[1]:
+        p[0] = StringNode(p[1], line=p.lineno(1), filename=p.lexer.filename)
+    else:
+        p[0] = None
 
 def p_empty(p):
     'empty :'
     p[0] = None
 
-# --- Statements ---
 def p_statement(p):
     '''statement : declaration
                  | qor_statement
@@ -66,17 +70,14 @@ def p_statement(p):
                  | statement_return
                  | expression SEMICOLON
                  | keen_import
+                 | isticmaal_import
     '''
     p[0] = p[1]
 
-
 def p_assignment_statement(p):
     '''assignment_statement : expression EQUALS expression SEMICOLON'''
-    # This now handles variable, array, and dictionary assignments
     p[0] = AssignmentNode(p[1], p[2], p[3], p.lineno(2), p.lexer.filename)
 
-
-# --- Type Specifiers ---
 def p_type_specifier(p):
     '''type_specifier : primitive_type
                       | array_type
@@ -101,7 +102,6 @@ def p_param_type_list(p):
     else:
         p[0] = []
 
-# V V V --- FIX 1: EXPANDED TO MULTIPLE LINES --- V V V
 def p_primitive_type(p):
     '''primitive_type : TIRO
                       | ERAY
@@ -111,8 +111,6 @@ def p_primitive_type(p):
                       | WAXBO'''
     p[0] = p[1]
 
-
-# --- Expressions ---
 precedence = (
     ('left', 'AMA', 'BARBAR'),
     ('left', 'IYO', 'AMPERSANDAMPERSAND'),
@@ -122,14 +120,17 @@ precedence = (
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
     ('right', 'CUSUB'),
     ('left', 'DOT'),
-    ('right', 'AHAYN'),
+    ('right', 'AHAYN', 'NOT'),
     ('right', 'QUESTION'),
     ('left', 'LPAREN', 'RPAREN', 'LBRACKET')
 )
 
-# V V V --- FIX 2: EXPANDED TO MULTIPLE LINES --- V V V
 def p_expression_binop(p):
     '''expression : expression PLUS expression
+                  | expression EQUAL_PLUS expression
+                  | expression EQUAL_MINUS expression
+                  | expression EQUAL_TIMES expression
+                  | expression EQUAL_DIVIDE expression
                   | expression MINUS expression
                   | expression TIMES expression
                   | expression DIVIDE expression
@@ -147,11 +148,15 @@ def p_expression_binop(p):
                   | expression AHAYN expression'''
     p[0] = BinaryOpNode(p[1], p[2], p[3], line=p.lineno(2), filename=p.lexer.filename)
 
+def p_expression_unary_not(p):
+    'expression : NOT expression'
+    # Create a binary op with dummy left operand
+    p[0] = BinaryOpNode(BooleanNode(False), '!', p[2], line=p.lineno(1), filename=p.lexer.filename)
+
 def p_expression_group(p):
     'expression : LPAREN expression RPAREN'
     p[0] = p[2]
 
-# V V V --- FIX 3: EXPANDED TO MULTIPLE LINES --- V V V
 def p_expression(p):
     '''expression : simple_expression
                   | array_initialization
@@ -163,7 +168,6 @@ def p_expression(p):
                   | c_call_expression'''
     p[0] = p[1]
 
-# V V V --- FIX 4: EXPANDED TO MULTIPLE LINES --- V V V
 def p_simple_expression(p):
     '''simple_expression : NUMBER
                          | FLOAT_LITERAL
@@ -198,7 +202,6 @@ def p_expression_ternary(p):
     '''expression : expression QUESTION expression COLON expression'''
     p[0] = TernaryOpNode(p[1], p[3], p[5], line=p.lineno(2), filename=p.lexer.filename)
 
-# --- Dictionary Rules ---
 def p_dictionary_initialization(p):
     '''dictionary_initialization : LBRACE key_value_pairs RBRACE
                                | LBRACE empty RBRACE'''

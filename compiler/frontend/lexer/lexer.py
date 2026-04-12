@@ -1,25 +1,109 @@
 import ply.lex as lex
 
 reserved = {
-    'keyd': 'KEYD', 'tiro': 'TIRO', 'eray': 'ERAY', 'xaraf': 'XARAF', 'miyaa': 'MIYAA',
-    'jajab': 'JAJAB', 'tix': 'TIX', 'qaamuus': 'QAAMUUS', 'tix_cayiman':'TIX_CAYIMAN', 'run': 'RUN', 'haa': 'HAA', 
-    'been': 'BEEN', 'maya': 'MAYA', 'hel': 'HEL', 'qor': 'QOR', 'show':'SHOW',
-    'haddii': 'HADDII', 'ama_haddii': 'AMA_HADDII', 'haddii_kale': 'HADDII_KALE', 'hawl': 'HAWL', 'shaqo': 'SHAQO', 
-    'soo_celi': 'SOO_CELI', 'inta': 'INTA', 'ay': 'AY', 'samay': 'SAMAY', 'soco': 'SOCO', 
-    'laga': 'LAGA', 'bilaabo': 'BILAABO', 'kasta': 'KASTA', 'helo': 'HELO', 'joog': 'JOOG', 'kasoco':'KASOCO', 
-    'ahayn': 'AHAYN', 'iyo': 'IYO', 'lamid': 'LAMID', 'weyn': 'WEYN', 'yar': 'YAR',
-    'koox': 'KOOX', 'cusub': 'CUSUB', 'kan': 'KAN', 'dhis': 'DHIS', 'burbur': 'BURBUR', 'gali': 'GALI',
-     'ama':'AMA', 'keen':'KEEN', 'isticmaal':'ISTICMAAL', 'waxbo':'WAXBO', '___c__call_': 'C_CALL', '___c__code_': 'C_CODE', 'nooc':'NOOC', 'dherer':'DHERER',
-     'dhaxlaya': 'DHAXLAYA', 'waalid': 'WAALID'
+    'keyd': 'KEYD', 
+    'tiro': 'TIRO', 
+    'eray': 'ERAY', 
+    'xaraf': 'XARAF', 
+    'miyaa': 'MIYAA',
+    'jajab': 'JAJAB', 
+    'tix': 'TIX', 
+    'qaamuus': 'QAAMUUS', 
+    'tix_cayiman':'TIX_CAYIMAN', 
+    'run': 'RUN', 
+    'haa': 'HAA',
+    'been': 'BEEN', 
+    'maya': 'MAYA', 
+    'hel': 'HEL', 
+    'qor': 'QOR', 
+    'haddii': 'HADDII', 
+    'ama_haddii': 'AMA_HADDII', 
+    'haddii_kale': 'HADDII_KALE', 
+    'hawl': 'HAWL', 
+    'shaqo': 'SHAQO', 
+    'soo_celi': 'SOO_CELI', 
+    'inta': 'INTA', 
+    'ay': 'AY', 
+    'samay': 'SAMAY', 
+    'soco': 'SOCO',
+    'laga': 'LAGA', 
+    'bilaabo': 'BILAABO', 
+    'kasta': 'KASTA', 
+    'helo': 'HELO', 
+    'joog': 'JOOG', 
+    'kasoco':'KASOCO', 
+    'ahayn': 'AHAYN', 
+    'iyo': 'IYO', 
+    'lamid': 'LAMID', 
+    'weyn': 'WEYN', 
+    'yar': 'YAR',
+    'koox': 'KOOX', 
+    'cusub': 'CUSUB', 
+    'kan': 'KAN', 
+    'dhis': 'DHIS', 
+    'burbur': 'BURBUR', 
+    'gali': 'GALI',
+    'ama':'AMA', 
+    'keen':'KEEN', 
+    'isticmaal':'ISTICMAAL', 
+    'kujira':'KUJIRA', 
+    'waxbo':'WAXBO', 
+    '___c__call_': 'C_CALL', 
+    '___c__code_': 'C_CODE', 
+    'nooc':'NOOC', 
+    'dherer':'DHERER',
+    'dhaxlaya': 'DHAXLAYA', 
+    'waalid': 'WAALID',
+    # String methods
+    'kuBadal': 'KUBADAL',
+    'kaReeb': 'KAREEB',
+    'Bkareeb': 'BKAREEB',
+    'Mkareeb': 'MKAREEB',
+    'XarafWeyn': 'XARAFWEYN',
+    'XarafYar': 'XARAFAYAR',
+    'sooRaadi': 'SOORAADI',
+    'lagaHelay': 'LAGAHELAY',
+    'qaybi': 'QAYBI'
 }
 
 
 tokens = [
-    'IDENTIFIER', 'NUMBER', 'FLOAT_LITERAL', 'STRING', 'FSTRING', 'CHAR_LITERAL',
-    'PLUS', 'MINUS', 'TIMES', 'DIVIDE','QUESTION', 'EQUALS', 'COLON', 'SEMICOLON', 'COMMA',
-    'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE', 'LBRACKET', 'RBRACKET', 'DOT',
-    'LAMID_MAAHA', 'WEYN_LAMID', 'YAR_LAMID', 'DOTDOT','MODULO','MEMBER_ACCESS','ARROW',
-    'AMPERSANDAMPERSAND','BARBAR'
+    'IDENTIFIER', 
+    'NUMBER', 
+    'FLOAT_LITERAL', 
+    'STRING', 
+    'FSTRING', 
+    'CHAR_LITERAL',
+    'PLUS',
+     'EQUAL_PLUS',
+    'EQUAL_MINUS',
+    'EQUAL_TIMES',
+    'EQUAL_DIVIDE',
+    'MINUS', 
+    'TIMES', 
+    'DIVIDE',
+    'QUESTION', 
+    'EQUALS', 
+    'COLON', 
+    'SEMICOLON', 
+    'COMMA',
+    'LPAREN', 
+    'RPAREN', 
+    'LBRACE', 
+    'RBRACE', 
+    'LBRACKET', 
+    'RBRACKET', 
+    'DOT',
+    'LAMID_MAAHA', 
+    'WEYN_LAMID', 
+    'YAR_LAMID', 
+    'DOTDOT',
+    'MODULO',
+    'MEMBER_ACCESS',
+    'ARROW',
+    'AMPERSANDAMPERSAND',
+    'BARBAR',
+    'NOT'
 ] + list(reserved.values())
 
 # Regular expression rules for simple tokens
@@ -31,6 +115,10 @@ t_LAMID = r'=='
 t_EQUALS = r'='
 t_WEYN = r'>'
 t_ARROW = r'=>'
+t_EQUAL_PLUS = r'\+='
+t_EQUAL_MINUS = r'-='
+t_EQUAL_TIMES = r'\*='
+t_EQUAL_DIVIDE = r'/='
 t_YAR = r'<'
 t_PLUS = r'\+'
 t_MINUS = r'-'
@@ -48,6 +136,7 @@ t_COMMA = r','
 t_DOT = r'\.'
 t_DOTDOT = r'\.\.'
 t_MODULO = r'%'
+t_NOT = r'!'
 t_ignore = ' \t'
 t_AMPERSANDAMPERSAND = r'&&'
 t_BARBAR = r'\|\|'
@@ -64,12 +153,12 @@ def t_ML_COMMENT(t):
     pass
 
 def t_FLOAT_LITERAL(t):
-    r'\d+\.\d+'
+    r'-?\d+\.\d+'
     t.value = float(t.value)
     return t
 
 def t_NUMBER(t):
-    r'\d+'
+    r'-?\d+'
     t.value = int(t.value)
     return t
 
@@ -89,7 +178,7 @@ def _parse_fstring_content(content):
     i = 0
     while i < len(content):
         if content[i] == '{' and i + 1 < len(content) and content[i+1] != '{':
-            # Start of an expression
+            # Start expression
             j = i + 1
             brace_count = 1
             while j < len(content) and brace_count > 0:
@@ -153,14 +242,14 @@ def t_IDENTIFIER(t):
 
 def t_newline(t): r'\n+'; t.lexer.lineno += len(t.value)
 
-# def t_error(t): print(f"Calaamad aan la aqoon: '{t.value[0]}' sadarka {t.lineno}"); t.lexer.skip(1)
 
 def t_error(t):
     filename = getattr(t.lexer, 'filename', '<fayl aan la aqoon>')
-    print(f"Cilad Erayeed (Lexical): Xaraf aan la oggolayn '{t.value[0]}' oo ku jira '{filename}' safka {t.lineno}")
+    print(f"\n\033[1;31m[!] KHALAD ERAY:\033[0m Xaraf aan la oggolayn \033[1;31m'{t.value[0]}'\033[0m ayaa laga helay koodkaaga!")
+    print(f"\033[90m" + ("-" * 45) + "\033[0m")
+    print(f"\033[94mFaylka:\033[0m   {filename}")
+    print(f"\033[94mSaddarka:\033[0m {t.lineno}")
+    print(f"\033[1;35m// Sidee kuugu soo dhex dhuuntay '{t.value[0]}'? Ma adigaa iska dhisay xarafkan?\033[0m\n")
     t.lexer.skip(1)
 
-
-
-# Build the lexer
 lexer = lex.lex()

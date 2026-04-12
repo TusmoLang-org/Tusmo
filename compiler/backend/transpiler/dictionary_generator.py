@@ -23,14 +23,18 @@ class DictionaryGenerator:
 
     def generate_assignment(self, node: DictionaryAssignmentNode):
         dict_var_c = self.expr_generator.generate_expression(node.dictionary_access_node.dictionary_node)
+        # Wrap dictionary in null check
+        safe_dict = f"TUSMO_SAFE_ACCESS({dict_var_c}, \"{node.filename}\", {node.line})"
         key_c = self.expr_generator.generate_expression(node.dictionary_access_node.key_node)
-        value_c, _ = self._generate_tusmo_value(node.value_node)
-        self.code_generator.c_code += f"    tusmo_qaamuus_set({dict_var_c}, {key_c}, {value_c});\n"
+        value_c, _ = self._generate_tusmo_value(value_node=node.value_node)
+        self.code_generator.c_code += f"    tusmo_qaamuus_set({safe_dict}, {key_c}, {value_c});\n"
 
     def generate_access(self, node: DictionaryAccessNode):
         dict_var_c = self.expr_generator.generate_expression(node.dictionary_node)
+        # Wrap dictionary in null check
+        safe_dict = f"TUSMO_SAFE_ACCESS({dict_var_c}, \"{node.filename}\", {node.line})"
         key_c = self.expr_generator.generate_expression(node.key_node)
-        return f"tusmo_qaamuus_get({dict_var_c}, {key_c})"
+        return f"tusmo_qaamuus_get({safe_dict}, {key_c})"
 
     def _generate_tusmo_value(self, value_node):
         value_c = self.expr_generator.generate_expression(value_node)

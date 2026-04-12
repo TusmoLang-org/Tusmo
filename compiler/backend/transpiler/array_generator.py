@@ -10,6 +10,15 @@ class ArrayGenerator:
         self.expr_generator = expr_generator
         self.symbol_table = main_generator.symbol_table
 
+    def _get_array_depth(self, array_type):
+        """Get the depth of nested arrays (1 for tix:tiro, 2 for tix:tix:tiro, etc.)"""
+        depth = 0
+        current = array_type
+        while isinstance(current, ArrayTypeNode):
+            depth += 1
+            current = current.element_type
+        return depth
+
     # Mapping from base element type string to type suffix for nested arrays
     # Used to build type names like TusmoTixTiroNested, TusmoTixTiroNested2
     TYPE_SUFFIX_MAP = {
@@ -18,10 +27,16 @@ class ArrayGenerator:
         'eray': 'Eray',
         'miyaa': 'Miyaa',
         'xaraf': 'Xaraf',
+        'waxbo': 'Waxbo',
+        'qaamuus': 'Qaamuus',
     }
 
     def get_c_type_map(self):
         return {'tiro': 'int', 'jajab': 'double', 'eray': 'char*', 'miyaa': 'bool', 'xaraf': 'char', 'waxbo': 'void', 'qaamuus': 'TusmoQaamuus*'}
+
+    def _is_mixed_storage_type(self, element_type):
+        element_type_str = str(element_type)
+        return element_type is None or element_type_str == 'None' or element_type_str == 'qaamuus'
 
     def get_tix_struct_name(self, element_type_str):
         # If the element type string is None or 'None', it's a dynamic array.
@@ -211,33 +226,38 @@ class ArrayGenerator:
             self.main_generator.c_code += f"    TusmoValue {temp_var} = {base_expr_c};\n"
             return f"tusmo_tix_mixed_get_nested({temp_var}, {index_c})"
 
+        # Wrap base array in null check
+        safe_base = f"TUSMO_SAFE_ACCESS({base_expr_c}, \"{node.filename}\", {node.line})"
         # For regular array types, the bounds check uses the base pointer
-        checked_index = f"tusmo_bounds_check({index_c}, {base_expr_c}->size)"
+        checked_index = f"tusmo_bounds_check({index_c}, {safe_base}->size)"
 
         # For dynamic arrays (tix with element_type = None or string "None")
         is_dynamic = False
         if isinstance(base_tusmo_type, ArrayTypeNode):
-            if base_tusmo_type.element_type is None or str(base_tusmo_type.element_type) == 'None':
+            if self._is_mixed_storage_type(base_tusmo_type.element_type):
                 is_dynamic = True
             elif isinstance(base_tusmo_type.element_type, ArrayTypeNode):
                 inner = base_tusmo_type.element_type
                 while isinstance(inner, ArrayTypeNode):
-                    if inner.element_type is None or str(inner.element_type) == 'None':
+                    if self._is_mixed_storage_type(inner.element_type):
                         is_dynamic = True
                         break
                     inner = inner.element_type
         
         if is_dynamic:
-            return f"tusmo_tix_mixed_get({base_expr_c}, {checked_index})"
+            safe_base = f"TUSMO_SAFE_ACCESS({base_expr_c}, \"{node.filename}\", {node.line})"
+            return f"tusmo_tix_mixed_get({safe_base}, {checked_index})"
 
         # For typed nested arrays (2D, 3D), need to cast to proper pointer type
         if isinstance(base_tusmo_type, ArrayTypeNode) and isinstance(base_tusmo_type.element_type, ArrayTypeNode):
             element_tusmo_type = base_tusmo_type.element_type
             element_c_type = self.get_c_type_from_tusmo_type(element_tusmo_type)
-            return f"(({element_c_type})({base_expr_c}->data[{checked_index}]))"
+            safe_base = f"TUSMO_SAFE_ACCESS({base_expr_c}, \"{node.filename}\", {node.line})"
+            return f"(({element_c_type})({safe_base}->data[{checked_index}]))"
         
         # For typed 1D arrays
-        return f"({base_expr_c}->data[{checked_index}])"
+        safe_base = f"TUSMO_SAFE_ACCESS({base_expr_c}, \"{node.filename}\", {node.line})"
+        return f"({safe_base}->data[{checked_index}])"
 
     def generate_assignment(self, node: ArrayAssignmentNode):
         access_c = self.generate_access(node.array_access_node)
@@ -248,50 +268,93 @@ class ArrayGenerator:
     def generate_method_call(self, node: MethodCallNode):
         self.main_generator.used_features.add("array")
         object_c = self.expr_generator.generate_expression(node.object_node)
+        # Wrap array object in null check
+        safe_object = f"TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})"
+        # Get type
         object_type = self.expr_generator.get_expression_type(node.object_node)
         args = node.args_list # Use raw args list as we handle named args manually
 
         if node.method_name == 'gali':
             if len(args) == 2:
                 # Insert: gali(boos=i, value)
-                # First arg is boos=i (NamedArgument)
                 index_node = args[0].value
                 value_node = args[1]
-                self.generate_insert_call(object_c, object_type, index_node, value_node)
+                self.generate_insert_call(safe_object, object_type, index_node, value_node)
             else:
-                # Append: gali(value)
-                self.generate_append_call(object_c, object_type, args[0])
+                # Append: gali(value) - could be single element or array
+                arg_node = args[0]
+                arg_type = self.expr_generator.get_expression_type(arg_node)
+                if isinstance(arg_type, ArrayTypeNode):
+                    # Check array depth - if obj is deeper than arg, use append (add row) not extend (flatten)
+                    obj_depth = self._get_array_depth(object_type)
+                    arg_depth = self._get_array_depth(arg_type)
+                    if obj_depth > arg_depth:
+                        # Use append to add a nested element (e.g., adding row to 2D array)
+                        self.generate_append_call(safe_object, object_type, arg_node)
+                    else:
+                        # Use extend to flatten and add elements
+                        self.generate_extend_call(safe_object, object_type, arg_node)
+                else:
+                    # Append single element
+                    self.generate_append_call(safe_object, object_type, arg_node)
             return ""
 
         if node.method_name == 'kasaar':
             arg = args[0]
             if isinstance(arg, NamedArgument) and arg.name == 'boos':
                 # Pop: kasaar(boos=i)
-                return self.generate_pop_call(object_c, object_type, arg.value)
+                return self.generate_pop_call(safe_object, object_type, arg.value)
             else:
                 # Remove: kasaar(value)
-                return self.generate_remove_call(object_c, object_type, arg)
+                return self.generate_remove_call(safe_object, object_type, arg)
         
         return ""
 
     def generate_append_call(self, array_c_name, array_type_node, element_node):
         element_type = array_type_node.element_type
         
-        if element_type is None:
+        if self._is_mixed_storage_type(element_type):
             self.generate_mixed_append_call(array_c_name, element_node)
         elif isinstance(element_type, ArrayTypeNode): # Nested array
-            element_c_code = self.expr_generator.generate_expression(element_node)
-            self.main_generator.c_code += f"    tusmo_tix_generic_append({array_c_name}, {element_c_code});\n"
+            inner_type = element_type.element_type
+            if isinstance(inner_type, str):
+                # For 2D nested arrays, use nested append
+                append_func = f"tusmo_tix_{inner_type}_nested_append"
+                element_c_code = self.expr_generator.generate_expression(element_node)
+                self.main_generator.c_code += f"    {append_func}({array_c_name}, {element_c_code});\n"
+            else:
+                # For 3D+ nested arrays, use generic append
+                element_c_code = self.expr_generator.generate_expression(element_node)
+                self.main_generator.c_code += f"    tusmo_tix_generic_append({array_c_name}, {element_c_code});\n"
         elif not isinstance(element_type, ArrayTypeNode):
             element_c_code = self.expr_generator.generate_expression(element_node)
             append_func = f"tusmo_hp_tix_{element_type}_append"
             self.main_generator.c_code += f"    {append_func}({array_c_name}, {element_c_code});\n"
 
+    def generate_extend_call(self, array_c_name, array_type_node, source_array_node):
+        element_type = array_type_node.element_type
+        source_c = self.expr_generator.generate_expression(source_array_node)
+        
+        if self._is_mixed_storage_type(element_type):
+            self.main_generator.c_code += f"    tusmo_tix_mixed_extend({array_c_name}, {source_c});\n"
+        elif isinstance(element_type, ArrayTypeNode):
+            # For nested 2D arrays, use nested extend function
+            inner_type = element_type.element_type
+            if isinstance(inner_type, str):
+                extend_func = f"tusmo_tix_{inner_type}_nested_extend"
+                self.main_generator.c_code += f"    {extend_func}({array_c_name}, {source_c});\n"
+            else:
+                # For 3D+ arrays, use generic extend
+                self.main_generator.c_code += f"    tusmo_tix_generic_extend({array_c_name}, {source_c});\n"
+        else:
+            extend_func = f"tusmo_hp_tix_{element_type}_extend"
+            self.main_generator.c_code += f"    {extend_func}({array_c_name}, {source_c});\n"
+
     def generate_insert_call(self, array_c_name, array_type_node, index_node, element_node):
         element_type = array_type_node.element_type
         index_c = self.expr_generator.generate_expression(index_node)
         
-        if element_type is None:
+        if self._is_mixed_storage_type(element_type):
             self.generate_mixed_insert_call(array_c_name, index_c, element_node)
         elif isinstance(element_type, ArrayTypeNode): # Nested array
             element_c_code = self.expr_generator.generate_expression(element_node)
@@ -305,7 +368,7 @@ class ArrayGenerator:
         element_type = array_type_node.element_type
         index_c = self.expr_generator.generate_expression(index_node)
         
-        if element_type is None:
+        if self._is_mixed_storage_type(element_type):
             return f"tusmo_tix_mixed_pop({array_c_name}, {index_c})"
         elif isinstance(element_type, ArrayTypeNode): # Nested array
              # Return type needs cast to appropriate generic type, or just void*
@@ -324,7 +387,7 @@ class ArrayGenerator:
     def generate_remove_call(self, array_c_name, array_type_node, element_node):
         element_type = array_type_node.element_type
         
-        if element_type is None:
+        if self._is_mixed_storage_type(element_type):
             return self.generate_mixed_remove_call(array_c_name, element_node)
         elif isinstance(element_type, ArrayTypeNode): # Nested array
             element_c_code = self.expr_generator.generate_expression(element_node)

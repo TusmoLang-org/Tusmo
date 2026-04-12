@@ -16,4 +16,4 @@ def check_built_in_function_call(checker, node):
             raise SyntaxError(f"Khalad Nooca Xogta: Qaybta {i+1} ee hawsha '{fn_name}' waa inay noqotaa '{expected_type}', laakiin la siiyay '{actual_type}'.\n\t\tSadarka: {node.line}")
             
     return rules["return_type"]
-    return rules["return_type"]
+    

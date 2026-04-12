@@ -39,13 +39,13 @@ class Keyd_Assignment_Generator:
 
             size_expr = self.expr_generator.generate_expression(right_expr_node.params[0])
             element_type = left_side_type.element_type
+            element_type_str = str(element_type)
             
-            if element_type is None:
+            if element_type is None or element_type_str == "None" or element_type_str == "qaamuus":
                 init_c = f"tusmo_tix_mixed_create({size_expr})"
             elif isinstance(element_type, ArrayTypeNode):
                 init_c = f"tusmo_tix_generic_create({size_expr})"
             else:
-                element_type_str = str(element_type)
                 init_c = f"tusmo_hp_tix_{element_type_str}_create({size_expr})"
             
             self.main_generator.c_code += f"    {left_c_code} = {init_c};\n"

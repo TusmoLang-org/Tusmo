@@ -12,6 +12,10 @@ class HelGenerator:
         if not varInfo:
             return
 
+        self.main_generator.used_features.add("io")  # Add io feature for hel_str
+        
+        if node.prompt:
+            self.main_generator.c_code += f'    printf("{node.prompt}");\n'
         
         if varInfo[1] == "eray": 
             self.main_generator.c_code += f'    {var_name} = hel_str();\n'

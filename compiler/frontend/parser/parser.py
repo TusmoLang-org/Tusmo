@@ -1,23 +1,24 @@
 import ply.yacc as yacc
+import sys
 from compiler.frontend.lexer.lexer import tokens, lexer
 from compiler.frontend.parser.grammar_rules import *
 
 
 
 def p_error(p):
-    # XALKA WAA KAN: Isticmaal 'p.lexer' halkii aad ka isticmaali lahayd 'parser.lexer'
     if p:
-        # Kiiska 1: Ciladdu waxay leedahay calaamad (token) gaar ah.
-        # Waxaan ka helaynaa magaca faylka 'lexer'-ka ku xiran calaamaddan.
         filename = getattr(p.lexer, 'filename', '<fayl aan la aqoon>')
-        print(f"Khalad Naxwe: Khalad Ayaa Laga Helay Faylkan '{filename}' saddarka {p.lineno}: Lama Aqooonsano '{p.value}'")
+        print(f"\n\033[1;31m[!] KHALAD NAXWE:\033[0m Erayga \033[1;31m'{p.value}'\033[0m lama aqoonsana halkan!")
+        print(f"\033[90m" + ("-" * 45) + "\033[0m")
+        print(f"\033[94mFaylka:\033[0m   {filename}")
+        print(f"\033[94mSaddarka:\033[0m {p.lineno}")
+        print(f"\033[1;35m// Naxwahaaga dib u eeg! '{p.value}' booskan ma qabanayo.\033[0m\n")
         sys.exit(1)
     else:
-        # Kiiska 2: Dhammaad fayl lama filaan ah. 'p' waa None.
-        # Halkan, waxaan isku dayeynaa inaan ka helno magaca faylka shayga 'lexer' ee caalamiga ah (global).
         filename = getattr(lexer, 'filename', '<fayl aan la aqoon>')
-        print(f"Khalad Naxwe: Waxaa Laga Helay Dhammaadka '{filename}':  faylkan")
+        print(f"\n\033[1;31m[!] KHALAD NAXWE:\033[0m Waxaa laga helay dhammaadka faylka \033[1;31m'{filename}'\033[0m meel aan laga filayn!")
+        print(f"\033[90m" + ("-" * 45) + "\033[0m")
+        print(f"\033[1;35m// Ma koodkaad kala bartay ka tagtay? Soo dhammaystir koodkaaga.\033[0m\n")
         sys.exit(1)
 
-# Build the parser
 parser = yacc.yacc(debug=True)

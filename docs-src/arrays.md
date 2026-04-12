@@ -1,4 +1,4 @@
-# Tixyada
+# Tixyada(Arrays)
 
 Tixyada Tusmo waxay isticmaalaan syntax-ka `tix:<nooca>`.
 
@@ -10,6 +10,15 @@ keyd:tix:eray erayo = ["foo", "bar", "baz"];
 keyd:tix:jajab jajabyo = [1.1, 2.2, 3.3];
 keyd:tix:miyaa calamo = [haa, maya, haa];
 keyd:tix:tiro eber = [];
+
+#tix dynamic ah
+keyd:tix collections = [12, 'a', "Somalia", 3.14, haa]
+
+
+// sida loo galiyo xog tixda
+tirooyin.gali(44);
+collections.gali(maya);
+tirooyin.kasaar()
 ```
 
 ## Helidda Xubnaha

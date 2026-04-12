@@ -6,13 +6,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Iterator
 from urllib.parse import urlparse
-
 from compiler.frontend.lexer.lexer import lexer
 from compiler.frontend.parser.ast_nodes import (
     ASTNode,
     ClassNode,
     FunctionNode,
     KeenNode,
+    IsticmaalNode,
     ParameterNode,
 )
 from compiler.frontend.parser.parser import parser
@@ -253,6 +253,8 @@ def _iter_keen_targets(ast_nodes: list[ASTNode]) -> Iterator[str]:
     for node in ast_nodes:
         if isinstance(node, KeenNode):
             yield node.filename
+        elif isinstance(node, IsticmaalNode):
+            yield node.module
 
 
 def _resolve_module_path(

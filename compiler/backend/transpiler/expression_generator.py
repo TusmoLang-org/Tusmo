@@ -5,14 +5,11 @@ from compiler.frontend.parser.ast_nodes import (
     CharNode, IdentifierNode, BinaryOpNode, FStringNode, BooleanNode,
     FunctionCallNode, ArrayAccessNode, ArrayTypeNode, MethodCallNode,
     ClassInstantiationNode, MemberAccessNode, ThisNode, WaalidNode, ArrayInitializationNode, ArrayTypeQueryNode,
-    ASTNode, CCallNode, DictionaryInitializationNode, FunctionTypeNode, NamedArgument, TypeLiteralNode
+    ASTNode, CCallNode, DictionaryInitializationNode, DictionaryAccessNode, FunctionTypeNode, NamedArgument, TypeLiteralNode
 )
 
+from compiler.backend.transpiler.expression_errors import *
 from compiler.midend.built_in_fn import functions_ as built_in_functions
-
-class Cilad(Exception):
-
-    pass
 class ExpressionGenerator:
     def __init__(self, main_generator):
         self.main_generator = main_generator
@@ -27,7 +24,7 @@ class ExpressionGenerator:
 
     def generate_expression(self, node):
         if not isinstance(node, ASTNode):
-            raise Cilad(f"Generator Error: generate_expression received '{type(node).__name__}' instead of an AST node")
+            raise Cilad(ERR_NOT_AST_NODE(type(node).__name__))
 
         if isinstance(node, NumberNode):
             return str(node.value)
@@ -59,6 +56,10 @@ class ExpressionGenerator:
             self.main_generator.used_features.add("dictionary")
             return self.main_generator.dictionary_generator.generate_initialization(node)
 
+        elif isinstance(node, DictionaryAccessNode):
+            self.main_generator.used_features.add("dictionary")
+            return self.main_generator.dictionary_generator.generate_access(node)
+
         # Consolidated Access Logic for [...] syntax
         elif isinstance(node, ArrayAccessNode):
             base_type = self.get_expression_type(node.array_name_node)
@@ -69,7 +70,9 @@ class ExpressionGenerator:
             # Case 1: It's a direct dictionary variable. Generate a get() call.
             if str(base_type) == 'qaamuus':
                 self.main_generator.used_features.add("dictionary")
-                return f"tusmo_qaamuus_get({base_expr_c}, {index_c})"
+                # Wrap dictionary variable in null check
+                safe_base = f"TUSMO_SAFE_ACCESS({base_expr_c}, \"{node.filename}\", {node.line})"
+                return f"tusmo_qaamuus_get({safe_base}, {index_c})"
 
             # Case 2: It's a value from a mixed array. Use tusmo_tix_mixed_get_nested for proper type-switching.
             elif str(base_type) == 'dynamic_value':
@@ -123,12 +126,13 @@ class ExpressionGenerator:
             
             # Build access string
             if depth == 0:
-                return f"{object_c}->{node.member_name}"
+                # Original access: {object_c}->{node.member_name}
+                # Wrapped: TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})->{node.member_name}
+                return f"TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})->{node.member_name}"
             else:
-                 parents = ".parent" * depth
-                 # object_c is pointer, so ->parent gives the first parent struct. 
-                 # subsequent parents are inside that struct, so .parent.
-                 return f"{object_c}->{parents[1:]}.{node.member_name}"
+                parents = ".parent" * depth
+                # Wrapped: TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})->{parents[1:]}.{node.member_name}
+                return f"TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})->{parents[1:]}.{node.member_name}"
                  
         elif isinstance(node, MethodCallNode):
             return self._generate_method_call(node)
@@ -139,7 +143,7 @@ class ExpressionGenerator:
         elif isinstance(node, TypeLiteralNode):
             return f'"{node.type_name}"'
         else:
-            raise Cilad(f"Generator Error: No C code generation logic for expression node '{type(node).__name__}'")
+            raise Cilad(ERR_NO_GEN_LOGIC(type(node).__name__))
 
     def _generate_array_initialization(self, node: ArrayInitializationNode):
         array_type = self.get_expression_type(node)
@@ -163,11 +167,77 @@ class ExpressionGenerator:
             
             if node.method_name == 'kasaar':
                 key_c = self.generate_expression(args[0])
-                return f"tusmo_qaamuus_delete({object_c}, {key_c})"
+                safe_object = f"TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})"
+                return f"tusmo_qaamuus_delete({safe_object}, {key_c})"
             
             if node.method_name == 'majiraa':
                 key_c = self.generate_expression(args[0])
-                return f"tusmo_qaamuus_has_key({object_c}, {key_c})"
+                safe_object = f"TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})"
+                return f"tusmo_qaamuus_has_key({safe_object}, {key_c})"
+        
+        # Handle string methods
+        if str(object_type) == 'eray':
+            self.main_generator.used_features.add("string")
+            object_c = self.generate_expression(node.object_node)
+            args = self._unwrap_args(getattr(node, "ordered_args", None), node.args_list)
+            safe_object = f"TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})"
+            
+            # XarafWeyn() - uppercase
+            if node.method_name == 'XarafWeyn':
+                return f"tusmo_str_upper({safe_object})"
+            
+            # XarafYar() - lowercase
+            if node.method_name == 'XarafYar':
+                return f"tusmo_str_lower({safe_object})"
+            
+            # kaReeb() - trim
+            if node.method_name == 'kaReeb':
+                return f"tusmo_str_trim({safe_object})"
+            
+            # Bkareeb() - left trim (trim start)
+            if node.method_name == 'Bkareeb':
+                return f"tusmo_str_ltrim({safe_object})"
+            
+            # Mkareeb() - right trim (trim end)
+            if node.method_name == 'Mkareeb':
+                return f"tusmo_str_rtrim({safe_object})"
+            
+            # kuBadal(old, new) - replace
+            if node.method_name == 'kuBadal':
+                if len(args) != 2:
+                    raise Cilad("kuBadal() waxay u baahan tahay 2 qayb (qadim, cusub)")
+                old_c = self.generate_expression(args[0])
+                new_c = self.generate_expression(args[1])
+                return f"tusmo_str_replace({safe_object}, {old_c}, {new_c})"
+            
+            # sooRaadi(substr) - find index
+            if node.method_name == 'sooRaadi':
+                if len(args) != 1:
+                    raise Cilad("sooRaadi() waxay u baahan tahay 1 qayb")
+                substr_c = self.generate_expression(args[0])
+                return f"tusmo_str_find({safe_object}, {substr_c})"
+            
+            # lagaHelay(substr) - contains check
+            if node.method_name == 'lagaHelay':
+                if len(args) != 1:
+                    raise Cilad("lagaHelay() waxay u baahan tahay 1 qayb")
+                substr_c = self.generate_expression(args[0])
+                return f"tusmo_str_contains({safe_object}, {substr_c})"
+            
+            # qaybi(delimiter) - split
+            if node.method_name == 'qaybi':
+                self.main_generator.used_features.add("array")  # qaybi returns tix:eray
+                if len(args) != 1:
+                    raise Cilad("qaybi() needs 1 argument (delimiter)")
+                delim_c = self.generate_expression(args[0])
+                return f"tusmo_str_split({safe_object}, {delim_c})"
+            
+            # Unknown string method - raise error
+            raise Cilad(f"Hawsha '{node.method_name}' ma ahan mid jirta oo ku shuban eray (string). Hawlgalaha erayga waa: XarafWeyn, XarafYar, kaReeb, Bkareeb, Mkareeb, kuBadal, sooRaadi, lagaHelay, qaybi")
+        
+        # Guard against NULL objects before method call
+        # object_c = self.generate_expression(node.object_node)
+        # However, for regular methods, we wrap cast_object_c which is used as 'kan'
         object_c = self.generate_expression(node.object_node)
         
         # Use recorded source class for name mangling
@@ -202,7 +272,9 @@ class ExpressionGenerator:
                     cast_object_c = f"&({object_c}->{parents[1:]})"
 
         args = self._unwrap_args(getattr(node, "ordered_args", None), node.args_list)
-        arg_exprs = [cast_object_c] + [self.generate_expression(arg) for arg in args]
+        # Wrap the 'kan' (first argument) in a null check
+        safe_kan = f"TUSMO_SAFE_ACCESS({cast_object_c}, \"{node.filename}\", {node.line})"
+        arg_exprs = [safe_kan] + [self.generate_expression(arg) for arg in args]
         return f"{mangled_name}({', '.join(arg_exprs)})"
 
     def _generate_binary_op(self, node):
@@ -210,10 +282,11 @@ class ExpressionGenerator:
         right_c = self.generate_expression(node.right)
         left_type = self.get_expression_type(node.left)
         right_type = self.get_expression_type(node.right)
-        if node.op == '+' and str(left_type) == 'eray':
+        if node.op == '+' and ('eray' in (str(left_type), str(right_type))):
             self.main_generator.used_features.add("string")
+            left_c_converted = self._ensure_string_operand(left_c, left_type)
             right_c_converted = self._ensure_string_operand(right_c, right_type)
-            return f"tusmo_concat_cstr({left_c}, {right_c_converted})"
+            return f"tusmo_concat_cstr({left_c_converted}, {right_c_converted})"
         if node.op in ('==', '!=') and ('eray' in (str(left_type), str(right_type))):
             self.main_generator.used_features.add("string")
             cmp = f"strcmp({left_c}, {right_c})"
@@ -223,7 +296,8 @@ class ExpressionGenerator:
                 return f"({cmp} != 0)"
         op_map = {'+': '+', '-': '-', '*': '*', '/': '/', '%': '%',
                   'iyo': '&&', 'ama': '||', '==': '==', '!=': '!=',
-                  '>': '>', '<': '<', '>=': '>=', '<=': '<='}
+                  '>': '>', '<': '<', '>=': '>=', '<=': '<=', '+=': '+=', '-=': '-=', '*=': '*=', '/=': '/=',
+                  'ahayn': '!', '!': '!'}  # Logical NOT
         
         # Handle Type Comparison (e.g., n == tiro)
         if node.op in ('==', '!='):
@@ -269,9 +343,16 @@ class ExpressionGenerator:
 
         c_op = op_map.get(node.op)
         if c_op:
+            if node.op == '/':
+                return f"TUSMO_SAFE_DIV({left_c}, {right_c}, \"{node.filename}\", {node.line})"
+            if node.op == '%':
+                return f"TUSMO_SAFE_MOD({left_c}, {right_c}, \"{node.filename}\", {node.line})"
+            # Handle unary NOT (ahayn and !) - only use right operand
+            if node.op == 'ahayn' or node.op == '!':
+                return f"(!{right_c})"
             return f"({left_c} {c_op} {right_c})"
         else:
-            raise Cilad(f"Generator Error: Hawl-wadeen aan la aqoon {node.op}")
+            raise Cilad(ERR_UNKNOWN_OP(node.op))
 
     def _generate_ternary_op(self, node):
         condition_c = self.generate_expression(node.condition)
@@ -331,6 +412,8 @@ class ExpressionGenerator:
             self.main_generator.used_features.add("websocket")
             self.main_generator.used_features.add("socket")  # WebSocket needs socket
             self.main_generator.used_features.add("dictionary")  # For decode_frame result
+        elif "tusmo_gl" in c_function_name:
+            self.main_generator.used_features.add("opengl")
         elif c_function_name in ["tusmo_sin", "tusmo_cos", "tusmo_sqrt", "tusmo_abs_d", 
                                   "tusmo_pow", "tusmo_floor", "tusmo_ceil", "tusmo_round"]:
             self.main_generator.used_features.add("math")
@@ -356,8 +439,12 @@ class ExpressionGenerator:
             return f'tusmo_str_format("%f", {expr_code})'
         if expr_type_str == 'miyaa':
             return f"(({expr_code}) ? \"run\" : \"been\")"
+        if expr_type_str == 'dynamic_value':
+            self.main_generator.used_features.add("conversion")
+            self.main_generator.used_features.add("string")
+            return f"tusmo_to_eray({expr_code})"
         
-        raise Cilad("F-string expressions must evaluate to 'eray', 'xaraf', 'tiro', 'jajab', or 'miyaa'.")
+        raise Cilad(ERR_FSTRING_TYPE())
 
     def _generate_function_call(self, node: FunctionCallNode):
         # Handle Type Casting Functions
@@ -365,7 +452,7 @@ class ExpressionGenerator:
             self.main_generator.used_features.add("conversion")
             args = self._unwrap_args(getattr(node, "ordered_args", None), node.params)
             if len(args) != 1:
-                raise Cilad(f"Khalad: Hawsha '{node.name}' waxay filaysaa 1 parameter, laakiin waxaa lasiiyay {len(args)}")
+                raise Cilad(ERR_CAST_ARG_COUNT(node.name, len(args)))
             
             arg_node = args[0]
             arg_c = self.generate_expression(arg_node)
@@ -391,7 +478,7 @@ class ExpressionGenerator:
                 self.main_generator.used_features.add(feature)
         if node.name == 'dherer':
             if len(node.params) != 1:
-                raise Cilad(f"Khalad: dherer Waxa uu filayaa kaliya 1 parameter, laakiin waxaa lasiiyay {len(node.params)} ")
+                raise Cilad(ERR_DHERER_ARG_COUNT(len(node.params)))
             arg_expr = self.generate_expression(node.params[0])
             arg_type = self.main_generator.semantic_checker.get_expression_type(node.params[0], skip_context_check=True)
             if str(arg_type) == 'eray':
@@ -399,16 +486,16 @@ class ExpressionGenerator:
             elif isinstance(arg_type, ArrayTypeNode):
                 return f"{arg_expr}->size"
             else:
-                raise Cilad(f"Generator Error: dherer does not support type {arg_type}")
+                raise Cilad(ERR_DHERER_TYPE(arg_type))
         if node.name == 'nooc':
             if len(node.params) != 1:
-                raise Cilad("Generator Error: nooc expects exactly 1 parameter")
+                raise Cilad(ERR_NOOC_ARG_COUNT())
             arg_node = node.params[0]
             # Special case: nooc(arr[]) asks for the element type of a tix.
             if isinstance(arg_node, ArrayTypeQueryNode):
                 base_type = self.main_generator.semantic_checker.get_expression_type(arg_node, skip_context_check=True)
                 if not isinstance(base_type, ArrayTypeNode):
-                    raise Cilad("Generator Error: nooc(arr[]) requires a tix variable.")
+                    raise Cilad(ERR_NOOC_TIX_QUERY())
                 self.main_generator.used_features.add("array")
                 elem_type = base_type.element_type
                 type_str = "tix:dynamic" if elem_type is None else f"tix:{elem_type}"
@@ -424,14 +511,28 @@ class ExpressionGenerator:
                 return f"tusmo_type_of({arg_expr})"
             type_str = str(arg_type)
             return f'"{type_str}"'
+        
+        # qor_tiro() - convert char to integer (ASCII value)
+        if node.name == 'qor_tiro':
+            if len(node.params) != 1:
+                raise Cilad("qor_tiro() waxay u baahan tahay 1 parameter (xaraf)")
+            arg_expr = self.generate_expression(node.params[0])
+            return f"(int)({arg_expr})"
+        
+        # qor_xaraf() - convert integer (ASCII) to char
+        if node.name == 'qor_xaraf':
+            if len(node.params) != 1:
+                raise Cilad("qor_xaraf() waxay u baahan tahay 1 parameter (tiro)")
+            arg_expr = self.generate_expression(node.params[0])
+            return f"(char)({arg_expr})"
         if node.name == 'tix_cayiman':
             self.main_generator.used_features.add("array")
-            raise Cilad("Generator Error: tix_cayiman can only be used in variable declarations or assignments.")
+            raise Cilad(ERR_TIX_CAYIMAN_USAGE())
         
         func_info = self.symbol_table.get(node.name)
         if not func_info:
             # This should have been caught by the semantic analyzer, but as a safeguard:
-            raise Cilad(f"hawashan '{node.name}' Ma ahan mid jirta.")
+            raise Cilad(ERR_FUNC_NOT_FOUND(node.name))
 
         # Check if it's a direct function call or an indirect call through a variable
         if isinstance(func_info[1], FunctionTypeNode):
@@ -457,7 +558,7 @@ class ExpressionGenerator:
                         arg_exprs.append(self.generate_expression(param.default_value))
                     else:
                         # This should also be caught by the semantic analyzer
-                        raise Cilad(f"Generator Error: Missing argument for parameter '{param.name}' with no default value.")
+                        raise Cilad(ERR_MISSING_PARAM(param.name))
 
             c_func_name = node.name
             return f"{c_func_name}({', '.join(arg_exprs)})"

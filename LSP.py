@@ -73,7 +73,11 @@ def hover(ls: TusmoLanguageServer, params: HoverParams) -> Optional[Hover]:
 
     doc_index = ls.doc_indices.get(params.text_document.uri)
     if not doc_index:
-        return None
+        # Build index on-demand in case hover arrives before didOpen/didChange finished.
+        _refresh_index(ls, params.text_document.uri)
+        doc_index = ls.doc_indices.get(params.text_document.uri)
+        if not doc_index:
+            return None
 
     entries: list[DocEntry] = []
     if qualified_symbol:
@@ -215,6 +219,16 @@ def _determine_search_roots(
 ) -> list[Path]:
     candidates: list[Path] = []
 
+    def add_builtin_stdlib() -> None:
+        """Ku dar stdlib-ga ku xiran server-ka (bundled) haddii uu jiro."""
+        here = Path(__file__).resolve().parent
+        bundled = here / "stdlib"
+        # Markii Tusmo lagu rakibo ~/.tusmo/bin/_internal/stdlib ayaa jira
+        alt = Path.home() / ".tusmo" / "bin" / "_internal" / "stdlib"
+        for path in (bundled, alt):
+            if path.exists():
+                candidates.append(path)
+
     def add_sets(base: Path) -> None:
         for name in ("lib", "stdlib", ".lib"):
             candidates.append(base / name)
@@ -229,6 +243,8 @@ def _determine_search_roots(
     if file_path:
         repo_root = file_path.parent
         add_sets(repo_root)
+
+    add_builtin_stdlib()
 
     uniq: list[Path] = []
     seen: set[str] = set()

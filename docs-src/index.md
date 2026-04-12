@@ -1,41 +1,70 @@
 ---
-title: Hoyga
+title: Tusmo Documentation
+description: Tusmo is a Somali static programming language that compiles to C for fast native binaries.
 ---
 
-# Documentation-ka Tusmo
+# Tusmo Language Documentation
 
-Ku soo dhowow Tusmo, luqad barnaamijka Soomaaliga ah!
+Tusmo waa **Somali programming language** oo loo dhisay in ay noqoto mid sahlan in la barto, balse awood leh marka la gaadho production.
 
-## Bilow Degdeg ah
+Tusmo language waxay isku darsatay:
+
+- Syntax Soomaali ah (`keyd`, `haddii`, `soco`, `koox`)
+- Static typing (type safety)
+- Compilation to C -> native binary (performance fiican)
+- Standard library ku habboon apps dhab ah (OS, HTTP, sockets, time, random)
+
+## Why Tusmo (Developer + Leadership View)
+
+Tusmo waxay ku habboon tahay kooxo raba:
+
+- In ay barnaamijyada ku qoraan Af-Soomaali si onboarding-ku u fududaado
+- In ay dhisaan software leh predictable performance
+- In ay helaan luqad waxbarasho + luqad shaqo oo isku mar ah
+- In ay yeeshaan ecosystem maxalli ah oo Somali developers ah
+
+## Quick Start
 
 ```bash
 # Install
 curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash
 
+```
+
+`hello.tus`:
+
+```tus
+qor("Hello, Somali Developers!");
+```
+
+```bash
 # Run
 tusmo hello.tus
 ```
 
-## Documentation
 
-- [Bilaabista](getting-started.md)
-- [Sida ay u shaqeyso](how-it-works.md)
-- [Doorsoomayaasha](variables.md)
-- [Erayada (Strings)](strings.md)
-- [Tixyada (Arrays)](arrays.md)
-- [Qaamuusyada (Dictionaries)](dictionaries.md)
-- [Xaaladaha (Conditions)](conditions.md)
-- [Wareegyada (Loops)](loops.md)
-- [Hawlaha (Functions)](functions.md)
-- [Kooxaha (Classes)](classes.md)
-- [Hawl-wadeennada (Operators)](operators.md)
-- [Maktabadda Caadiga ah (Standard Library)](stdlib.md)
+## Documentation Roadmap
 
-### Modules-ka Maktabadda
+- [Getting Started](getting-started.md)
+- [How Tusmo Works](how-it-works.md)
+- [Variables](variables.md)
+- [Strings](strings.md)
+- [Arrays](arrays.md)
+- [Dictionaries](dictionaries.md)
+- [Conditions](conditions.md)
+- [Loops](loops.md)
+- [Functions](functions.md)
+- [Classes](classes.md)
+- [Operators](operators.md)
+- [Standard Library](stdlib.md)
 
-- [Module-ka OS](stdlib-os.md)
-- [Module-ka Wakhti](stdlib-wakhti.md)
-- [Module-ka Nasiib](stdlib-nasiib.md)
-- [Module-ka Xiriiriye](stdlib-xiriiriye.md)
-- [Module-ka WebXiriiriye](stdlib-webxiriiriye.md)
-- [Module-ka HTTP](stdlib-http.md)
+## Standard Library Modules
+
+- [OS](stdlib-os.md)
+- [Wakhti (Time)](stdlib-wakhti.md)
+- [Nasiib (Random)](stdlib-nasiib.md)
+- [Xiriiriye (Sockets)](stdlib-xiriiriye.md)
+- [WebXiriiriye (WebSocket)](stdlib-webxiriiriye.md)
+- [HTTP](stdlib-http.md)
+
+

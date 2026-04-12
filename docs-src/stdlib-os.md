@@ -32,6 +32,7 @@ os.u_guur("/path/to/folder");
 ```
 
 **Halbeegyada:**
+
 - `folder` (eray) - Wadada loo guurayo
 
 ---
@@ -48,6 +49,7 @@ soco item kasta laga helo files {
 ```
 
 **Halbeegyada:**
+
 - `wadada` (eray) - Wadada directory-ga
 
 **Soo-celinta:** `tix:eray` - Tix ka kooban magacyada faylka/folder-ka
@@ -63,6 +65,7 @@ os.abuur_folder("myfolder");
 ```
 
 **Halbeegyada:**
+
 - `wadada` (eray) - Wadada la abuurayo
 
 ---
@@ -76,6 +79,7 @@ os.tirtir_folder("myfolder");
 ```
 
 **Halbeegyada:**
+
 - `wadada` (eray) - Wadada la tirtirayo
 
 ---
@@ -89,6 +93,7 @@ os.tirtir_fayl("file.txt");
 ```
 
 **Halbeegyada:**
+
 - `wadada` (eray) - Wadada faylka la tirtirayo
 
 ---
@@ -105,6 +110,7 @@ haddii (exists) {
 ```
 
 **Halbeegyada:**
+
 - `wadada` (eray) - Wadada la hubinayo
 
 **Soo-celinta:** `miyaa` - haa haddii uu jiro, maya haddii kale
@@ -120,6 +126,7 @@ keyd:miyaa isFile = os.fayl_miyaa("file.txt");
 ```
 
 **Halbeegyada:**
+
 - `wadada` (eray) - Wadada la hubinayo
 
 **Soo-celinta:** `miyaa` - haa haddii uu yahay fayl, maya haddii kale
@@ -135,6 +142,7 @@ keyd:miyaa isDir = os.folder_miyaa("folder");
 ```
 
 **Halbeegyada:**
+
 - `wadada` (eray) - Wadada la hubinayo
 
 **Soo-celinta:** `miyaa` - haa haddii uu yahay folder, maya haddii kale
@@ -143,7 +151,7 @@ keyd:miyaa isDir = os.folder_miyaa("folder");
 
 ### hel_deegaan(magac)
 
-Hel doorsoomaha deegaanka (environment variable).
+Hel Keydiyaha deegaanka (environment variable).
 
 ```tus
 keyd:eray path = os.hel_deegaan("PATH");
@@ -151,23 +159,25 @@ qor(path);
 ```
 
 **Halbeegyada:**
-- `magac` (eray) - Magaca doorsoomaha
 
-**Soo-celinta:** `eray` - Qiimaha doorsoomaha
+- `magac` (eray) - Magaca Keydiyaha
+
+**Soo-celinta:** `eray` - Qiimaha Keydiyaha
 
 ---
 
 ### deji_deegaan(magac, qiimo)
 
-Deji doorsoomaha deegaanka.
+Deji Keydiyaha deegaanka.
 
 ```tus
 os.deji_deegaan("MY_VAR", "hello");
 ```
 
 **Halbeegyada:**
-- `magac` (eray) - Magaca doorsoomaha
-- `qiimo` (eray) - Qiimaha doorsoomaha
+
+- `magac` (eray) - Magaca Keydiyaha
+- `qiimo` (eray) - Qiimaha Keydiyaha
 
 ---
 
@@ -180,6 +190,7 @@ keyd:tiro natiijo = os.fuli("ls -la");
 ```
 
 **Halbeegyada:**
+
 - `amar` (eray) - Amarka shell-ka
 
 **Soo-celinta:** `tiro` - Exit code
@@ -195,6 +206,7 @@ os.koobi("source.txt", "dest.txt");
 ```
 
 **Halbeegyada:**
+
 - `il` (eray) - Wadada faylka asalka ah
 - `meel` (eray) - Wadada meesha loo koobiyeynayo
 
@@ -219,6 +231,7 @@ os.u_dhaqaaji("old.txt", "new.txt");
 ```
 
 **Halbeegyada:**
+
 - `wadadii_hore` (eray) - Wadada hadda
 - `wadada_cusub` (eray) - Wadada cusub
 
@@ -234,6 +247,7 @@ qor(content);
 ```
 
 **Halbeegyada:**
+
 - `wadada` (eray) - Wadada faylka
 
 **Soo-celinta:** `eray` - Nuxurka faylka
@@ -253,6 +267,7 @@ os.qor_fayl("file.txt", " World", haa);
 ```
 
 **Halbeegyada:**
+
 - `wadada` (eray) - Wadada faylka
 - `nuxur` (eray) - Waxa la qorayo
 - `ku_dar` (miyaa) - haa haddii aad ku darayso, maya haddii aad dib u qorayso
@@ -269,6 +284,7 @@ qor(full);  // "folder/file.txt"
 ```
 
 **Halbeegyada:**
+
 - `qayb1` (eray) - Qaybta koowaad ee wadada
 - `qayb2` (eray) - Qaybta labaad ee wadada
 
@@ -286,6 +302,7 @@ qor("Baaxadda faylka: " + nooc(size));
 ```
 
 **Halbeegyada:**
+
 - `wadada` (eray) - Wadada faylka
 
 **Soo-celinta:** `tiro` - Baaxadda faylka oo byte ah

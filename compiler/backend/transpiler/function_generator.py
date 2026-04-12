@@ -63,10 +63,13 @@ class FunctionGenerator:
             self.symbol_table.set(param.name, param.param_type)
 
         original_c_code_buffer = self.main_generator.c_code
+        original_inside_function = self.main_generator.inside_function
+        self.main_generator.inside_function = True
         self.main_generator.c_code = ""  # Clear buffer for this function's body
         self.main_generator._generate_node(node.body)
         function_body_code = self.main_generator.c_code
         self.main_generator.c_code = original_c_code_buffer # Restore original buffer
+        self.main_generator.inside_function = original_inside_function
 
         self.symbol_table.pop_scope()
 

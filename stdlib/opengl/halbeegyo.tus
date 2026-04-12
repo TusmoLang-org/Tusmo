@@ -1,0 +1,18 @@
+// stdlib/opengl/halbeegyo.tus
+
+// --- Noocyada Sawirka (Drawing Primitives) ---
+
+keyd:tiro DHIBCO = 0;
+keyd:tiro XARIIQYAAL = 1;
+keyd:tiro SADDEX_GEES = 4;
+keyd:tiro AFAR_GEES = 7;
+
+// --- Xusuusta Shaashadda (Buffer Bits) ---
+
+keyd:tiro XUSUUSTA_MIDABKA = 16384;
+keyd:tiro XUSUUSTA_DHUMUCDA = 256;
+
+// --- Matrix Modes ---
+
+keyd:tiro ARAGGA = 5889;
+keyd:tiro MUUQAALKA = 5888;

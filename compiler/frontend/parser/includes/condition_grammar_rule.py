@@ -1,5 +1,4 @@
 # condition_grammar_rule.py (La cusboonaysiiyay)
-
 from compiler.frontend.parser.ast_nodes import IfNode
 
 def p_condition_statement(p):

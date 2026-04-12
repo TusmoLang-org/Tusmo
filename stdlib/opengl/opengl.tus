@@ -1,0 +1,98 @@
+// stdlib/opengl/opengl.tus
+
+keen "core";
+keen "halbeegyo";
+
+koox Daaqad {
+    """Kooxda Daaqad waxay maamushaa furitaanka iyo socodka daaqadda ciyaarta."""
+
+    dhis() : waxbo {}
+
+    hawl fur(ballac: tiro, dheer: tiro, cinwaan: eray) : miyaa {
+        haddii (bilow_nidaamka() == maya) {
+            soo_celi been;
+        }
+        soo_celi sameey_daaqad(ballac, dheer, cinwaan);
+    }
+
+    hawl ma_socotaa() : miyaa {
+        soo_celi miyey_xirmaysaa() == maya;
+    }
+
+    hawl muuji() : waxbo {
+        soo_muuji();
+    }
+
+    hawl hubi() : waxbo {
+        hubi_dhacdooyinka();
+    }
+
+    hawl xir() : waxbo {
+        xir_nidaamka();
+    }
+}
+
+koox Sawire {
+    """Kooxda Sawire waxay maamushaa sawiridda leydiyada iyo midabaynta."""
+
+    dhis() : waxbo {}
+
+    hawl midabka_masaxida(r: jajab, g: jajab, b: jajab, a: jajab) : waxbo {
+        midabka_masaxida(r, g, b, a);
+    }
+
+    hawl nadiifi(xusuusta: tiro) : waxbo {
+        nadiifi(xusuusta);
+    }
+
+    hawl diyaar_2d(ballac: jajab, dheer: jajab) : waxbo {
+        """U diyaari shaashadda in lagu sawiro pixels (2D Mode)."""
+        hab_matrix(ARAGGA);
+        dib_u_deji();
+        hab_ortho(0.0, ballac, dheer, 0.0, -1.0, 1.0);
+        hab_matrix(MUUQAALKA);
+        dib_u_deji();
+    }
+
+    hawl leydi(x: jajab, y: jajab, w: jajab, h: jajab, r: jajab, g: jajab, b: jajab) : waxbo {
+        """Sawir leydi buuxa (Rectangle)."""
+        midab(r, g, b);
+        bilow(AFAR_GEES);
+            bar_2d(x, y);
+            bar_2d(x + w, y);
+            bar_2d(x + w, y + h);
+            bar_2d(x, y + h);
+        dhameey();
+    }
+
+    hawl midab(r: jajab, g: jajab, b: jajab) : waxbo {
+        midab(r, g, b);
+    }
+
+    hawl dib_u_deji() : waxbo {
+        dib_u_deji();
+    }
+}
+
+koox Jiir {
+    """Kooxda Jiir waxay maamushaa dhaqdhaqaaqa iyo riixista mouse-ka."""
+    keyd:tiro BIDIX;
+    keyd:tiro MIDIG;
+
+    dhis() : waxbo {
+        kan.BIDIX = 0;
+        kan.MIDIG = 1;
+    }
+
+    hawl x() : jajab {
+        soo_celi jiir_x();
+    }
+
+    hawl y() : jajab {
+        soo_celi jiir_y();
+    }
+
+    hawl ma_riixan_yahay(badhan: tiro) : miyaa {
+        soo_celi jiir_ma_riixan_yahay(badhan);
+    }
+}

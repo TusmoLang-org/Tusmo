@@ -15,25 +15,9 @@ _DOCSTRING_PATTERN = re.compile(
 
 def preprocess_docstrings(source: str) -> str:
     """
-    Replace lines of the form `    :text goes here:` with
-    string-literal statements so the parser treats them like
-    Python-style docstrings.
+    No-op: Docstrings are now handled directly by the parser.
     """
-
-    def _escape(text: str) -> str:
-        return (
-            text.replace("\\", "\\\\")
-            .replace('"', '\\"')
-            .replace("\n", "\\n")
-        )
-
-    def repl(match: re.Match) -> str:
-        indent = match.group(1)
-        text = match.group(2)
-        escaped = _escape(text)
-        return f'{indent}"{escaped}";\n'
-
-    return _DOCSTRING_PATTERN.sub(repl, source)
+    return source
 
 
 def attach_docstrings(ast):

@@ -59,3 +59,4 @@ The bundled release includes everything needed - no external dependencies requir
 - [Xiriiriye Module](stdlib-xiriiriye) - TCP socket programming
 - [WebXiriiriye Module](stdlib-webxiriiriye) - WebSocket support
 - [HTTP Module](stdlib-http) - HTTP server and requests
+- [OpenGL Module](stdlib-opengl) - 2D/3D graphics and games

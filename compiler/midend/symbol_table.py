@@ -25,7 +25,7 @@ class SymbolTable:
         if len(self.scopes) > 1:  # Keep global scope
             self.scopes.pop()
         else:
-            raise Exception("Cannot pop global scope")
+            raise Exception("\033[1;31m[!] KHAlAD:\033[0m Ma banaan in la'pop-garayo global scope!")
 
     # ---------------- Variable Management ----------------
     def set(self, name: str, var_type: str, value: Any = None, return_type: Optional[str] = None) -> None:
@@ -39,7 +39,10 @@ class SymbolTable:
         Set variable in global scope.
         """
         if self.exists_in_global_scope(name):
-            raise Exception(f"Khalad: '{name}' hore ayaa loo qeexay global scope.")
+            raise Exception(f"""\033[1;31m[!] KHAlAD:\033[0m Keydiyaha '{name}' hore ayaa loo qeexay global scope.
+                    
+        \033[1;31m keyd:tiro {name} = 1; \033[1;35m // Magacan hore ayaa loo isticmaalay global-ka
+        \033[1;32m keyd:tiro magac_kale = 1; \033[1;35m // isticmaal magac cusub""")
         self.scopes[0][name] = (value, var_type, return_type)
 
     def get(self, name: str) -> Optional[Tuple[Any, str, Optional[str]]]:

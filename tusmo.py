@@ -18,6 +18,7 @@ from compiler.frontend.parser.parser import parser
 from compiler.backend.transpiler import Transpiler
 from compiler.midend.symbol_table import SymbolTable
 from compiler.midend.semanticanalyzer import SemanticChecker, SemanticError
+from compiler.frontend.parser.ast_nodes import Xidid
 from compiler.processer import process_imports
 from compiler.midend.fstring_resolver import resolve_fstrings
 from compiler.midend.docstring_utils import (
@@ -26,17 +27,9 @@ from compiler.midend.docstring_utils import (
 )
 
 
-LOCAL_VERSION = "0.0.54"
+LOCAL_VERSION = "0.0.5"
 REPO_URL = "https://api.github.com/repos/TusmoLang-org/Tusmo/releases/latest"
 
-
-def _normalize_arch(raw_arch: str) -> str:
-    arch = (raw_arch or "").lower()
-    if arch in ("x86_64", "amd64"):
-        return "x64"
-    if arch in ("aarch64", "arm64"):
-        return "arm64"
-    return arch or "unknown"
 
 
 def _platform_key(os_type: str) -> str:
@@ -47,15 +40,6 @@ def _platform_key(os_type: str) -> str:
     return "linux"
 
 
-def _collect_static_lib_paths(root_dir: str, static_ext: str) -> list[str]:
-    libs: list[str] = []
-    if not os.path.exists(root_dir):
-        return libs
-    for root, _, files in os.walk(root_dir):
-        for file in files:
-            if file.endswith(static_ext):
-                libs.append(os.path.join(root, file))
-    return libs
 
 def help(command=None):
     if command in ["-h", "--help", "-c", "--caawimaad"]:
@@ -265,6 +249,34 @@ def list_libraries(command=None):
         sys.exit(0)
    
 
+def get_static_lib():
+    flags = []
+    for lib in Xidid.dhamaan_xogta:
+        file_name = lib
+        os_type = platform.system()
+        os_name = _platform_key(os_type)
+
+        # Waa inaad variable-ka dib u qeexdaa (re-assign)
+        if os_name == "windows":
+            if not file_name.endswith(".lib"):
+                file_name = file_name + ".lib"
+        else: # linux ama macos
+            if not file_name.endswith(".a"):
+                file_name = file_name + ".a"
+        
+        # Hubi in faylku dhab ahaan u jiro ka hor intaanan ku darin flags
+        if os.path.exists(file_name):
+            flags.append(f'"{file_name}"')
+        else:
+            # Haddii uusan jirin waddada tooska ah, isku day inaad ka raadiso .lib/
+            alt_path = os.path.join(".lib", file_name)
+            if os.path.exists(alt_path):
+                flags.append(f'"{alt_path}"')
+            else:
+                # Haddii wali la waayo, iska daa saas (GCC ayaa error soo saari doona)
+                flags.append(f'"{file_name}"')
+                
+    return " ".join(flags)
 
 def main():
     remove_c_code = True
@@ -292,29 +304,7 @@ def main():
     project_root = script_directory
     runtime_dir = os.path.join(project_root, "runtime")
     stdlib_dir = os.path.join(project_root, "stdlib")
-
-
-# --- QAYBTA CUSUB: C-INTERFACE (STATIC LIBS & HEADERS) ---
-    os_type = platform.system()
     
-    # Extension-ka saxda ah ee library-ga C
-    static_ext = ".a" if os_type != "Windows" else ".lib"
-    
-    # Folder-ka kaliya ee aan u aqoonsanray dunida C
-    c_bridge_folder = os.path.join(os.getcwd(), ".include")
-    
-    c_static_libs = []
-    c_include_flag = ""
-
-    if os.path.exists(c_bridge_folder):
-        # 1. Ku dar folder-ka liiska "Include Path" ee GCC
-        c_include_flag = f' -I"{c_bridge_folder}"'
-        
-        # 2. Si recursive ah u raadi dhammaan .a ama .lib files
-        for full_path in _collect_static_lib_paths(c_bridge_folder, static_ext):
-            c_static_libs.append(f'"{full_path}"')
-    
-    c_libs_str = " ".join(c_static_libs)
 
 
     # Map features to their source files
@@ -353,48 +343,12 @@ def main():
 
         if not final_ast:
             sys.exit(0)
-
-        # Resolve OS and Architecture for linking
-        os_name = _platform_key(os_type)
-        arch_name = _normalize_arch(platform.machine())
-        static_ext = ".a" if os_type != "Windows" else ".lib"
-
-        # Dynamic Linker Flags and Feature Detection
-        dynamic_include_flags = []
-        dynamic_static_libs = []
-        dynamic_lib_paths = []
+            
         used_features = set()
-
-        for file_path in all_imported_files:
-            if "opengl" in file_path:
-                used_features.add("opengl")
-
-            module_dir = os.path.dirname(file_path)
-            include_root = os.path.join(module_dir, ".include")
-            platform_arch_root = os.path.join(include_root, os_name, arch_name)
-
-            if os.path.exists(platform_arch_root):
-                inc_path = os.path.join(platform_arch_root, "include")
-                lib_path = os.path.join(platform_arch_root, "lib")
-
-                if os.path.exists(inc_path):
-                    dynamic_include_flags.append(f' -I"{inc_path}"')
-
-                if os.path.exists(lib_path):
-                    dynamic_lib_paths.append(f' -L"{lib_path}"')
-                    for lib_file in _collect_static_lib_paths(lib_path, static_ext):
-                        dynamic_static_libs.append(f'"{lib_file}"')
-
-        dynamic_inc_str = "".join(dynamic_include_flags)
-        dynamic_libs_str = " ".join(dynamic_static_libs)
-        dynamic_lib_path_str = "".join(dynamic_lib_paths)
-
         resolve_fstrings(final_ast)
         attach_docstrings(final_ast)
-
         checker = SemanticChecker(shared_symbol_table)
         checker.check(final_ast)
-
         # Pass the 'checker' instance and detected features to the Transpiler
         transpiler = Transpiler(shared_symbol_table, checker)
         # Merge detected features with transpiler features
@@ -432,25 +386,17 @@ def main():
 
         include_flag = f'-I"{include_override}"' if include_override else f'-I"{runtime_dir}"'
         lib_flag = f' -L"{lib_dir_override}"' if lib_dir_override else ""
-
         math_flag = " -lm" if "math" in used_features else ""
 
-        # Extra Linker Flags for OpenGL (Legacy fallback or manual overrides)
-        opengl_flag = ""
-        if "opengl" in used_features:
-            if os_type == "Windows":
-                opengl_flag = " -lglfw3 -lopengl32 -lgdi32"
-            elif os_type == "Darwin":
-                opengl_flag = " -lglfw -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo"
-            else:
-                opengl_flag = " -lglfw -lGL -ldl -lpthread -lX11 -lXrandr -lXi -lXxf86vm -lXinerama -lXcursor"
+        
 
-        # Final Compilation Command
         compile_command = (
             f'"{cc}" -O3 -march=native -flto -o "{binary}" '
-            f'{all_sources_str} {c_libs_str} {dynamic_libs_str} '      # static libs
-            f'{include_flag} {c_include_flag} {dynamic_inc_str} '      # include paths
-            f'{lib_flag} {dynamic_lib_path_str} -lgc {math_flag} {opengl_flag}' # system libs
+            f'{all_sources_str} '
+            f'{include_flag} '
+            # Halkan hoose ayaa isbeddelka lagu sameeyay:
+            f'{get_static_lib()} ' 
+            f'{lib_flag}  {math_flag}'
         )
         compile_result = os.system(compile_command)
 

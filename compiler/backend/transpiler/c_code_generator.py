@@ -115,7 +115,6 @@ class CCodeGenerator:
             f"{self.global_declarations}"
             f"{self.function_definitions}"
             f"int main(void) {{\n"
-            f"    GC_INIT();\n"
             f"{self.c_code}"
             f"    return 0;\n"
             f"}}\n"
@@ -140,6 +139,9 @@ class CCodeGenerator:
         if isinstance(node, ExpressionNode):
             expr_c = self.expr_generator.generate_expression(node)
             self.c_code += f"    {expr_c};\n"
+        elif isinstance(node, Xidid):
+            pass
+        
         else:
             print(f"\033[1;33m[!] DIGNIIN:\033[0m Ma jiro hab-turjun loogu talagalay nooca '{type(node).__name__}'")
             print(f"\033[90m" + ("-" * 35) + "\033[0m")

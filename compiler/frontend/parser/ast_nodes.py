@@ -257,11 +257,12 @@ class DoWhileNode(ASTNode):
 
 class ForRangeNode(ASTNode):
     """Kani waxa uu matali donaa  'soco identifier laga bilaawo' oo leh xadka, tusaale ahaan: soco i laga bilaabo 0..10 { qor(i) }"""
-    def __init__(self, line, iterator_var_name, start_expr, end_expr, body, filename):
+    def __init__(self, line, iterator_var_name, start_expr, end_expr,  body, filename, increase=True):
         super().__init__(line, filename)
         self.iterator_var_name = iterator_var_name
         self.start_expr = start_expr
         self.end_expr = end_expr
+        self.increase = increase
         self.body = body
 
 class ForEachNode(ASTNode):
@@ -364,3 +365,22 @@ class DictionaryAssignmentNode(ASTNode):
         super().__init__(line, filename)
         self.dictionary_access_node = dictionary_access_node
         self.value_node = value_node
+
+
+
+class Xidid(ASTNode):
+    '''Xidid waa linker haddhoo ku xiriirin doono c static files-ka uu ugudbin doono gcc-ga'''
+    dhamaan_xogta = []
+    def __init__(self, aqoonsi):
+        self.aqoonsi = aqoonsi
+        Xidid.dhamaan_xogta.append(aqoonsi)
+
+
+
+class WaxboNode(ExpressionNode):
+    """Kani waxa uu matali donaa qiimaha 'waxbo' (NULL) ee luqadda Tusmo."""
+    def __init__(self, line, filename):
+        super().__init__(line, filename)
+
+    def __str__(self):
+        return "waxbo"

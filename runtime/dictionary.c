@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdio.h>
 #include "tusmo_runtime.h"
-#include <gc.h>
 
 #define QAAMUUS_INITIAL_CAPACITY 16
 
@@ -19,10 +18,10 @@ static unsigned long hash_key(const char* key) {
 }
 
 TusmoQaamuus* tusmo_qaamuus_create() {
-    TusmoQaamuus* qaamuus = (TusmoQaamuus*)GC_MALLOC(sizeof(TusmoQaamuus));
+    TusmoQaamuus* qaamuus = (TusmoQaamuus*)malloc(sizeof(TusmoQaamuus));
     qaamuus->capacity = QAAMUUS_INITIAL_CAPACITY;
     qaamuus->count = 0;
-    qaamuus->entries = (TusmoQaamuusEntry**)GC_MALLOC(sizeof(TusmoQaamuusEntry*) * qaamuus->capacity);
+    qaamuus->entries = (TusmoQaamuusEntry**)malloc(sizeof(TusmoQaamuusEntry*) * qaamuus->capacity);
     for (size_t i = 0; i < qaamuus->capacity; i++) {
         qaamuus->entries[i] = NULL;
     }
@@ -33,7 +32,7 @@ static void tusmo_qaamuus_resize(TusmoQaamuus* qaamuus) {
     if (qaamuus->count < qaamuus->capacity * 0.75) return;
 
     size_t new_capacity = qaamuus->capacity * 2;
-    TusmoQaamuusEntry** new_entries = (TusmoQaamuusEntry**)GC_MALLOC(sizeof(TusmoQaamuusEntry*) * new_capacity);
+    TusmoQaamuusEntry** new_entries = (TusmoQaamuusEntry**)malloc(sizeof(TusmoQaamuusEntry*) * new_capacity);
     for (size_t i = 0; i < new_capacity; i++) new_entries[i] = NULL;
 
     for (size_t i = 0; i < qaamuus->capacity; i++) {
@@ -64,8 +63,8 @@ void tusmo_qaamuus_set(TusmoQaamuus* qaamuus, const char* key, TusmoValue value)
         entry = entry->next;
     }
 
-    TusmoQaamuusEntry* new_entry = (TusmoQaamuusEntry*)GC_MALLOC(sizeof(TusmoQaamuusEntry));
-    new_entry->key = (char*)GC_MALLOC(strlen(key) + 1);
+    TusmoQaamuusEntry* new_entry = (TusmoQaamuusEntry*)malloc(sizeof(TusmoQaamuusEntry));
+    new_entry->key = (char*)malloc(strlen(key) + 1);
     strcpy(new_entry->key, key);
     new_entry->value = value;
     new_entry->next = qaamuus->entries[index];
@@ -144,3 +143,19 @@ bool tusmo_qaamuus_has_key(TusmoQaamuus* qaamuus, const char* key) {
     return false;
 }
 
+
+void tusmo_free_qaamuus(TusmoQaamuus* q) {
+    if (!q) return;
+    for (size_t i = 0; i < q->capacity; i++) {
+        TusmoQaamuusEntry* entry = q->entries[i];
+        while (entry) {
+            TusmoQaamuusEntry* next = entry->next;
+            // Note: In a full implementation, we'd also free the keys and values
+            // based on their type. For now, we free the entry itself.
+            free(entry);
+            entry = next;
+        }
+    }
+    free(q->entries);
+    free(q);
+}

@@ -36,6 +36,7 @@ class CCodeGenerator:
         self.inside_function = False
         self.used_features = used_features
         self.embedded_c_chunks = []
+        self.statement_cleanups_stack = []
 
         self.expr_generator = ExpressionGenerator(self)
         self.function_generator = FunctionGenerator(self, self.expr_generator)
@@ -79,12 +80,26 @@ class CCodeGenerator:
             return f"{return_type} (*)({', '.join(param_types)})"
         if isinstance(tusmo_type, ArrayTypeNode):
             return self.array_generator.get_c_type_from_tusmo_type(tusmo_type)
+
+        t_str = str(tusmo_type).strip()
+        if t_str == 'tiro': return 'int'
+        if t_str == 'jajab': return 'double'
+        if t_str == 'eray': return 'char*'
+        if t_str == 'xaraf': return 'char'
+        if t_str == 'miyaa': return 'bool'
+        if t_str == 'waxbo': return 'void'
+
         if isinstance(tusmo_type, str):
             type_info = self.symbol_table.get(tusmo_type)
-            if type_info and type_info[1] == 'class_definition':
-                return f"{tusmo_type}*"
-            type_map = self.array_generator.get_c_type_map()
-            return type_map.get(tusmo_type, "void*")
+            if type_info:
+                if type_info[1] == 'class_definition':
+                    return f"{tusmo_type}*"
+                if type_info[1] == 'struct_definition':
+                    return tusmo_type
+                if type_info[1] == 'c_type':
+                    return tusmo_type
+
+        # Fallback
         return "void*"
 
     def generate(self, ast):
@@ -108,6 +123,13 @@ class CCodeGenerator:
                     body += "\n"
                 embedded_bodies.append(f"{comment}{body}")
             embedded_section = "".join(embedded_bodies) + "\n"
+        cleanup_code = ""
+        global_cleanup = getattr(self.semantic_checker, 'global_cleanup', [])
+        for var in global_cleanup:
+            name = var['name']
+            free_fn = var.get('free_fn', 'free')
+            cleanup_code += f"    if ({name}) {free_fn}({name});\n"
+            
         final_c_code = (
             f"{header_include}"
             f"{embedded_section}"
@@ -116,6 +138,7 @@ class CCodeGenerator:
             f"{self.function_definitions}"
             f"int main(void) {{\n"
             f"{self.c_code}"
+            f"{cleanup_code}"
             f"    return 0;\n"
             f"}}\n"
         )
@@ -130,6 +153,22 @@ class CCodeGenerator:
             self._generate_classnode(node)
         elif isinstance(node, FunctionNode):
             self._generate_functionnode(node)
+        elif isinstance(node, QeexNode):
+            val_c = self.expr_generator.generate_expression(node.value)
+            self.global_declarations += f"#define {node.name} {val_c}\n"
+        elif isinstance(node, QaabNode):
+            struct_code = f"typedef struct {{\n"
+            for member in node.members:
+                c_type = self._map_type(member.var_type)
+                struct_code += f"    {c_type} {member.var_name};\n"
+            struct_code += f"}} {node.name};\n\n"
+            self.global_declarations += struct_code
+        elif isinstance(node, EmbeddedCNode):
+            # If inside a function, put in c_code. Else, put in global_declarations.
+            if self.inside_function:
+                self.c_code += f"    {node.code}\n"
+            else:
+                self.global_declarations += f"{node.code}\n"
         else:
             method_name = f"_generate_{type(node).__name__.lower()}"
             method = getattr(self, method_name, self._unhandled_node)
@@ -150,6 +189,27 @@ class CCodeGenerator:
         self.class_generator.generate(node)
     def _generate_functionnode(self, node: FunctionNode):
         self.function_generator.generate(node)
+
+    def _map_type(self, tusmo_type):
+        """Map Tusmo types to C types."""
+        t_str = str(tusmo_type).strip()
+        if t_str == 'tiro': return 'int'
+        if t_str == 'jajab': return 'double'
+        if t_str == 'eray': return 'char*'
+        if t_str == 'xaraf': return 'char'
+        if t_str == 'miyaa': return 'bool'
+        if t_str == 'waxbo': return 'void'
+        
+        # Check symbol table for Tusmo-defined and explicitly-declared C types.
+        info = self.symbol_table.get(t_str)
+        if info and info[1] == 'struct_definition':
+            return t_str # Use the struct name directly (Value Type)
+        if info and info[1] == 'class_definition':
+            return f"{t_str}*"
+        if info and info[1] == 'c_type':
+            return t_str
+            
+        return "void*"
     
     def _generate_keydnode(self, node: KeydNode):
         self.keyd_generator.generate(node)
@@ -177,8 +237,21 @@ class CCodeGenerator:
         self.used_features.add("dictionary")
         self.dictionary_generator.generate_assignment(node)
     def _generate_breaknode(self, node: BreakNode):
+        cleanup_code = ""
+        for var in getattr(node, 'active_cleanup', []):
+            name = var['name']
+            free_fn = var.get('free_fn', 'free')
+            cleanup_code += f"    if ({name}) {free_fn}({name});\n"
+        self.c_code += cleanup_code
         self.c_code += "    break;\n"
+        
     def _generate_continuenode(self, node: ContinueNode):
+        cleanup_code = ""
+        for var in getattr(node, 'active_cleanup', []):
+            name = var['name']
+            free_fn = var.get('free_fn', 'free')
+            cleanup_code += f"    if ({name}) {free_fn}({name});\n"
+        self.c_code += cleanup_code
         self.c_code += "    continue;\n"
     def _generate_embeddedcnode(self, node: EmbeddedCNode):
         self.embedded_c_chunks.append((node.code, node))

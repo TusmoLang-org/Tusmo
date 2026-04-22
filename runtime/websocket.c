@@ -150,7 +150,7 @@ static const char base64_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqr
 
 static char* base64_encode(const uint8_t* data, size_t input_length) {
     size_t output_length = 4 * ((input_length + 2) / 3);
-    char* encoded = (char*)GC_MALLOC(output_length + 1);
+    char* encoded = (char*)malloc(output_length + 1);
     
     if (!encoded) return NULL;
 
@@ -188,7 +188,7 @@ char* tusmo_ws_generate_accept_key(const char* client_key) {
     // Concatenate client key with magic string
     size_t key_len = strlen(client_key);
     size_t magic_len = strlen(WS_MAGIC_STRING);
-    char* combined = (char*)GC_MALLOC(key_len + magic_len + 1);
+    char* combined = (char*)malloc(key_len + magic_len + 1);
     strcpy(combined, client_key);
     strcat(combined, WS_MAGIC_STRING);
 
@@ -244,7 +244,7 @@ char* tusmo_ws_encode_frame(uint8_t opcode, const char* payload, size_t payload_
     // Add masking key if needed
     if (mask) frame_size += 4;
 
-    uint8_t* frame = (uint8_t*)GC_MALLOC(frame_size);
+    uint8_t* frame = (uint8_t*)malloc(frame_size);
     size_t pos = 0;
 
     // Byte 0: FIN + opcode
@@ -343,7 +343,7 @@ TusmoQaamuus* tusmo_ws_decode_frame(const char* socket_handle) {
             apply_mask((uint8_t*)payload, payload_len, mask);
         }
     } else {
-        payload = (char*)GC_MALLOC(1);
+        payload = (char*)malloc(1);
         payload[0] = '\0';
     }
 

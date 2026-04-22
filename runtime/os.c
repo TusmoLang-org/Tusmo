@@ -9,7 +9,7 @@
 
 // Get current working directory
 char* tusmo_os_cwd() {
-    char* buf = (char*)GC_MALLOC(1024 * sizeof(char));
+    char* buf = (char*)malloc(1024 * sizeof(char));
     if (getcwd(buf, 1024) != NULL) {
         return buf;
     } else {
@@ -136,7 +136,7 @@ char* tusmo_os_read_file(char* path) {
     long fsize = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
-    char* content = (char*)GC_MALLOC(fsize + 1);
+    char* content = (char*)malloc(fsize + 1);
     fread(content, 1, fsize, fp);
     fclose(fp);
     content[fsize] = 0;
@@ -160,7 +160,7 @@ char* tusmo_os_path_join(char* part1, char* part2) {
     // More robust implementation would handle these cases
     size_t len1 = strlen(part1);
     size_t len2 = strlen(part2);
-    char* result = (char*)GC_MALLOC(len1 + len2 + 2); // +1 for /, +1 for null terminator
+    char* result = (char*)malloc(len1 + len2 + 2); // +1 for /, +1 for null terminator
     strcpy(result, part1);
     if (result[len1 - 1] != '/' && part2[0] != '/') {
         strcat(result, "/");

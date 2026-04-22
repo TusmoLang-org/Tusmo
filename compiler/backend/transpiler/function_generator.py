@@ -67,7 +67,27 @@ class FunctionGenerator:
         self.main_generator.inside_function = True
         self.main_generator.c_code = ""  # Clear buffer for this function's body
         self.main_generator._generate_node(node.body)
-        function_body_code = self.main_generator.c_code
+        
+        # --- NEW: Inject Cleanup (free) code ---
+        cleanup_code = ""
+        cleanup_vars = getattr(node, 'cleanup_vars', [])
+        
+        # Identify the variable being returned (if any) to skip its cleanup
+        returned_var = None
+        if isinstance(node.body, list):
+            for stmt in node.body:
+                if isinstance(stmt, ReturnStatementNode) and isinstance(stmt.expression, IdentifierNode):
+                    returned_var = stmt.expression.name
+
+        for var in cleanup_vars:
+            name = var['name']
+            free_fn = var.get('free_fn', 'free')
+            if name == returned_var:
+                continue # Skip: ownership moved to caller
+            
+            cleanup_code += f"    if ({name}) {free_fn}({name});\n"
+
+        function_body_code = self.main_generator.c_code + cleanup_code
         self.main_generator.c_code = original_c_code_buffer # Restore original buffer
         self.main_generator.inside_function = original_inside_function
 

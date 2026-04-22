@@ -258,11 +258,18 @@ def get_static_lib():
 
         # Waa inaad variable-ka dib u qeexdaa (re-assign)
         if os_name == "windows":
-            if not file_name.endswith(".lib"):
-                file_name = file_name + ".lib"
-        else: # linux ama macos
-            if not file_name.endswith(".a"):
-                file_name = file_name + ".a"
+            if file_name.endswith(".maya"):
+                file_name = file_name.removesuffix(".maya")
+            elif not file_name.endswith(".lib"):
+                file_name += ".lib"
+
+        else:  # linux or macos
+            if file_name.endswith(".maya"):
+                file_name = file_name.removesuffix(".maya")
+            elif not file_name.endswith(".a"):
+                file_name += ".a"
+            
+
         
         # Hubi in faylku dhab ahaan u jiro ka hor intaanan ku darin flags
         if os.path.exists(file_name):
@@ -398,6 +405,7 @@ def main():
             f'{get_static_lib()} ' 
             f'{lib_flag}  {math_flag}'
         )
+        print(f"This is compiler command {compile_command}")
         compile_result = os.system(compile_command)
 
         if compile_result == 1:

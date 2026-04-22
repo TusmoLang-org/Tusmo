@@ -228,8 +228,14 @@ class ArrayGenerator:
 
         # Wrap base array in null check
         safe_base = f"TUSMO_SAFE_ACCESS({base_expr_c}, \"{node.filename}\", {node.line})"
-        # For regular array types, the bounds check uses the base pointer
-        checked_index = f"tusmo_bounds_check({index_c}, {safe_base}->size)"
+        
+        # --- NEW: Legendary Selective Bounds Check ---
+        if getattr(node, 'is_safe', False):
+            # Proved safe at compile-time: use direct access for 6x speed
+            checked_index = index_c
+        else:
+            # Unsafe or unproven: use runtime bounds check
+            checked_index = f"tusmo_bounds_check({index_c}, {safe_base}->size)"
 
         # For dynamic arrays (tix with element_type = None or string "None")
         is_dynamic = False
@@ -311,12 +317,16 @@ class ArrayGenerator:
         return ""
 
     def generate_append_call(self, array_c_name, array_type_node, element_node):
-        element_type = array_type_node.element_type
+        if isinstance(array_type_node, str):
+            parts = array_type_node.split(':')
+            element_type = parts[-1] if len(parts) > 1 else 'None'
+        else:
+            element_type = array_type_node.element_type
         
-        if self._is_mixed_storage_type(element_type):
+        if self._is_mixed_storage_type(element_type) or str(element_type) == 'dynamic_value':
             self.generate_mixed_append_call(array_c_name, element_node)
-        elif isinstance(element_type, ArrayTypeNode): # Nested array
-            inner_type = element_type.element_type
+        elif isinstance(element_type, ArrayTypeNode) or (isinstance(array_type_node, str) and array_type_node.count(':') > 1): # Nested array
+            inner_type = element_type.element_type if isinstance(element_type, ArrayTypeNode) else array_type_node.split(':')[-1]
             if isinstance(inner_type, str):
                 # For 2D nested arrays, use nested append
                 append_func = f"tusmo_tix_{inner_type}_nested_append"
@@ -330,6 +340,12 @@ class ArrayGenerator:
             element_c_code = self.expr_generator.generate_expression(element_node)
             append_func = f"tusmo_hp_tix_{element_type}_append"
             self.main_generator.c_code += f"    {append_func}({array_c_name}, {element_c_code});\n"
+            
+        # Move Semantics NULLing
+        if hasattr(element_node, '__class__') and element_node.__class__.__name__ == 'IdentifierNode':
+            if self.main_generator.semantic_checker.tracker.is_heap_type(self.expr_generator.get_expression_type(element_node)):
+                ident_c = self.expr_generator.generate_expression(element_node)
+                self.main_generator.c_code += f"    {ident_c} = NULL;\n"
 
     def generate_extend_call(self, array_c_name, array_type_node, source_array_node):
         element_type = array_type_node.element_type

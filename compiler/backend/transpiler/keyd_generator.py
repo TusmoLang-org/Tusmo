@@ -27,6 +27,10 @@ class KeydGenerator:
                 if str(right_type) == "dynamic_value":
                     init_c = f"({init_c}).value.as_qaamuus"
                 self.main_generator.c_code += f"    {var_name} = {init_c};\n"
+                # Move Semantics NULLing
+                if value.__class__.__name__ == 'IdentifierNode':
+                    ident_c = self.expr_generator.generate_expression(value)
+                    self.main_generator.c_code += f"    {ident_c} = NULL;\n"
             else:
                 self.main_generator.c_code += f"    {var_name} = tusmo_qaamuus_create();\n"
             return
@@ -67,6 +71,9 @@ class KeydGenerator:
                     # Other initializations
                     init_c = self.expr_generator.generate_expression(value)
                     self.main_generator.c_code += f"    {var_name} = {init_c};\n"
+                    # Move Semantics NULLing
+                    if value.__class__.__name__ == 'IdentifierNode':
+                        self.main_generator.c_code += f"    {init_c} = NULL;\n"
             else:
                 # Array without initialization - set to NULL
                 self.main_generator.c_code += f"    {var_name} = NULL;\n"
@@ -82,6 +89,9 @@ class KeydGenerator:
                 if value:
                     init_c = self.expr_generator.generate_expression(value)
                     self.main_generator.c_code += f"    {var_name} = {init_c};\n"
+                    # Move Semantics NULLing
+                    if value.__class__.__name__ == 'IdentifierNode':
+                        self.main_generator.c_code += f"    {init_c} = NULL;\n"
                 else:
                     self.main_generator.c_code += f"    {var_name} = NULL;\n"
             else:
@@ -107,6 +117,9 @@ class KeydGenerator:
                         if member:
                             init_c = f"({init_c}).value.{member}"
                     self.main_generator.c_code += f"    {var_name} = {init_c};\n"
+                    # Move Semantics NULLing
+                    if value.__class__.__name__ == 'IdentifierNode' and self.main_generator.semantic_checker.tracker.is_heap_type(var_type):
+                        self.main_generator.c_code += f"    {init_c} = NULL;\n"
                 else:
                     # Declaration without initialization - use defaults
                     c_primitive_type = self._get_primitive_c_type(var_type)
@@ -126,6 +139,10 @@ class KeydGenerator:
             return "char*"
         elif var_type == "waxbo":
             return "void*"
+        info = self.symbol_table.get(var_type) if isinstance(var_type, str) else None
+        if info:
+            if info[1] == "c_type": return var_type
+            if info[1] == "struct_definition": return var_type
         return "void*"
 
     def _emit_declaration(self, c_type, var_name, is_top_level):

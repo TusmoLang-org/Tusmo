@@ -4,11 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gc.h>
 
 // Convert any TusmoValue to a string (eray)
 char* tusmo_to_eray(TusmoValue val) {
-    char* buffer = GC_MALLOC(128); // Allocate a buffer
+    char* buffer = malloc(128); // Allocate a buffer
     switch (val.type) {
         case TUSMO_TIRO:
             snprintf(buffer, 128, "%d", val.value.as_tiro);

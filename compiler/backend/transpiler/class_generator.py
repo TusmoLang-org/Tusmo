@@ -77,8 +77,8 @@ class ClassGenerator:
 
         # --- Generate the body of the creator function ---
         creator_body = ""
-        # 1. Allocate memory for the object using the garbage collector
-        creator_body += f"    {class_name}* kan = GC_MALLOC(sizeof({class_name}));\n"
+        # 1. Allocate memory for the object using standard malloc
+        creator_body += f"    {class_name}* kan = ({class_name}*)malloc(sizeof({class_name}));\n"
 
         # 2. If a constructor exists, call it
         if constructor:

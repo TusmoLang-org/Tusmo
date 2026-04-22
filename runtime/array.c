@@ -4,7 +4,7 @@
 
 size_t tusmo_bounds_check(size_t idx, size_t size) {
     if (idx >= size) {
-        fprintf(stderr, "Cilad Farsamo: Waxaad dhaaftay Xudduudii ahyd => %zu Waxaad u talaabtay xuduuda => %zu  \n", size,idx);
+        fprintf(stderr, "\n\033[1;31m[!] CILAD SOCDAALKA:\033[0m Waxaad dhaaftay xadka tixda!\n\033[90m" "---------------------------------------------" "\033[0m\n\033[94mXajmiga:\033[0m %zu\n\033[94mBooska:\033[0m  %zu\n", size, idx);
         exit(1);
     }
     return idx;
@@ -29,48 +29,43 @@ static inline void tusmo_hp_grow_if_needed(void** data, size_t* capacity, size_t
 }
 
 TusmoTixTiro* tusmo_hp_tix_tiro_create(size_t cap) {
-    TusmoTixTiro* tix = GC_MALLOC(sizeof(TusmoTixTiro));
+    TusmoTixTiro* tix = malloc(sizeof(TusmoTixTiro));
     tix->data = malloc(cap * sizeof(int));
     tix->size = 0; tix->capacity = cap;
-    GC_REGISTER_FINALIZER(tix, tusmo_tix_data_finalizer, NULL, NULL, NULL);
     return tix;
 }
 
 TusmoTixEray* tusmo_hp_tix_eray_create(size_t cap) {
-    TusmoTixEray* tix = GC_MALLOC(sizeof(TusmoTixEray));
+    TusmoTixEray* tix = malloc(sizeof(TusmoTixEray));
     tix->data = malloc(cap * sizeof(char*));
     tix->size = 0; tix->capacity = cap;
-    GC_REGISTER_FINALIZER(tix, tusmo_tix_data_finalizer, NULL, NULL, NULL);
     return tix;
 }
 
 TusmoTixJajab* tusmo_hp_tix_jajab_create(size_t cap) {
-    TusmoTixJajab* tix = GC_MALLOC(sizeof(TusmoTixJajab));
+    TusmoTixJajab* tix = malloc(sizeof(TusmoTixJajab));
     tix->data = malloc(cap * sizeof(double));
     tix->size = 0; tix->capacity = cap;
-    GC_REGISTER_FINALIZER(tix, tusmo_tix_data_finalizer, NULL, NULL, NULL);
     return tix;
 }
 
 TusmoTixMiyaa* tusmo_hp_tix_miyaa_create(size_t cap) {
-    TusmoTixMiyaa* tix = GC_MALLOC(sizeof(TusmoTixMiyaa));
+    TusmoTixMiyaa* tix = malloc(sizeof(TusmoTixMiyaa));
     tix->data = malloc(cap * sizeof(bool));
     tix->size = 0; tix->capacity = cap;
-    GC_REGISTER_FINALIZER(tix, tusmo_tix_data_finalizer, NULL, NULL, NULL);
     return tix;
 }
 
 TusmoTixXaraf* tusmo_hp_tix_xaraf_create(size_t cap) {
-    TusmoTixXaraf* tix = GC_MALLOC(sizeof(TusmoTixXaraf));
+    TusmoTixXaraf* tix = malloc(sizeof(TusmoTixXaraf));
     tix->data = malloc(cap * sizeof(char));
     tix->size = 0; tix->capacity = cap;
-    GC_REGISTER_FINALIZER(tix, tusmo_tix_data_finalizer, NULL, NULL, NULL);
     return tix;
 }
 
 TusmoTixMixed* tusmo_tix_mixed_create(size_t initial_capacity) {
-    TusmoTixMixed* tix = GC_MALLOC(sizeof(TusmoTixMixed));
-    tix->data = GC_MALLOC(initial_capacity * sizeof(TusmoValue));
+    TusmoTixMixed* tix = malloc(sizeof(TusmoTixMixed));
+    tix->data = malloc(initial_capacity * sizeof(TusmoValue));
     tix->size = 0;
     tix->capacity = initial_capacity;
     return tix;
@@ -104,7 +99,7 @@ void tusmo_hp_tix_xaraf_append(TusmoTixXaraf* tix, char value) {
 void tusmo_tix_mixed_append(TusmoTixMixed* tix, TusmoValue value) {
     if (tix->size >= tix->capacity) {
         tix->capacity = (tix->capacity == 0) ? 8 : tix->capacity * 2;
-        tix->data = GC_REALLOC(tix->data, tix->capacity * sizeof(TusmoValue));
+        tix->data = realloc(tix->data, tix->capacity * sizeof(TusmoValue));
     }
     tix->data[tix->size++] = value;
 }
@@ -173,7 +168,7 @@ void tusmo_tix_mixed_insert(TusmoTixMixed* tix, size_t index, TusmoValue value) 
     }
     if (tix->size >= tix->capacity) {
         tix->capacity = (tix->capacity == 0) ? 8 : tix->capacity * 2;
-        tix->data = GC_REALLOC(tix->data, tix->capacity * sizeof(TusmoValue));
+        tix->data = realloc(tix->data, tix->capacity * sizeof(TusmoValue));
     }
     memmove(&tix->data[index + 1], &tix->data[index], (tix->size - index) * sizeof(TusmoValue));
     tix->data[index] = value;
@@ -385,7 +380,7 @@ bool tusmo_tix_mixed_remove(TusmoTixMixed* tix, TusmoValue value) {
 #define TUSMO_NESTED_GROW(tix, elem_type) \
     if (tix->size >= tix->capacity) { \
         size_t new_cap = tix->capacity == 0 ? 8 : tix->capacity * 2; \
-        tix->data = GC_REALLOC(tix->data, new_cap * sizeof(elem_type)); \
+        tix->data = realloc(tix->data, new_cap * sizeof(elem_type)); \
         tix->capacity = new_cap; \
     }
 
@@ -396,8 +391,8 @@ bool tusmo_tix_mixed_remove(TusmoTixMixed* tix, TusmoValue value) {
 
 // TusmoTixTiroNested - 2D array of integers
 TusmoTixTiroNested* tusmo_tix_tiro_nested_create(size_t cap) {
-    TusmoTixTiroNested* tix = GC_MALLOC(sizeof(TusmoTixTiroNested));
-    tix->data = cap > 0 ? GC_MALLOC(cap * sizeof(TusmoTixTiro*)) : NULL;
+    TusmoTixTiroNested* tix = malloc(sizeof(TusmoTixTiroNested));
+    tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixTiro*)) : NULL;
     tix->size = 0;
     tix->capacity = cap;
     return tix;
@@ -410,8 +405,8 @@ void tusmo_tix_tiro_nested_append(TusmoTixTiroNested* tix, TusmoTixTiro* value) 
 
 // TusmoTixErayNested - 2D array of strings
 TusmoTixErayNested* tusmo_tix_eray_nested_create(size_t cap) {
-    TusmoTixErayNested* tix = GC_MALLOC(sizeof(TusmoTixErayNested));
-    tix->data = cap > 0 ? GC_MALLOC(cap * sizeof(TusmoTixEray*)) : NULL;
+    TusmoTixErayNested* tix = malloc(sizeof(TusmoTixErayNested));
+    tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixEray*)) : NULL;
     tix->size = 0;
     tix->capacity = cap;
     return tix;
@@ -424,8 +419,8 @@ void tusmo_tix_eray_nested_append(TusmoTixErayNested* tix, TusmoTixEray* value) 
 
 // TusmoTixJajabNested - 2D array of floats
 TusmoTixJajabNested* tusmo_tix_jajab_nested_create(size_t cap) {
-    TusmoTixJajabNested* tix = GC_MALLOC(sizeof(TusmoTixJajabNested));
-    tix->data = cap > 0 ? GC_MALLOC(cap * sizeof(TusmoTixJajab*)) : NULL;
+    TusmoTixJajabNested* tix = malloc(sizeof(TusmoTixJajabNested));
+    tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixJajab*)) : NULL;
     tix->size = 0;
     tix->capacity = cap;
     return tix;
@@ -438,8 +433,8 @@ void tusmo_tix_jajab_nested_append(TusmoTixJajabNested* tix, TusmoTixJajab* valu
 
 // TusmoTixMiyaaNested - 2D array of booleans
 TusmoTixMiyaaNested* tusmo_tix_miyaa_nested_create(size_t cap) {
-    TusmoTixMiyaaNested* tix = GC_MALLOC(sizeof(TusmoTixMiyaaNested));
-    tix->data = cap > 0 ? GC_MALLOC(cap * sizeof(TusmoTixMiyaa*)) : NULL;
+    TusmoTixMiyaaNested* tix = malloc(sizeof(TusmoTixMiyaaNested));
+    tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixMiyaa*)) : NULL;
     tix->size = 0;
     tix->capacity = cap;
     return tix;
@@ -452,8 +447,8 @@ void tusmo_tix_miyaa_nested_append(TusmoTixMiyaaNested* tix, TusmoTixMiyaa* valu
 
 // TusmoTixXarafNested - 2D array of chars
 TusmoTixXarafNested* tusmo_tix_xaraf_nested_create(size_t cap) {
-    TusmoTixXarafNested* tix = GC_MALLOC(sizeof(TusmoTixXarafNested));
-    tix->data = cap > 0 ? GC_MALLOC(cap * sizeof(TusmoTixXaraf*)) : NULL;
+    TusmoTixXarafNested* tix = malloc(sizeof(TusmoTixXarafNested));
+    tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixXaraf*)) : NULL;
     tix->size = 0;
     tix->capacity = cap;
     return tix;
@@ -471,8 +466,8 @@ void tusmo_tix_xaraf_nested_append(TusmoTixXarafNested* tix, TusmoTixXaraf* valu
 
 // TusmoTixTiroNested2 - 3D array of integers
 TusmoTixTiroNested2* tusmo_tix_tiro_nested2_create(size_t cap) {
-    TusmoTixTiroNested2* tix = GC_MALLOC(sizeof(TusmoTixTiroNested2));
-    tix->data = cap > 0 ? GC_MALLOC(cap * sizeof(TusmoTixTiroNested*)) : NULL;
+    TusmoTixTiroNested2* tix = malloc(sizeof(TusmoTixTiroNested2));
+    tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixTiroNested*)) : NULL;
     tix->size = 0;
     tix->capacity = cap;
     return tix;
@@ -481,7 +476,7 @@ TusmoTixTiroNested2* tusmo_tix_tiro_nested2_create(size_t cap) {
 void tusmo_tix_tiro_nested2_append(TusmoTixTiroNested2* tix, TusmoTixTiroNested* value) {
     if (tix->size >= tix->capacity) {
         size_t new_cap = tix->capacity == 0 ? 8 : tix->capacity * 2;
-        tix->data = GC_REALLOC(tix->data, new_cap * sizeof(TusmoTixTiroNested*));
+        tix->data = realloc(tix->data, new_cap * sizeof(TusmoTixTiroNested*));
         tix->capacity = new_cap;
     }
     tix->data[tix->size++] = value;
@@ -489,8 +484,8 @@ void tusmo_tix_tiro_nested2_append(TusmoTixTiroNested2* tix, TusmoTixTiroNested*
 
 // TusmoTixErayNested2 - 3D array of strings
 TusmoTixErayNested2* tusmo_tix_eray_nested2_create(size_t cap) {
-    TusmoTixErayNested2* tix = GC_MALLOC(sizeof(TusmoTixErayNested2));
-    tix->data = cap > 0 ? GC_MALLOC(cap * sizeof(TusmoTixErayNested*)) : NULL;
+    TusmoTixErayNested2* tix = malloc(sizeof(TusmoTixErayNested2));
+    tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixErayNested*)) : NULL;
     tix->size = 0;
     tix->capacity = cap;
     return tix;
@@ -499,7 +494,7 @@ TusmoTixErayNested2* tusmo_tix_eray_nested2_create(size_t cap) {
 void tusmo_tix_eray_nested2_append(TusmoTixErayNested2* tix, TusmoTixErayNested* value) {
     if (tix->size >= tix->capacity) {
         size_t new_cap = tix->capacity == 0 ? 8 : tix->capacity * 2;
-        tix->data = GC_REALLOC(tix->data, new_cap * sizeof(TusmoTixErayNested*));
+        tix->data = realloc(tix->data, new_cap * sizeof(TusmoTixErayNested*));
         tix->capacity = new_cap;
     }
     tix->data[tix->size++] = value;
@@ -507,8 +502,8 @@ void tusmo_tix_eray_nested2_append(TusmoTixErayNested2* tix, TusmoTixErayNested*
 
 // TusmoTixJajabNested2 - 3D array of floats
 TusmoTixJajabNested2* tusmo_tix_jajab_nested2_create(size_t cap) {
-    TusmoTixJajabNested2* tix = GC_MALLOC(sizeof(TusmoTixJajabNested2));
-    tix->data = cap > 0 ? GC_MALLOC(cap * sizeof(TusmoTixJajabNested*)) : NULL;
+    TusmoTixJajabNested2* tix = malloc(sizeof(TusmoTixJajabNested2));
+    tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixJajabNested*)) : NULL;
     tix->size = 0;
     tix->capacity = cap;
     return tix;
@@ -517,7 +512,7 @@ TusmoTixJajabNested2* tusmo_tix_jajab_nested2_create(size_t cap) {
 void tusmo_tix_jajab_nested2_append(TusmoTixJajabNested2* tix, TusmoTixJajabNested* value) {
     if (tix->size >= tix->capacity) {
         size_t new_cap = tix->capacity == 0 ? 8 : tix->capacity * 2;
-        tix->data = GC_REALLOC(tix->data, new_cap * sizeof(TusmoTixJajabNested*));
+        tix->data = realloc(tix->data, new_cap * sizeof(TusmoTixJajabNested*));
         tix->capacity = new_cap;
     }
     tix->data[tix->size++] = value;
@@ -525,8 +520,8 @@ void tusmo_tix_jajab_nested2_append(TusmoTixJajabNested2* tix, TusmoTixJajabNest
 
 // TusmoTixMiyaaNested2 - 3D array of booleans
 TusmoTixMiyaaNested2* tusmo_tix_miyaa_nested2_create(size_t cap) {
-    TusmoTixMiyaaNested2* tix = GC_MALLOC(sizeof(TusmoTixMiyaaNested2));
-    tix->data = cap > 0 ? GC_MALLOC(cap * sizeof(TusmoTixMiyaaNested*)) : NULL;
+    TusmoTixMiyaaNested2* tix = malloc(sizeof(TusmoTixMiyaaNested2));
+    tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixMiyaaNested*)) : NULL;
     tix->size = 0;
     tix->capacity = cap;
     return tix;
@@ -535,7 +530,7 @@ TusmoTixMiyaaNested2* tusmo_tix_miyaa_nested2_create(size_t cap) {
 void tusmo_tix_miyaa_nested2_append(TusmoTixMiyaaNested2* tix, TusmoTixMiyaaNested* value) {
     if (tix->size >= tix->capacity) {
         size_t new_cap = tix->capacity == 0 ? 8 : tix->capacity * 2;
-        tix->data = GC_REALLOC(tix->data, new_cap * sizeof(TusmoTixMiyaaNested*));
+        tix->data = realloc(tix->data, new_cap * sizeof(TusmoTixMiyaaNested*));
         tix->capacity = new_cap;
     }
     tix->data[tix->size++] = value;
@@ -543,8 +538,8 @@ void tusmo_tix_miyaa_nested2_append(TusmoTixMiyaaNested2* tix, TusmoTixMiyaaNest
 
 // TusmoTixXarafNested2 - 3D array of chars
 TusmoTixXarafNested2* tusmo_tix_xaraf_nested2_create(size_t cap) {
-    TusmoTixXarafNested2* tix = GC_MALLOC(sizeof(TusmoTixXarafNested2));
-    tix->data = cap > 0 ? GC_MALLOC(cap * sizeof(TusmoTixXarafNested*)) : NULL;
+    TusmoTixXarafNested2* tix = malloc(sizeof(TusmoTixXarafNested2));
+    tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixXarafNested*)) : NULL;
     tix->size = 0;
     tix->capacity = cap;
     return tix;
@@ -553,7 +548,7 @@ TusmoTixXarafNested2* tusmo_tix_xaraf_nested2_create(size_t cap) {
 void tusmo_tix_xaraf_nested2_append(TusmoTixXarafNested2* tix, TusmoTixXarafNested* value) {
     if (tix->size >= tix->capacity) {
         size_t new_cap = tix->capacity == 0 ? 8 : tix->capacity * 2;
-        tix->data = GC_REALLOC(tix->data, new_cap * sizeof(TusmoTixXarafNested*));
+        tix->data = realloc(tix->data, new_cap * sizeof(TusmoTixXarafNested*));
         tix->capacity = new_cap;
     }
     tix->data[tix->size++] = value;
@@ -627,3 +622,75 @@ void tusmo_tix_mixed_extend(TusmoTixMixed* dest, TusmoTixMixed* src) {
         tusmo_tix_mixed_append(dest, src->data[i]);
     }
 }
+
+// --- Deep Free Implementations ---
+
+void tusmo_free_tix_tiro(TusmoTixTiro* tix) {
+    if (!tix) return;
+    if (tix->data) free(tix->data);
+    free(tix);
+}
+
+void tusmo_free_tix_eray(TusmoTixEray* tix) {
+    if (!tix) return;
+    if (tix->data) {
+        for (size_t i = 0; i < tix->size; i++) {
+            if (tix->data[i]) free(tix->data[i]);
+        }
+        free(tix->data);
+    }
+    free(tix);
+}
+
+void tusmo_free_tix_jajab(TusmoTixJajab* tix) {
+    if (!tix) return;
+    if (tix->data) free(tix->data);
+    free(tix);
+}
+
+void tusmo_free_tix_miyaa(TusmoTixMiyaa* tix) {
+    if (!tix) return;
+    if (tix->data) free(tix->data);
+    free(tix);
+}
+
+void tusmo_free_tix_xaraf(TusmoTixXaraf* tix) {
+    if (!tix) return;
+    if (tix->data) free(tix->data);
+    free(tix);
+}
+
+void tusmo_free_tix_mixed(TusmoTixMixed* tix) {
+    if (!tix) return;
+    if (tix->data) {
+        // Mixed arrays might need more complex logic to free nested TusmoValues
+        // For now, simple free. In a full implementation, we'd switch on type.
+        free(tix->data);
+    }
+    free(tix);
+}
+
+// Nested Arrays (Deep Free)
+
+void tusmo_free_tix_tiro_nested(TusmoTixTiroNested* tix) {
+    if (!tix) return;
+    if (tix->data) {
+        for (size_t i = 0; i < tix->size; i++) {
+            tusmo_free_tix_tiro(tix->data[i]);
+        }
+        free(tix->data);
+    }
+    free(tix);
+}
+
+void tusmo_free_tix_eray_nested(TusmoTixErayNested* tix) {
+    if (!tix) return;
+    if (tix->data) {
+        for (size_t i = 0; i < tix->size; i++) {
+            tusmo_free_tix_eray(tix->data[i]);
+        }
+        free(tix->data);
+    }
+    free(tix);
+}
+

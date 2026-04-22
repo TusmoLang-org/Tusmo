@@ -12,11 +12,14 @@ from .includes.keen_grammer_rule import *
 from .includes.class_grammer_rule import *
 from .includes.embedded_c_grammar_rule import *
 from .includes.dictionary_grammar_rule import *
+from .includes.tusmo_xiddid_grammer import *
+from .includes.qeex_qaab_grammar import *
+
 from .ast_nodes import (
     NumberNode, FloatNode, IdentifierNode, StringNode, CharNode,
     BinaryOpNode, FStringNode, BooleanNode, TernaryOpNode,
     ThisNode, DictionaryInitializationNode,
-    FunctionTypeNode, TypeLiteralNode, AssignmentNode
+    FunctionTypeNode, TypeLiteralNode, AssignmentNode, QeexNode, QaabNode
 )
 
 # Start rule
@@ -39,7 +42,9 @@ def p_statement_list(p):
 def p_top_level_item(p):
     '''top_level_item : statement
                       | function_declaration
-                      | class_declaration'''
+                      | class_declaration
+                      | qeex_declaration
+                      | qaab_declaration'''
     p[0] = p[1]
 
 def p_body_statements(p):

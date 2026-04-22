@@ -4,7 +4,7 @@ static inline void tusmo_hp_grow_if_needed(void** data, size_t* capacity, size_t
     if (__builtin_expect(new_size > *capacity, 0)) {
         size_t new_capacity = (*capacity == 0) ? 8 : *capacity * 2;
         if (new_capacity < new_size) new_capacity = new_size;
-        *data = GC_REALLOC(*data, new_capacity * elem_size);
+        *data = realloc(*data, new_capacity * elem_size);
         *capacity = new_capacity;
     }
 }
@@ -13,8 +13,8 @@ static inline void tusmo_hp_grow_if_needed(void** data, size_t* capacity, size_t
 // --- Implementation for the Generic Array ---
 
 TusmoTixGeneric* tusmo_tix_generic_create(size_t cap) {
-    TusmoTixGeneric* tix = GC_MALLOC(sizeof(TusmoTixGeneric));
-    tix->data = GC_MALLOC(cap * sizeof(void*));
+    TusmoTixGeneric* tix = malloc(sizeof(TusmoTixGeneric));
+    tix->data = malloc(cap * sizeof(void*));
     tix->size = 0;
     tix->capacity = cap;
     return tix;

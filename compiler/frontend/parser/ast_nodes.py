@@ -384,3 +384,26 @@ class WaxboNode(ExpressionNode):
 
     def __str__(self):
         return "waxbo"
+
+class QeexNode(ASTNode):
+    """Kani waxa uu matali donaa keyword-ka 'qeex' (C #define)."""
+    def __init__(self, name, value, line, filename):
+        super().__init__(line, filename)
+        self.name = name
+        self.value = value
+
+class QaabNode(ASTNode):
+    """Kani waxa uu matali donaa keyword-ka 'qaab' (C struct)."""
+    def __init__(self, name, members, line, filename):
+        super().__init__(line, filename)
+        self.name = name
+        self.members = members # List of KeydNode (but as struct members)
+
+class QaabQiimeNode(ExpressionNode):
+    """Kani waxa uu matali donaa dhisidda struct-ga (C Compound Literal).
+    Tusaale: (Midab){255, 255, 255, 255}
+    """
+    def __init__(self, struct_name, values, line, filename):
+        super().__init__(line, filename)
+        self.struct_name = struct_name
+        self.values = values # List of expressions

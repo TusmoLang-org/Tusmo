@@ -33,7 +33,7 @@ static unsigned long tusmo_socket_next_handle_id = 1;
 
 // Helper function to create empty string
 static char* tusmo_socket_empty_string() {
-    char* s = (char*)GC_MALLOC(1);
+    char* s = (char*)malloc(1);
     s[0] = '\0';
     return s;
 }
@@ -44,7 +44,7 @@ static char* tusmo_socket_register_handle(TusmoSocket* socket) {
         return tusmo_socket_empty_string();
     }
 
-    TusmoSocketHandleEntry* entry = (TusmoSocketHandleEntry*)GC_MALLOC(sizeof(TusmoSocketHandleEntry));
+    TusmoSocketHandleEntry* entry = (TusmoSocketHandleEntry*)malloc(sizeof(TusmoSocketHandleEntry));
     entry->socket = socket;
     entry->next = tusmo_socket_handle_registry;
 
@@ -52,7 +52,7 @@ static char* tusmo_socket_register_handle(TusmoSocket* socket) {
     unsigned long id = tusmo_socket_next_handle_id++;
     snprintf(buffer, sizeof(buffer), "SOCK:%lu", id);
     size_t len = strlen(buffer);
-    entry->handle = (char*)GC_MALLOC(len + 1);
+    entry->handle = (char*)malloc(len + 1);
     strcpy(entry->handle, buffer);
 
     tusmo_socket_handle_registry = entry;
@@ -134,7 +134,7 @@ char* tusmo_socket_create_server(const char* port_str) {
         return tusmo_socket_empty_string();
     }
 
-    TusmoSocket* socket = (TusmoSocket*)GC_MALLOC(sizeof(TusmoSocket));
+    TusmoSocket* socket = (TusmoSocket*)malloc(sizeof(TusmoSocket));
     socket->fd = server_fd;
     socket->port = port;
     socket->is_server = true;
@@ -181,7 +181,7 @@ char* tusmo_socket_accept(const char* server_handle) {
         return tusmo_socket_empty_string();
     }
 
-    TusmoSocket* client_socket = (TusmoSocket*)GC_MALLOC(sizeof(TusmoSocket));
+    TusmoSocket* client_socket = (TusmoSocket*)malloc(sizeof(TusmoSocket));
     client_socket->fd = client_fd;
     client_socket->port = ntohs(client_addr.sin_port);
     client_socket->is_server = false;
@@ -232,7 +232,7 @@ char* tusmo_socket_connect(const char* host, const char* port_str) {
         return tusmo_socket_empty_string();
     }
 
-    TusmoSocket* socket = (TusmoSocket*)GC_MALLOC(sizeof(TusmoSocket));
+    TusmoSocket* socket = (TusmoSocket*)malloc(sizeof(TusmoSocket));
     socket->fd = client_fd;
     socket->port = port;
     socket->is_server = false;
@@ -277,7 +277,7 @@ char* tusmo_socket_receive(const char* handle, int max_size) {
         max_size = TUSMO_SOCKET_BUFFER_SIZE;
     }
 
-    char* buffer = (char*)GC_MALLOC((size_t)max_size + 1);
+    char* buffer = (char*)malloc((size_t)max_size + 1);
     ssize_t received = recv(socket->fd, buffer, (size_t)max_size, 0);
     
     if (received < 0) {
@@ -322,7 +322,7 @@ char* tusmo_socket_from_fd(int client_fd) {
         return tusmo_socket_empty_string();
     }
 
-    TusmoSocket* socket = (TusmoSocket*)GC_MALLOC(sizeof(TusmoSocket));
+    TusmoSocket* socket = (TusmoSocket*)malloc(sizeof(TusmoSocket));
     socket->fd = client_fd;
     socket->port = 0;  // Unknown port for adopted socket
     socket->is_server = false;

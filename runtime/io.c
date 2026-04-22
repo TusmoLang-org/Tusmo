@@ -70,7 +70,7 @@ static int is_valid_ptr(void* ptr) {
 
 void prints_tix_generic(void* tix_ptr) {
     if (tix_ptr == NULL) {
-        printf("NULL");
+        printf("waxbo");
         return;
     }
     
@@ -96,7 +96,7 @@ void prints_tix_generic(void* tix_ptr) {
         if (i > 0) printf(", ");
         void* elem = tix->data[i];
         if (elem == NULL) {
-            printf("null");
+            printf("waxbo");
             continue;
         }
         
@@ -303,7 +303,7 @@ void prints_tix_xaraf_nested2(TusmoTixXarafNested2* tix) {
 void tusmo_qor_dynamic_value(TusmoValue val) {
     switch (val.type) {
         case TUSMO_TIRO:  printf("%d", val.value.as_tiro); break;
-        case TUSMO_ERAY:  printf("%s", val.value.as_eray); break;
+        case TUSMO_ERAY:  printf("%s", val.value.as_eray ? val.value.as_eray : "waxbo"); break;
         case TUSMO_JAJAB: printf("%f", val.value.as_jajab); break;
         case TUSMO_MIYAA: printf(val.value.as_miyaa ? "run" : "been"); break;
         case TUSMO_XARAF: printf("%c", val.value.as_xaraf); break;

@@ -50,6 +50,10 @@
           "name": "comment.block.tusmo",
           "begin": "/\\*",
           "end": "\\*/"
+        },
+        {
+          "name": "comment.line.number-sign.tusmo",
+          "match": "\\bTUSMO_XIDID\\b"
         }
       ]
     },

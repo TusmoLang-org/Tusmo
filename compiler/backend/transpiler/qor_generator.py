@@ -108,7 +108,7 @@ class QorGenerator:
                 arg_parts.append(c_expr)
             elif expr_type_str == "eray":
                 format_parts.append("%s")
-                arg_parts.append(c_expr)
+                arg_parts.append(f'({c_expr} ? {c_expr} : "waxbo")')
             elif expr_type_str == "xaraf":
                 format_parts.append("%c")
                 arg_parts.append(c_expr)

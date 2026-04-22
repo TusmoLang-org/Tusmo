@@ -48,6 +48,8 @@ reserved = {
     'isticmaal':'ISTICMAAL', 
     'kujira':'KUJIRA', 
     'waxbo':'WAXBO', 
+    'qeex':'QEEX',
+    'qaab':'QAAB',
     '___c__call_': 'C_CALL', 
     '___c__code_': 'C_CODE',
     'TUSMO_XIDID':'TUSMO_XIDID', 

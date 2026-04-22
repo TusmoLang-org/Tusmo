@@ -13,6 +13,14 @@ class LoopGenerator:
         self.main_generator.c_code += f"    while ({condition_c}) {{\n"
         self.symbol_table.push_scope()
         self.main_generator._generate_node(node.body)
+        
+        # --- NEW: Inject Cleanup code ---
+        cleanup_vars = getattr(node, 'cleanup_vars', [])
+        for var in cleanup_vars:
+            name = var['name']
+            free_fn = var.get('free_fn', 'free')
+            self.main_generator.c_code += f"        if ({name}) {free_fn}({name});\n"
+
         self.symbol_table.pop_scope()
         self.main_generator.c_code += f"    }}\n"
 
@@ -32,8 +40,16 @@ class LoopGenerator:
         self.symbol_table.push_scope()
         self.symbol_table.set(iterator, 'tiro')
 
-        self.main_generator.c_code += f"    for (int {iterator} = {start_c}; {iterator} < {end_c}; ++{iterator}) {{\n"
+        self.main_generator.c_code += f"    for (int {iterator} = {start_c}{"" if node.increase else "-1"}; {iterator} {"<" if node.increase else ">="} {end_c}; {"++" if node.increase else "--"}{iterator}) {{\n"
         self.main_generator._generate_node(node.body)
+        
+        # --- NEW: Inject Cleanup code ---
+        cleanup_vars = getattr(node, 'cleanup_vars', [])
+        for var in cleanup_vars:
+            name = var['name']
+            free_fn = var.get('free_fn', 'free')
+            self.main_generator.c_code += f"        if ({name}) {free_fn}({name});\n"
+
         self.main_generator.c_code += f"    }}\n"
 
         self.symbol_table.pop_scope()
@@ -53,6 +69,14 @@ class LoopGenerator:
             self.symbol_table.set(item_var, 'xaraf')
             self.main_generator.c_code += f"        char {item_var} = {array_c}[{index_var}];\n"
             self.main_generator._generate_node(node.body)
+            
+            # --- NEW: Inject Cleanup code ---
+            cleanup_vars = getattr(node, 'cleanup_vars', [])
+            for var in cleanup_vars:
+                name = var['name']
+                free_fn = var.get('free_fn', 'free')
+                self.main_generator.c_code += f"        if ({name}) {free_fn}({name});\n"
+                
             self.main_generator.c_code += "    }\n"
 
         else: # It's a Tusmo array type
@@ -82,6 +106,14 @@ class LoopGenerator:
                 self.main_generator.c_code += f"        {iterator_c_type} {item_var} = {array_c}->data[{index_var}];\n"
 
             self.main_generator._generate_node(node.body)
+            
+            # --- NEW: Inject Cleanup code ---
+            cleanup_vars = getattr(node, 'cleanup_vars', [])
+            for var in cleanup_vars:
+                name = var['name']
+                free_fn = var.get('free_fn', 'free')
+                self.main_generator.c_code += f"        if ({name}) {free_fn}({name});\n"
+                
             self.main_generator.c_code += f"    }}\n"
 
         self.symbol_table.pop_scope()

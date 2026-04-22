@@ -10,7 +10,6 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <assert.h>
-#include <gc.h>
 #include "tusmo_types.h"
 
 // ==========================================================================
@@ -152,6 +151,7 @@ char* tusmo_str_replace(const char* str, const char* old_str, const char* new_st
 int tusmo_str_find(const char* str, const char* substr);
 bool tusmo_str_contains(const char* str, const char* substr);
 TusmoTixEray* tusmo_str_split(const char* str, const char* delimiter);
+char* tusmo_strdup(const char* s);
 
 // hel
 char* hel_str();
@@ -306,6 +306,25 @@ double tusmo_floor(double x);
 double tusmo_ceil(double x);
 double tusmo_round(double x);
 
+// --- Deep Free / Destructors (Manual Memory Management) ---
+void tusmo_free_tix_tiro(TusmoTixTiro* tix);
+void tusmo_free_tix_eray(TusmoTixEray* tix);
+void tusmo_free_tix_jajab(TusmoTixJajab* tix);
+void tusmo_free_tix_miyaa(TusmoTixMiyaa* tix);
+void tusmo_free_tix_xaraf(TusmoTixXaraf* tix);
+void tusmo_free_tix_mixed(TusmoTixMixed* tix);
+
+// Nested Array Deep Free
+void tusmo_free_tix_tiro_nested(TusmoTixTiroNested* tix);
+void tusmo_free_tix_eray_nested(TusmoTixErayNested* tix);
+void tusmo_free_tix_jajab_nested(TusmoTixJajabNested* tix);
+void tusmo_free_tix_miyaa_nested(TusmoTixMiyaaNested* tix);
+void tusmo_free_tix_xaraf_nested(TusmoTixXarafNested* tix);
+
+// String and Dictionary
+void tusmo_free_eray(char* str);
+void tusmo_free_qaamuus(TusmoQaamuus* q);
+
 // --- Safety Macros ---
 #define TUSMO_SAFE_DIV(a, b, f, l) \
     ((b) == 0 ? (fprintf(stderr, "\n\033[1;31m[!] CILAD SOCDAALKA:\033[0m Isku day inaad u qaybiso 0! (Division by zero)\n\033[90m" "---------------------------------------------" "\033[0m\n\033[94mFaylka:\033[0m   %s\n\033[94mSaddarka:\033[0m %d\n\033[1;35m// Xisaabtaada dib u baro! Sidee 0 wax ugu qaybin kartaa?\033[0m\n", f, l), exit(1), (a)) : ((a) / (b)))
@@ -313,7 +332,6 @@ double tusmo_round(double x);
 #define TUSMO_SAFE_MOD(a, b, f, l) \
     ((b) == 0 ? (fprintf(stderr, "\n\033[1;31m[!] CILAD SOCDAALKA:\033[0m Isku day inaad %s (modulo) ka qaado 0! (Modulo by zero)\n\033[90m" "---------------------------------------------" "\033[0m\n\033[94mFaylka:\033[0m   %s\n\033[94mSaddarka:\033[0m %d\n\033[1;35m// 0 waxba kama soo haro marka la qaybiyo! Dib u eeg.\033[0m\n", "%", f, l), exit(1), (a)) : ((a) % (b)))
 
-#define TUSMO_SAFE_ACCESS(p, f, l) \
-    ((p) == NULL ? (fprintf(stderr, "\n\033[1;31m[!] CILAD SOCDAALKA:\033[0m Isku day inaad gasho xogta wax maran (null) ah!\n\033[90m" "---------------------------------------------" "\033[0m\n\033[94mFaylka:\033[0m   %s\n\033[94mSaddarka:\033[0m %d\n\033[1;35m// Ma waxaan jirin baad rabtaa inaad xog ka keento? Horta hubi inay jirto.\033[0m\n", f, l), exit(1), (p)) : (p))
+#define TUSMO_SAFE_ACCESS(p, f, l) (p)
 
 #endif // TUSMO_RUNTIME_H

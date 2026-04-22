@@ -221,6 +221,18 @@ def ERR_CANNOT_PRINT_TYPE(type_name):
         \033[1;31m qor(shay_kooxeed) \033[1;35m // Sidani waa khalad! Kooxaha (classes) si toos ah looma qoro.
         \033[1;32m qor(shay.magac) \033[1;35m // Sidani waa sax. Qor xubnaha ka kooban kooxda (sida tiro ama eray)."""
 
+def ERR_USE_AFTER_MOVE(var_name, move_node_info):
+    return f"""Variable-ka '{var_name}' milkiyaddiisa waa la wareejiyay!
+
+        \033[1;31m {var_name} ... \033[1;35m // Khalad! Variable-ku hadda ma haayo wax milkiyad ah.
+        \033[1;32m // Mulkiyadiisa waxa uu ku wariijiyay heshiiskii ka dhacay: {move_node_info}
+        \033[1;34m Talo: Haddii aad rabto inaad mar kale isticmaasho, samee nuqul (copy) ama ha wareejin."""
+
+def ERR_UNINITIALIZED_VARIABLE(name):
+    return f"""Keydiyaha '{name}' ma laha wax qiime ah (Uninitialized)! 
+
+        \033[1;31m qor({name}); \033[1;35m // '{name}' booskiisii waa eber. Ma waxaad moodday inuu hawada ka dhalanayo?
+        \033[1;32m {name} = 10; qor({name}); \033[1;35m // Horta qiime sii intaadan u yeerin!"""
 # ============================================================================
 # Missing Error Functions - Added to fix semantic analyzer crashes
 # These 18 functions were being called but not defined in semantic_errors.py
@@ -346,9 +358,17 @@ def ERR_FOR_EACH_NOT_ITERABLE(iterable_type):
         \033[1;32m xukusho (x : tix_kan) {{ }} \033[1;35m // Isticmaal tix (array)."""
         # Use arrays for iteration
 
+def ERR_BINARY_OP_TYPE_MISMATCH(left_type, right_type, op):
+    return f"""Noocyada xogta iskuma mid ahan (Type Mismatch) ee Binary Operation!
+
+        \033[1;31m qiime left: {left_type} \033[0m {op} \033[1;31m qiime right: {right_type} \033[0m
+
+        \033[1;35m// Isticmaal nooco isku mid ah."""
+        # Arithmetic operations require compatible numeric types
+
 def ERR_ASSIGNMENT_NON_LVALUE():
     return f"""Qiime lama gelin karo dhinaca bidix ee calaamadda '='!
-    
+
         \033[1;31m x + 1 = 5 \033[1;35m // 'x + 1' waa expression, lama yeeli karo assignment
         \033[1;32m x = 5 \033[1;35m // 'x' keliya ayaa la gelin karaa."""
         # Can only assign to variables, not expressions

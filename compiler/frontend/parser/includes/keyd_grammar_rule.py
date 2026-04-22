@@ -9,6 +9,7 @@ def p_declaration(p):
     filename = p.lexer.filename
     var_type = p[3]
     var_name = p[4]
+    print(f"DEBUG: var_name={var_name}, var_type={var_type}, type(var_type)={type(var_type)}")
 
     if len(p) == 6:
         p[0] = KeydNode(var_name, var_type, None, line, filename)

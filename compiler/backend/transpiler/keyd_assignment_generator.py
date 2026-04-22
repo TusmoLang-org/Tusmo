@@ -55,7 +55,7 @@ class Keyd_Assignment_Generator:
             left_side_type = self.main_generator.semantic_checker.get_expression_type(left_expr_node, skip_context_check=True)
             right_side_type = self.main_generator.semantic_checker.get_expression_type(right_expr_node, skip_context_check=True)
 
-            # If assigning from dynamic_value, unwrap to the target primitive where possible
+            # If assigning from dynamic_value (TusmoValue struct), unwrap it
             if str(right_side_type) == "dynamic_value":
                 unwrap_map = {
                     "tiro": "as_tiro",
@@ -69,9 +69,22 @@ class Keyd_Assignment_Generator:
                 member = unwrap_map.get(str(left_side_type))
                 if member:
                     right_c_code = f"({right_c_code}).value.{member}"
+            # For c_dynamic, right_c_code is already raw C, so do nothing.
 
             if str(left_side_type) == "eray" and op == "+=":
                 right_c_converted = self.expr_generator._ensure_string_operand(right_c_code, right_side_type)
                 self.main_generator.c_code += f"    {left_c_code} = tusmo_concat_cstr({left_c_code}, {right_c_converted});\n"
             else:
+                # --- NEW: Smart Reassignment Cleanup ---
+                if op == "=":
+                    # Only free if the variable was NOT moved previously
+                    if getattr(node, 'needs_cleanup', False):
+                        free_fn = self.main_generator.semantic_checker.tracker.get_free_function(left_side_type)
+                        if self.main_generator.semantic_checker.tracker.is_heap_type(left_side_type):
+                            self.main_generator.c_code += f"    if ({left_c_code}) {free_fn}({left_c_code});\n"
+                
                 self.main_generator.c_code += f"    {left_c_code} {op} {right_c_code};\n"
+                
+                # --- NEW: Move Semantics NULLing ---
+                if op == "=" and right_expr_node.__class__.__name__ == 'IdentifierNode' and self.main_generator.semantic_checker.tracker.is_heap_type(right_side_type):
+                    self.main_generator.c_code += f"    {right_c_code} = NULL;\n"

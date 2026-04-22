@@ -21,10 +21,21 @@ def p_statement_do_while(p):
     p[0] = DoWhileNode(line, p[2], p[6], filename)
 
 def p_statement_for_range(p):
-    '''statement : SOCO IDENTIFIER LAGA BILAABO expression DOTDOT expression body_statements'''
+    '''statement : SOCO IDENTIFIER LAGA BILAABO expression DOTDOT expression body_statements
+                | SOCO MINUS IDENTIFIER LAGA BILAABO expression DOTDOT expression body_statements'''
+    
     line = p.lineno(1)
     filename = p.lexer.filename
-    p[0] = ForRangeNode(line, p[2], p[5], p[7], p[8], filename)
+
+    # Xaaladda 1: SOCO IDENTIFIER (Length is 9 because of p[0])
+    if len(p) == 9:
+        # p[2]=ID, p[5]=start, p[7]=end, p[8]=body
+        p[0] = ForRangeNode(line, p[2], p[5], p[7], p[8], filename)
+    
+    # Xaaladda 2: SOCO t_MINUS IDENTIFIER (Length is 10)
+    elif len(p) == 10:
+        # p[3]=ID, p[6]=start, p[8]=end, p[9]=body
+        p[0] = ForRangeNode(line, p[3], p[6], p[8], p[9], filename, increase=False)
 
 def p_statement_for_each(p):
     '''statement : SOCO IDENTIFIER KASTA LAGA HELO expression body_statements'''

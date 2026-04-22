@@ -10,7 +10,7 @@ char* tusmo_str_format(const char* format, ...) {
     int size = vsnprintf(NULL, 0, format, args1);
     va_end(args1);
     if (size < 0) return NULL;
-    char* buffer = GC_MALLOC(size + 1);
+    char* buffer = malloc(size + 1);
     if (!buffer) return NULL;
     vsnprintf(buffer, size + 1, format, args2);
     va_end(args2);
@@ -40,7 +40,7 @@ char* tusmo_concat_cstr(const char* left, const char* right) {
 char* tusmo_str_upper(const char* str) {
     if (!str) return "";
     size_t len = strlen(str);
-    char* result = GC_MALLOC(len + 1);
+    char* result = malloc(len + 1);
     for (size_t i = 0; i < len; i++) {
         result[i] = toupper(str[i]);
     }
@@ -52,7 +52,7 @@ char* tusmo_str_upper(const char* str) {
 char* tusmo_str_lower(const char* str) {
     if (!str) return "";
     size_t len = strlen(str);
-    char* result = GC_MALLOC(len + 1);
+    char* result = malloc(len + 1);
     for (size_t i = 0; i < len; i++) {
         result[i] = tolower(str[i]);
     }
@@ -72,7 +72,7 @@ char* tusmo_str_trim(const char* str) {
         end--;
     }
     size_t len = end - str + 1;
-    char* result = GC_MALLOC(len + 1);
+    char* result = malloc(len + 1);
     strncpy(result, str, len);
     result[len] = '\0';
     return result;
@@ -97,7 +97,7 @@ char* tusmo_str_rtrim(const char* str) {
         end--;
     }
     size_t result_len = end - str + 1;
-    char* result = GC_MALLOC(result_len + 1);
+    char* result = malloc(result_len + 1);
     strncpy(result, str, result_len);
     result[result_len] = '\0';
     return result;
@@ -124,7 +124,7 @@ char* tusmo_str_replace(const char* str, const char* old_str, const char* new_st
     
     // Calculate new length
     size_t result_len = str_len + count * (new_len - old_len);
-    char* result = GC_MALLOC(result_len + 1);
+    char* result = malloc(result_len + 1);
     
     char* dest = result;
     p = str;
@@ -181,4 +181,17 @@ TusmoTixEray* tusmo_str_split(const char* str, const char* delimiter) {
     }
     free(str_copy);
     return result;
+}
+
+char* tusmo_strdup(const char* s) {
+    if (!s) return NULL;
+    char* copy = malloc(strlen(s) + 1);
+    if (copy) strcpy(copy, s);
+    return copy;
+}
+
+void tusmo_free_eray(char* str) {
+    if (str) {
+        free(str);
+    }
 }

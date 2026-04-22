@@ -40,7 +40,7 @@ char* tusmo_time_now() {
 char* tusmo_format_time(const char* format) {
     time_t rawtime;
     struct tm * timeinfo;
-    char * buffer = (char *)GC_MALLOC(80 * sizeof(char));
+    char * buffer = (char *)malloc(80 * sizeof(char));
 
     time(&rawtime);
     timeinfo = localtime(&rawtime);

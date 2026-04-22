@@ -5,7 +5,8 @@ from compiler.frontend.parser.ast_nodes import (
     CharNode, IdentifierNode, BinaryOpNode, FStringNode, BooleanNode,
     FunctionCallNode, ArrayAccessNode, ArrayTypeNode, MethodCallNode,
     ClassInstantiationNode, MemberAccessNode, ThisNode, WaalidNode, ArrayInitializationNode, ArrayTypeQueryNode,
-    ASTNode, CCallNode, DictionaryInitializationNode, DictionaryAccessNode, FunctionTypeNode, NamedArgument, TypeLiteralNode
+    ASTNode, CCallNode, DictionaryInitializationNode, DictionaryAccessNode, FunctionTypeNode, NamedArgument, TypeLiteralNode, WaxboNode,
+    QaabQiimeNode
 )
 
 from compiler.backend.transpiler.expression_errors import *
@@ -38,6 +39,11 @@ class ExpressionGenerator:
             return "true" if node.value else "false"
         elif isinstance(node, IdentifierNode):
             return node.name
+        elif isinstance(node, WaxboNode):
+            return "NULL"
+        elif isinstance(node, CCallNode):
+            args = [self.generate_expression(arg) for arg in node.args]
+            return f"{node.c_function_name}({', '.join(args)})"
         elif isinstance(node, ThisNode):
             return "kan"
         elif isinstance(node, WaalidNode):
@@ -59,6 +65,10 @@ class ExpressionGenerator:
         elif isinstance(node, DictionaryAccessNode):
             self.main_generator.used_features.add("dictionary")
             return self.main_generator.dictionary_generator.generate_access(node)
+
+        elif isinstance(node, QaabQiimeNode):
+            vals_c = [self.generate_expression(v) for v in node.values]
+            return f"({node.struct_name}){{ {', '.join(vals_c)} }}"
 
         # Consolidated Access Logic for [...] syntax
         elif isinstance(node, ArrayAccessNode):
@@ -125,6 +135,10 @@ class ExpressionGenerator:
                         break
             
             # Build access string
+            if class_info and class_info[1] == 'struct_definition':
+                # Structs are passed by value, so use dot operator directly
+                return f"{object_c}.{node.member_name}"
+                
             if depth == 0:
                 # Original access: {object_c}->{node.member_name}
                 # Wrapped: TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})->{node.member_name}
@@ -157,7 +171,7 @@ class ExpressionGenerator:
 
     def _generate_method_call(self, node: MethodCallNode):
         object_type = self.get_expression_type(node.object_node)
-        if isinstance(object_type, ArrayTypeNode):
+        if isinstance(object_type, ArrayTypeNode) or str(object_type).startswith('tix'):
             return self.main_generator.array_generator.generate_method_call(node)
         
         if str(object_type) == 'qaamuus':
@@ -426,7 +440,7 @@ class ExpressionGenerator:
         expr_type_str = str(expr_type)
        
 
-        if expr_type_str == 'eray':
+        if expr_type_str in ('eray', 'c_dynamic', 'unknown'):
             return expr_code
         if expr_type_str == 'xaraf':
             self.main_generator.used_features.add("string")
@@ -483,7 +497,7 @@ class ExpressionGenerator:
             arg_type = self.main_generator.semantic_checker.get_expression_type(node.params[0], skip_context_check=True)
             if str(arg_type) == 'eray':
                 return f"strlen({arg_expr})"
-            elif isinstance(arg_type, ArrayTypeNode):
+            elif isinstance(arg_type, ArrayTypeNode) or str(arg_type).startswith("tix") or str(arg_type) == "dynamic_value":
                 return f"{arg_expr}->size"
             else:
                 raise Cilad(ERR_DHERER_TYPE(arg_type))
@@ -544,6 +558,9 @@ class ExpressionGenerator:
         else:
             # Direct function call
             func_node = func_info[0]
+            if func_node is None:
+                # Symbol exists but is not a callable with AST body (e.g. c_type/constant).
+                raise Cilad(ERR_FUNC_NOT_FOUND(node.name))
             args = self._unwrap_args(getattr(node, "ordered_args", None), node.params)
 
             arg_exprs = [self.generate_expression(arg) for arg in args]

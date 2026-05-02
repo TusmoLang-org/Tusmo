@@ -53,7 +53,7 @@ void prints_tix_xaraf(TusmoTixXaraf* tix) {
 void prints_tix_mixed(TusmoTixMixed* tix) {
     printf("[");
     for (size_t i = 0; i < tix->size; i++) {
-        tusmo_qor_dynamic_value(tix->data[i]);
+        tusmo_qor_walbo(tix->data[i]);
         if (i + 1 < tix->size) printf(", ");
     }
     printf("]");
@@ -300,7 +300,7 @@ void prints_tix_xaraf_nested2(TusmoTixXarafNested2* tix) {
     printf("]");
 }
 
-void tusmo_qor_dynamic_value(TusmoValue val) {
+void tusmo_qor_walbo(TusmoValue val) {
     switch (val.type) {
         case TUSMO_TIRO:  printf("%d", val.value.as_tiro); break;
         case TUSMO_ERAY:  printf("%s", val.value.as_eray ? val.value.as_eray : "waxbo"); break;

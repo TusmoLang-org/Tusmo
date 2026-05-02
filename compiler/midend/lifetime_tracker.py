@@ -92,7 +92,9 @@ class LifetimeTracker:
 
     def get_all_active_heap_vars(self):
         cleanup_list = []
-        for scope_vars in reversed(self.scopes):
+        # Iterate through scopes but skip the global scope (index 0)
+        # We don't want functions freeing global variables when they return!
+        for scope_vars in reversed(self.scopes[1:]):
             for var_name, info in scope_vars.items():
                 if (self.is_heap_type(info['type']) and 
                     var_name not in self.moved_variables and 

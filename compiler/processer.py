@@ -6,6 +6,8 @@ from compiler.frontend.parser.ast_nodes import (
     KeydNode,
     FunctionNode,
     ClassNode,
+    QaabNode,
+    QeexNode,
 )
 from compiler.frontend.lexer.lexer import lexer
 from compiler.frontend.parser.parser import parser
@@ -60,6 +62,10 @@ def _get_top_level_name(node):
     if isinstance(node, FunctionNode):
         return node.name
     if isinstance(node, ClassNode):
+        return node.name
+    if isinstance(node, QaabNode):
+        return node.name
+    if isinstance(node, QeexNode):
         return node.name
     return None
 

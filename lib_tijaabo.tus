@@ -1,0 +1,25 @@
+// lib_tijaabo.tus
+
+// Constant
+qeex TIJAABO_NUMBER = 500;
+
+// Struct
+qaab TijaaboQaab {
+    keyd:tiro x;
+    keyd:tiro y;
+}
+
+// Variable
+keyd:eray fariin = "Waan shaqaynayaa!";
+
+// Function
+hawl isku_dar(a: tiro, b: tiro) : tiro {
+    soo_celi a + b;
+}
+
+// Dead code that SHOULD NOT be imported
+hawl code_dhintay() : waxbo {
+    qor("Haddii aad i aragto, isticmaal wuu fashilmay!");
+}
+
+qeex DEAD_CONSTANT = 999;

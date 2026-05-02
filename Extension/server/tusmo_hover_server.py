@@ -13,6 +13,10 @@ from lsprotocol.types import (
     HoverParams,
     MarkupContent,
     MarkupKind,
+    CompletionParams,
+    CompletionList,
+    CompletionItem,
+    CompletionItemKind,
 )
 from pygls.lsp.server import LanguageServer
 
@@ -29,6 +33,7 @@ TEXT_DOCUMENT_DID_OPEN = "textDocument/didOpen"
 TEXT_DOCUMENT_DID_CHANGE = "textDocument/didChange"
 TEXT_DOCUMENT_DID_CLOSE = "textDocument/didClose"
 HOVER = "textDocument/hover"
+TEXT_DOCUMENT_COMPLETION = "textDocument/completion"
 
 
 class TusmoLanguageServer(LanguageServer):
@@ -87,6 +92,38 @@ def hover(ls: TusmoLanguageServer, params: HoverParams) -> Optional[Hover]:
     return Hover(contents=MarkupContent(kind=MarkupKind.Markdown, value=markdown))
 
 
+@server.feature(TEXT_DOCUMENT_COMPLETION)
+def completions(ls: TusmoLanguageServer, params: CompletionParams) -> Optional[CompletionList]:
+    doc_index = ls.doc_indices.get(params.text_document.uri)
+    if not doc_index:
+        return None
+
+    items = []
+    for symbol_name, entries in doc_index.items():
+        if not entries:
+            continue
+        entry = entries[0] 
+        
+        kind = CompletionItemKind.Function
+        if entry.kind == "class" or entry.kind == "qaab":
+            kind = CompletionItemKind.Class
+        elif entry.kind == "method":
+            kind = CompletionItemKind.Method
+            
+        item = CompletionItem(
+            label=symbol_name,
+            kind=kind,
+            detail=entry.signature if entry.signature else entry.kind,
+            documentation=MarkupContent(
+                kind=MarkupKind.Markdown, 
+                value=_render_docstring(entry.docstring)
+            )
+        )
+        items.append(item)
+        
+    return CompletionList(is_incomplete=False, items=items)
+
+
 def _refresh_index(ls: TusmoLanguageServer, uri: str) -> None:
     document = ls.workspace.get_text_document(uri)
     if not document:
@@ -106,6 +143,11 @@ def _refresh_index(ls: TusmoLanguageServer, uri: str) -> None:
             index = build_doc_index(document.source, filename)
     except Exception:  # pragma: no cover - defensive
         LOGGER.exception("Failed to build docstring index for %s", filename)
+        return
+
+    # If the new index is empty (likely due to a syntax error while typing),
+    # keep the old index so hover/autocomplete keeps working!
+    if not list(index.items()) and uri in ls.doc_indices:
         return
 
     ls.doc_indices[uri] = index
@@ -188,7 +230,7 @@ def _render_docstring(docstring: str | None) -> str:
     text = text.replace(r"\\n", "\n")
     text = text.replace(r"\n", "\n")
     text = re.sub(r"#([^#\n]+)#", lambda m: f"**{m.group(1).strip()}**", text)
-    text = text.replace("\n", "  \n")
+    # Removing the hard line break to fix markdown formatting
     return text
 
 

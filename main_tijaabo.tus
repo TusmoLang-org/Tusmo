@@ -1,0 +1,20 @@
+// main_tijaabo.tus
+isticmaal {TIJAABO_NUMBER, TijaaboQaab, fariin, isku_dar} kujira "lib_tijaabo";
+
+hawl main() : waxbo {
+    // Test importing a constant
+    qor("Constant waa: ", TIJAABO_NUMBER);
+
+    // Test importing a variable
+    qor("Fariinta waa: ", fariin);
+
+    // Test importing a function
+    keyd:tiro jawaab = isku_dar(10, 20);
+    qor("Jawaabta isku_dar waa: ", jawaab);
+
+    // Test importing a struct
+    keyd:TijaaboQaab q = (TijaaboQaab){100, 200};
+    qor("Qaab x: ", q.x, " y: ", q.y);
+}
+
+main();

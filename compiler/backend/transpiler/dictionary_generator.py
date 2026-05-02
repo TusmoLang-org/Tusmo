@@ -66,8 +66,8 @@ class DictionaryGenerator:
             return f"(TusmoValue){{.type = TUSMO_TIX, .value.as_tix = {value_c}}}", "TUSMO_TIX"
 
         # Already a TusmoValue (e.g., coming from qaamuus_get or mixed array)
-        if str(value_type) == "dynamic_value":
-            return value_c, "dynamic_value"
+        if str(value_type) == "walbo":
+            return value_c, "walbo"
         
         # Default for complex types (like other dictionaries or objects)
         return f"(TusmoValue){{.type = TUSMO_ERAY, .value.as_eray = \"<complex_object>\"}}", "TUSMO_ERAY"

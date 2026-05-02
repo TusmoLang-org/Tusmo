@@ -24,7 +24,7 @@ class FunctionGenerator:
             class_name = self.main_generator.current_class.name
             c_func_name = f"{class_name}_{node.name}"  # e.g., Qof_hadal
         else:
-            c_func_name = node.name  # Regular function name
+            c_func_name = self.main_generator.mangle_name(node.name)  # Mangle protected names like 'main'
 
         # --- Build the C parameter list ---
         params_list = []
@@ -55,6 +55,9 @@ class FunctionGenerator:
         # We temporarily hijack the main generator's C code buffer to generate
         # the body for this function, then restore it.
         self.symbol_table.push_scope()
+
+        old_current_function = getattr(self.main_generator, 'current_function_node', None)
+        self.main_generator.current_function_node = node
 
         # Add parameters to the symbol table for the scope of this function's body
         if is_method:
@@ -90,6 +93,7 @@ class FunctionGenerator:
         function_body_code = self.main_generator.c_code + cleanup_code
         self.main_generator.c_code = original_c_code_buffer # Restore original buffer
         self.main_generator.inside_function = original_inside_function
+        self.main_generator.current_function_node = old_current_function
 
         self.symbol_table.pop_scope()
 

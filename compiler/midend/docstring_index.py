@@ -144,14 +144,50 @@ def _safe_parse_ast(source: str, filename: str) -> list[ASTNode]:
 
 
 def _collect_from_node(node: ASTNode, index: DocstringIndex, class_name: str | None = None) -> None:
-    if isinstance(node, ClassNode):
+    if node.__class__.__name__ == 'ClassNode':
         _record_class(node, index)
         for method in node.methods or []:
             _collect_from_node(method, index, class_name=node.name)
+        for member in getattr(node, 'members', []):
+            _collect_from_node(member, index, class_name=node.name)
         return
 
-    if isinstance(node, FunctionNode):
+    if node.__class__.__name__ == 'QaabNode':
+        if getattr(node, 'docstring', None):
+            entry = DocEntry(
+                display_name=node.name,
+                kind="qaab",
+                signature=f"qaab {node.name}",
+                docstring=node.docstring.strip(),
+            )
+            index.add(node.name, entry)
+            
+        for member in getattr(node, 'members', []):
+            _collect_from_node(member, index, class_name=node.name)
+        return
+
+    if node.__class__.__name__ == 'FunctionNode':
         _record_function(node, index, class_name)
+        return
+        
+    if node.__class__.__name__ in ('KeydNode', 'QeexNode'):
+        if getattr(node, 'docstring', None):
+            is_qeex = node.__class__.__name__ == 'QeexNode'
+            name = getattr(node, 'name', None) or getattr(node, 'var_name', None)
+            var_type = "qeex" if is_qeex else str(getattr(node, 'var_type', 'walbo'))
+            
+            kind = "constant" if is_qeex else ("property" if class_name else "variable")
+            display_name = f"{class_name}.{name}" if class_name else name
+            
+            entry = DocEntry(
+                display_name=display_name,
+                kind=kind,
+                signature=f"qeex {name}" if is_qeex else f"keyd:{var_type} {name}",
+                docstring=node.docstring.strip(),
+            )
+            index.add(name, entry)
+            if class_name:
+                index.add(display_name, entry)
         return
 
 

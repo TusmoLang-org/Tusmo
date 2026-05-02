@@ -1,0 +1,58 @@
+keen "types";
+
+hawl bilowDaaqada(ballac: tiro, dhirir: tiro, cinwaan: eray) : waxbo { 
+    """
+    Wuxuu furaa daaqad cusub oo lagu ciyaaro.
+    - ballac: Balaca daaqada (pixels)
+    - dheer: Dhererka daaqada (pixels)
+    - cinwaan: Magaca daaqada
+    """
+    ___c__call_("InitWindow", ballac, dheer, cinwaan); 
+}
+
+hawl xaddidFps(fps: tiro) : waxbo { 
+    """
+    Wuxuu xaddidaa xawaaraha ay ciyaartu ku socoto (Frames Per Second).
+    - fps: Tirada FPS (tusaale: 60)
+    """
+    ___c__call_("SetTargetFPS", fps); 
+}
+
+hawl daaqadaMaXirantahay() : miyaa { 
+    """
+    Wuxuu soo celiyaa 'haa' haddii isticmaaluhu riixay batoonka (X) ee daaqada.
+    Waa in lagu dhex isticmaalaa loop-ka (inta ay) si ciyaartu u socoto.
+    """
+    soo_celi ___c__call_("WindowShouldClose"); 
+}
+
+hawl bilowSawirka() : waxbo { 
+    """
+    Wuxuu bilaabaa habka sawirida ee shaashada. 
+    Waa in lagu bilaabo ka hor inta aanad sawirin waxyaabaha ciyaarta.
+    """
+    ___c__call_("BeginDrawing"); 
+}
+
+hawl dhameeySawirka() : waxbo { 
+    """
+    Wuxuu soo gabagabeeyaa sawirida oo wuxuu shaashada tusiyaa waxyaabihii la sawiray.
+    """
+    ___c__call_("EndDrawing"); 
+}
+
+hawl xirDaaqada() : waxbo { 
+    """
+    Wuxuu xiraa daaqada ciyaarta oo wuxuu nadiifiyaa xusuusta (memory) uu adeegsaday.
+    """
+    ___c__call_("CloseWindow"); 
+}
+
+hawl muujiFps(x: tiro, y: tiro) : waxbo { 
+    """
+    Wuxuu shaashada ku qoraa xawaaraha ciyaarta (FPS).
+    - x: Booska x-dhexaadka
+    - y: Booska y-dhexaadka
+    """
+    ___c__call_("DrawFPS", x, y); 
+}

@@ -1,0 +1,24 @@
+// lib_koox.tus
+
+koox Xisaabiye {
+    keyd:tiro wadarta;
+
+    dhis(bilowga: tiro) : waxbo {
+        kan.wadarta = bilowga;
+    }
+
+    hawl ku_dar(x: tiro) : waxbo {
+        kan.wadarta = kan.wadarta + x;
+    }
+
+    hawl hel_wadarta() : tiro {
+        soo_celi kan.wadarta;
+    }
+}
+
+// Dead class
+koox FasalkaDhintay {
+    hawl qor_fariin() : waxbo {
+        qor("Kani waa fasal dhintay!");
+    }
+}

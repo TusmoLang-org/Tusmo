@@ -1,6 +1,7 @@
 // runtime/type_conversion.c
 
 #include "type_conversion.h"
+#include "tusmo_runtime.h" // for tusmo_strdup
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,18 +17,23 @@ char* tusmo_to_eray(TusmoValue val) {
             snprintf(buffer, 128, "%f", val.value.as_jajab);
             break;
         case TUSMO_ERAY:
-            return val.value.as_eray; // Already a string
+            free(buffer);
+            return tusmo_strdup(val.value.as_eray); 
         case TUSMO_MIYAA:
-            return val.value.as_miyaa ? "run" : "been";
+            free(buffer);
+            return tusmo_strdup(val.value.as_miyaa ? "run" : "been");
         case TUSMO_XARAF:
             snprintf(buffer, 128, "%c", val.value.as_xaraf);
             break;
         case TUSMO_QAAMUUS:
-            return "<qaamuus>";
+            free(buffer);
+            return tusmo_strdup("<qaamuus>");
         case TUSMO_TIX:
-            return "<tix>";
+            free(buffer);
+            return tusmo_strdup("<tix>");
         default:
-            return "<nooc aan la menneyn>";
+            free(buffer);
+            return tusmo_strdup("<nooc aan la menneyn>");
     }
     return buffer;
 }

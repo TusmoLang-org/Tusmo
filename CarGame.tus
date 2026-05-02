@@ -1,0 +1,68 @@
+keen "raylib/core";
+keen "nasiib";
+
+qeex WINDOW_HEIGHT = 800;
+qeex WINDOW_WIDTH = 600;
+qeex far_tin = "stdlib/raylib/fonts/Tinos-Bold.ttf";
+
+keyd:walbo far = helFar(far_tin);
+keyd:jajab jihadaX = 0.0;
+keyd:jajab jihadaY = 0.0;
+
+keyd:jajab dropY = 0.0;
+keyd:jajab drop_acceleration = 1.0;
+
+bilowDaaqada(WINDOW_WIDTH, WINDOW_HEIGHT, "Car Game");
+xaddidFps(60);
+
+
+qeex BAABUUR_SAWIR = "car.png";
+keyd:walbo baabuur = helSawir(BAABUUR_SAWIR);
+
+keyd:jajab xariiqY = 10.0;
+keyd:jajab xawaaraha = 5.1;
+
+keyd:jajab score = 0.0;
+inta ay (daaqadaMaXirantahay() == been){
+    bilaab_nasiib();
+    bilowSawirka();
+    nadiifiShaashada(MADOW);
+
+    // count score
+    score = score + 0.01;
+
+    dropY = dropY + drop_acceleration;
+    haddii (dropY > WINDOW_HEIGHT) {
+        dropY = 0.0;
+    }
+
+    kuqor(far, "Score: " + tiro(score), (Boos2D){15.0, 100.0}, 50.0, CAD);
+    
+    haddii (laTaabtayFurahan(FURE_MIDIG) iyo jihadaX < 0.6) {
+        jihadaX = jihadaX + 0.1; // Midig waa lagu darayaa (+)
+    } ama_haddii (laTaabtayFurahan(FURE_BIDIX) iyo jihadaX > 0.0) {
+        jihadaX = jihadaX - 0.1; // Bidix waa laga goynayaa (-)
+    }
+    
+
+    // socod sii xariiqa si uu u muuqdo babuurka inuu socdo
+    haddii (xariiqY < 860.0) {
+        xariiqY = xariiqY + xawaaraha;
+    }haddii_kale{
+        xariiqY = 0.0;
+    }
+    // isbaaro blocks ah
+    sawirAfarGees(nasiib_jajab(0.0, 510.0), dropY, 90.0, 60.0, CAD);
+    sawirAfarGees(nasiib_jajab(0.0, 510.0), dropY, 90.0, 60.0, CAD);
+    //xariiqyada waddada
+    sawirAfarGees(WINDOW_WIDTH / 2.0, xariiqY - 640.0, 5.0, 60.0, CAD);
+    sawirAfarGees(WINDOW_WIDTH / 2.0, xariiqY - 240.0, 5.0, 60.0, CAD);
+    sawirAfarGees(WINDOW_WIDTH / 2.0, xariiqY - 440.0, 5.0, 60.0, CAD);
+    sawirAfarGees(WINDOW_WIDTH / 2.0, xariiqY, 5.0, 60.0, CAD);
+    sawirAfarGees(WINDOW_WIDTH / 2.0, xariiqY+240.0, 5.0, 60.0, CAD);
+    sawirAfarGees(WINDOW_WIDTH / 2.0, xariiqY+440.0, 5.0, 60.0, CAD);
+    sawirAfarGees(WINDOW_WIDTH / 2.0, xariiqY+640.0, 5.0, 60.0, CAD);       muujiSawirLahelay(baabuur, (Boos2D){WINDOW_WIDTH * jihadaX, WINDOW_HEIGHT * 0.7}, 0.0, 0.07, CAD);
+    dhameeySawirka();
+    xawaaraha = xawaaraha + 0.001; // Kordhinta xawaaraha si ciyaartu u adkaato waqti ka dib
+}
+xirDaaqada();

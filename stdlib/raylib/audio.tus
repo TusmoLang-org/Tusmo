@@ -1,0 +1,30 @@
+keen "types";
+
+hawl bilowMaqal() : waxbo { 
+    """
+    Wuxuu furaa ama dhaqaajiyaa qalabka codka (Audio Device). 
+    Waa in lagu wacaa ka hor inta aan codadka lasoo rurin.
+    """
+    ___c__call_("InitAudioDevice"); 
+}
+
+hawl xirMaqal() : waxbo { 
+    """
+    Wuxuu xiraa qalabka codka, isagoo sii deynaya xusuusta.
+    """
+    ___c__call_("CloseAudioDevice"); 
+}
+
+hawl helMaqal(faylka: eray) : walbo { 
+    """
+    Wuxuu soo rurisaa cod gaaban (tusaale: .wav, .mp3).
+    """
+    soo_celi ___c__call_("Tusmo_LoadSound", faylka); 
+}
+
+hawl garaacMaqal(maqal: walbo) : waxbo { 
+    """
+    Wuxuu ciyaaraa (play) codkii lasoo ruriyay mar keliya.
+    """
+    ___c__call_("Tusmo_PlaySound", maqal); 
+}

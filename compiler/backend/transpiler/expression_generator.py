@@ -38,7 +38,7 @@ class ExpressionGenerator:
         elif isinstance(node, BooleanNode):
             return "true" if node.value else "false"
         elif isinstance(node, IdentifierNode):
-            return node.name
+            return self.main_generator.mangle_name(node.name)
         elif isinstance(node, WaxboNode):
             return "NULL"
         elif isinstance(node, CCallNode):
@@ -85,7 +85,7 @@ class ExpressionGenerator:
                 return f"tusmo_qaamuus_get({safe_base}, {index_c})"
 
             # Case 2: It's a value from a mixed array. Use tusmo_tix_mixed_get_nested for proper type-switching.
-            elif str(base_type) == 'dynamic_value':
+            elif str(base_type) == 'walbo':
                 temp_var = self.main_generator.get_temp_var()
                 # Evaluate once so we can branch based on runtime type
                 self.main_generator.c_code += f"    TusmoValue {temp_var} = {base_expr_c};\n"
@@ -112,8 +112,8 @@ class ExpressionGenerator:
             object_c = self.generate_expression(node.object_node)
             object_type = self.get_expression_type(node.object_node)
 
-            # NEW: Handle dynamic_value (dictionary from mixed array)
-            if str(object_type) == "dynamic_value":
+            # NEW: Handle walbo (dictionary from mixed array)
+            if str(object_type) == "walbo":
                 # Check if it's coming from an array access (tix:qaamuus element)
                 if isinstance(node.object_node, ArrayAccessNode):
                     self.main_generator.used_features.add("dictionary")
@@ -332,7 +332,7 @@ class ExpressionGenerator:
                 is_equal = node.op == '=='
                 
                 # Case 1: Other side is a dynamic value
-                if other_type == "dynamic_value":
+                if other_type == "walbo":
                     self.main_generator.used_features.add("conversion")
                     self.main_generator.used_features.add("string")
                     res = f'(strcmp(tusmo_type_of({other_c}), "{type_name}") == 0)'
@@ -453,7 +453,7 @@ class ExpressionGenerator:
             return f'tusmo_str_format("%f", {expr_code})'
         if expr_type_str == 'miyaa':
             return f"(({expr_code}) ? \"run\" : \"been\")"
-        if expr_type_str == 'dynamic_value':
+        if expr_type_str == 'walbo':
             self.main_generator.used_features.add("conversion")
             self.main_generator.used_features.add("string")
             return f"tusmo_to_eray({expr_code})"
@@ -473,7 +473,7 @@ class ExpressionGenerator:
             arg_type = self.get_expression_type(arg_node)
 
             # If the argument is already a TusmoValue (dynamic array element), pass it straight through.
-            if str(arg_type) == "dynamic_value":
+            if str(arg_type) == "walbo":
                 c_func_name = f"tusmo_to_{node.name}"
                 return f"{c_func_name}({arg_c})"
 
@@ -497,7 +497,7 @@ class ExpressionGenerator:
             arg_type = self.main_generator.semantic_checker.get_expression_type(node.params[0], skip_context_check=True)
             if str(arg_type) == 'eray':
                 return f"strlen({arg_expr})"
-            elif isinstance(arg_type, ArrayTypeNode) or str(arg_type).startswith("tix") or str(arg_type) == "dynamic_value":
+            elif isinstance(arg_type, ArrayTypeNode) or str(arg_type).startswith("tix") or str(arg_type) == "walbo":
                 return f"{arg_expr}->size"
             else:
                 raise Cilad(ERR_DHERER_TYPE(arg_type))
@@ -518,8 +518,8 @@ class ExpressionGenerator:
             arg_type = self.main_generator.semantic_checker.get_expression_type(arg_node, skip_context_check=True)
             if isinstance(arg_type, ArrayTypeNode):
                 self.main_generator.used_features.add("array")
-            # If it's a mixed-array element (dynamic_value), ask the runtime for the actual tag.
-            if str(arg_type) == "dynamic_value":
+            # If it's a mixed-array element (walbo), ask the runtime for the actual tag.
+            if str(arg_type) == "walbo":
                 self.main_generator.used_features.add("conversion")
                 arg_expr = self.generate_expression(arg_node)
                 return f"tusmo_type_of({arg_expr})"
@@ -551,7 +551,7 @@ class ExpressionGenerator:
         # Check if it's a direct function call or an indirect call through a variable
         if isinstance(func_info[1], FunctionTypeNode):
             # Indirect call through a variable
-            c_func_name = node.name
+            c_func_name = self.main_generator.mangle_name(node.name)
             args = self._unwrap_args(getattr(node, "ordered_args", None), node.params)
             arg_exprs = [self.generate_expression(arg) for arg in args]
             return f"{c_func_name}({', '.join(arg_exprs)})"
@@ -563,7 +563,20 @@ class ExpressionGenerator:
                 raise Cilad(ERR_FUNC_NOT_FOUND(node.name))
             args = self._unwrap_args(getattr(node, "ordered_args", None), node.params)
 
-            arg_exprs = [self.generate_expression(arg) for arg in args]
+            arg_exprs = []
+            for i, arg in enumerate(args):
+                arg_c = self.generate_expression(arg)
+                
+                # Check if the parameter expects an 'eray'
+                if i < len(func_node.params):
+                    param_type = str(func_node.params[i].param_type)
+                    if param_type == "eray":
+                        # If the argument is not already a safe heap allocation (like a previous strdup or concat), duplicate it.
+                        if not arg_c.startswith("tusmo_strdup") and not arg_c.startswith("tusmo_concat_cstr") and not arg_c.startswith("tusmo_to_eray"):
+                            self.main_generator.used_features.add("string")
+                            arg_c = f"tusmo_strdup({arg_c})"
+                            
+                arg_exprs.append(arg_c)
             
             num_provided_args = len(arg_exprs)
             num_required_params = len(func_node.params)
@@ -577,7 +590,7 @@ class ExpressionGenerator:
                         # This should also be caught by the semantic analyzer
                         raise Cilad(ERR_MISSING_PARAM(param.name))
 
-            c_func_name = node.name
+            c_func_name = self.main_generator.mangle_name(node.name)
             return f"{c_func_name}({', '.join(arg_exprs)})"
 
     def _get_tusmo_type_enum(self, type_str):

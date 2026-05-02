@@ -24,11 +24,22 @@ def attach_docstrings(ast):
     """
     Traverse the AST and attach docstring metadata to FunctionNode/ClassNode
     instances. Removes the synthetic StringNode from the body/members so it
-    does not generate code.
+    does not generate code. Also attaches preceding string literals to 
+    variable declarations (KeydNode, QeexNode, QaabNode).
     """
     if isinstance(ast, list):
-        for node in ast:
-            _attach_docstrings(node)
+        i = 0
+        while i < len(ast):
+            # Check for a StringNode followed by a declarable node
+            if i + 1 < len(ast) and isinstance(ast[i], StringNode):
+                next_node = ast[i+1]
+                target_types = ('KeydNode', 'QeexNode', 'QaabNode', 'FunctionNode', 'ClassNode')
+                if next_node.__class__.__name__ in target_types:
+                    next_node.docstring = _unescape_docstring(ast[i].value)
+                    ast.pop(i) # Remove the string node from AST
+                    continue
+            _attach_docstrings(ast[i])
+            i += 1
     elif isinstance(ast, ASTNode):
         _attach_docstrings(ast)
     return ast
@@ -55,9 +66,8 @@ def _attach_docstrings(node: ASTNode | None):
             continue
         value = getattr(node, attr_name)
         if isinstance(value, list):
-            for child in value:
-                if isinstance(child, ASTNode):
-                    _attach_docstrings(child)
+            # Pass the list back to the main function to handle lookaheads
+            attach_docstrings(value)
         elif isinstance(value, ASTNode):
             _attach_docstrings(value)
 

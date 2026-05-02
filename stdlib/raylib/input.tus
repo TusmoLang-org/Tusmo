@@ -1,0 +1,35 @@
+keen "types";
+
+qeex GUJI_BIDIX = 0;
+qeex FURE_SPACE = 32;
+qeex FURE_BACKSPACE = 259;
+
+//ARROW KEYS
+qeex FURE_MIDIG = 262;
+qeex FURE_BIDIX = 263;
+qeex FURE_HOOSE = 264;
+qeex FURE_SARE = 265;
+
+
+hawl helBooskaFalaarta() : Boos2D { 
+    """
+    Wuxuu soo celiyaa booska hadda ay joogto falaarta jiirka (Mouse) oo ah Boos2D.
+    """
+    soo_celi ___c__call_("Tusmo_GetMousePosition"); 
+}
+
+hawl laRiixayFalaartaBidix() : miyaa { 
+    """
+    Wuxuu hubiyaa haddii isticmaaluhu riixay dhinaca bidix ee jiirka.
+    Wuxuu soo celiyaa 'haa' haddii la riixay.
+    """
+    soo_celi ___c__call_("IsMouseButtonPressed", GUJI_BIDIX); 
+}
+
+hawl laTaabtayFurahan(fure: tiro) : miyaa { 
+    """
+    Wuxuu hubiyaa haddii fureha la taabtay (tusaale: FURE_SPACE).
+    Wuxuu soo celiyaa 'haa' haddii la riixay furahaas.
+    """
+    soo_celi ___c__call_("IsKeyPressed", fure); 
+}

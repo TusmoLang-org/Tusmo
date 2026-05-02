@@ -219,9 +219,9 @@ class ArrayGenerator:
 
         base_type_str = str(base_tusmo_type)
 
-        # For dynamic_value (TusmoValue from a mixed array), we use tusmo_tix_mixed_get_nested
+        # For walbo (TusmoValue from a mixed array), we use tusmo_tix_mixed_get_nested
         # which handles type-switching for typed nested arrays (2D, 3D) stored in TusmoValue.
-        if base_type_str == 'dynamic_value':
+        if base_type_str == 'walbo':
             temp_var = self.main_generator.get_temp_var()
             self.main_generator.c_code += f"    TusmoValue {temp_var} = {base_expr_c};\n"
             return f"tusmo_tix_mixed_get_nested({temp_var}, {index_c})"
@@ -323,7 +323,7 @@ class ArrayGenerator:
         else:
             element_type = array_type_node.element_type
         
-        if self._is_mixed_storage_type(element_type) or str(element_type) == 'dynamic_value':
+        if self._is_mixed_storage_type(element_type) or str(element_type) == 'walbo':
             self.generate_mixed_append_call(array_c_name, element_node)
         elif isinstance(element_type, ArrayTypeNode) or (isinstance(array_type_node, str) and array_type_node.count(':') > 1): # Nested array
             inner_type = element_type.element_type if isinstance(element_type, ArrayTypeNode) else array_type_node.split(':')[-1]

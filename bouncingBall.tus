@@ -1,0 +1,54 @@
+keen "raylib/core";
+qeex H = 600;
+qeex W = 400;
+
+keyd:jajab banooni_jihada_X = 200.0;
+keyd:jajab banooni_jihada_Y = 50.0;
+keyd:jajab surface = 400.0;
+
+//physics
+keyd:jajab xawaaraha = 0.0;
+keyd:jajab cufisjiidad = 0.5;
+
+qeex FAR_TINOS_REGULAR = "stdlib/raylib/fonts/Tinos-Regular.ttf";
+
+keyd:Boos2D LocationText = (Boos2D){15.0, 15.0};
+
+bilowDaaqada(W, H, "Bouncing Ball");
+xaddidFps(60);
+keyd:walbo far = helFar(FAR_TINOS_REGULAR);
+
+inta ay (daaqadaMaXirantahay() == been){
+    bilowSawirka();
+    nadiifiShaashada(MADOW);
+    
+    kuqor(far, "Bouncing Ball", LocationText, 24.0, CAD);
+    sawirGoob(banooni_jihada_X, banooni_jihada_Y, 15.0, JAALLE);
+    sawirAfarGeesXariiqan(0.0, surface, 400.0, 50.0, CAGAAR);
+    dhameeySawirka();
+    qor("Current speed: ", xawaaraha);
+    haddii(banooni_jihada_Y+15.0 >= surface){
+        
+        banooni_jihada_Y = surface - 15.0;
+        xawaaraha = xawaaraha * -0.8;
+        qor("Kani waa jihada banooniga ", banooni_jihada_Y);
+        qor("Kani waa xawaaraha Banooniga ", xawaaraha);
+    }
+    haddii(banooni_jihada_Y == surface - 15.0){
+        qor("Banooniga waa taagan yahay dusha sare!");
+        keyd:Boos2D booskaFalaarta = helBooskaFalaarta();
+
+        qor("Booska falaarta: ", booskaFalaarta.x, ", ", booskaFalaarta.y);
+        qor("Booska banooniga: ", banooni_jihada_X, ", ", banooni_jihada_Y);
+        haddii(((booskaFalaarta.x - banooni_jihada_X) * (booskaFalaarta.x - banooni_jihada_X) + (booskaFalaarta.y - banooni_jihada_Y) * (booskaFalaarta.y - banooni_jihada_Y)) < 15 * 15 iyo laRiixayFalaartaBidix()){
+            qor("Banooniga waa la taabtay!");
+            banooni_jihada_X = 200.0;
+            banooni_jihada_Y = 50.0;
+        }
+    }
+
+    xawaaraha = xawaaraha + cufisjiidad;
+    banooni_jihada_Y = banooni_jihada_Y + xawaaraha;
+}
+
+xirDaaqada();

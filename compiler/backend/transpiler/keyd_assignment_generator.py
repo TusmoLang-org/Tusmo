@@ -55,8 +55,8 @@ class Keyd_Assignment_Generator:
             left_side_type = self.main_generator.semantic_checker.get_expression_type(left_expr_node, skip_context_check=True)
             right_side_type = self.main_generator.semantic_checker.get_expression_type(right_expr_node, skip_context_check=True)
 
-            # If assigning from dynamic_value (TusmoValue struct), unwrap it
-            if str(right_side_type) == "dynamic_value":
+            # If assigning from walbo (TusmoValue struct), unwrap it
+            if str(right_side_type) == "walbo" and right_expr_node.__class__.__name__ != 'CCallNode':
                 unwrap_map = {
                     "tiro": "as_tiro",
                     "jajab": "as_jajab",
@@ -75,6 +75,11 @@ class Keyd_Assignment_Generator:
                 right_c_converted = self.expr_generator._ensure_string_operand(right_c_code, right_side_type)
                 self.main_generator.c_code += f"    {left_c_code} = tusmo_concat_cstr({left_c_code}, {right_c_converted});\n"
             else:
+                # Super intelligent: wrap eray literals in strdup for assignment
+                if op == "=" and str(left_side_type) == "eray" and right_expr_node.__class__.__name__ == 'StringNode':
+                    self.main_generator.used_features.add("string")
+                    right_c_code = f"tusmo_strdup({right_c_code})"
+
                 # --- NEW: Smart Reassignment Cleanup ---
                 if op == "=":
                     # Only free if the variable was NOT moved previously

@@ -21,6 +21,15 @@ from compiler.frontend.parser.ast_nodes import ArrayTypeNode, EmbeddedCNode
 
 
 class CCodeGenerator:
+    FORBIDDEN_C_NAMES = {
+        "main", "printf", "scanf", "malloc", "free", "exit", "return", 
+        "if", "else", "while", "for", "do", "switch", "case", "break", 
+        "continue", "struct", "union", "enum", "typedef", "sizeof", 
+        "auto", "static", "extern", "register", "volatile", "const", 
+        "char", "int", "float", "double", "short", "long", "signed", 
+        "unsigned", "void"
+    }
+
     # 1. The __init__ method is updated to accept 'semantic_checker'.
     def __init__(self, symbol_table: SymbolTable, semantic_checker: SemanticChecker, used_features):
         self.symbol_table = symbol_table
@@ -50,6 +59,11 @@ class CCodeGenerator:
         self.dictionary_generator = DictionaryGenerator(self, self.expr_generator)
         self.loop_generator = LoopGenerator(self, self.expr_generator)
         self.class_generator = ClassGenerator(self)
+
+    def mangle_name(self, name):
+        if name in self.FORBIDDEN_C_NAMES:
+            return f"tusmo_{name}"
+        return name
 
     def get_temp_var(self):
         self.temp_var_counter += 1

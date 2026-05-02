@@ -44,7 +44,7 @@ class QorGenerator:
             array_type = self.expr_generator.get_expression_type(expr.array_name_node)
             if isinstance(array_type, ArrayTypeNode) and array_type.element_type is None:
                 # This is a mixed array access - returns TusmoValue
-                return "dynamic_value"
+                return "walbo"
         
         # Normal case - use the expression generator
         raw_type = self.expr_generator.get_expression_type(expr)
@@ -80,7 +80,7 @@ class QorGenerator:
                 key_c = self.expr_generator.generate_expression(expr.key_node)
                 unwrapped_dict = f"({array_access_c}).value.as_qaamuus"
                 get_call = f"tusmo_qaamuus_get({unwrapped_dict}, {key_c})"
-                self.main_generator.c_code += f'    tusmo_qor_dynamic_value({get_call});\n'
+                self.main_generator.c_code += f'    tusmo_qor_walbo({get_call});\n'
                 self.main_generator.c_code += "    fflush(stdout);\n"
                 continue
 
@@ -115,15 +115,15 @@ class QorGenerator:
             elif expr_type_str == "miyaa":
                 format_parts.append("%s")
                 arg_parts.append(f'({c_expr} ? "run" : "been")')
-            elif expr_type_str == "dynamic_value":
+            elif expr_type_str == "walbo":
                 # This is a TusmoValue from a mixed array - call the special function
                 flush_printf_batch()
-                self.main_generator.c_code += f'    tusmo_qor_dynamic_value({c_expr});\n'
+                self.main_generator.c_code += f'    tusmo_qor_walbo({c_expr});\n'
                 self.main_generator.c_code += "    fflush(stdout);\n"
             else:
-                # Unknown type - try to call tusmo_qor_dynamic_value as fallback
+                # Unknown type - try to call tusmo_qor_walbo as fallback
                 flush_printf_batch()
-                self.main_generator.c_code += f'    tusmo_qor_dynamic_value({c_expr});\n'
+                self.main_generator.c_code += f'    tusmo_qor_walbo({c_expr});\n'
                 self.main_generator.c_code += "    fflush(stdout);\n"
 
         # After processing all expressions, flush any remaining batch

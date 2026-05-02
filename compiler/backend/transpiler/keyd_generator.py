@@ -8,7 +8,7 @@ class KeydGenerator:
 
     def generate(self, node):
         """Main method to generate C code for variable declarations."""
-        var_name = node.var_name
+        var_name = self.main_generator.mangle_name(node.var_name)
         var_type = node.var_type
         value = node.value
         is_top_level = not self.main_generator.inside_function
@@ -24,7 +24,7 @@ class KeydGenerator:
             if value:
                 init_c = self.expr_generator.generate_expression(value)
                 right_type = self.main_generator.semantic_checker.get_expression_type(value, skip_context_check=True)
-                if str(right_type) == "dynamic_value":
+                if str(right_type) == "walbo":
                     init_c = f"({init_c}).value.as_qaamuus"
                 self.main_generator.c_code += f"    {var_name} = {init_c};\n"
                 # Move Semantics NULLing
@@ -101,9 +101,15 @@ class KeydGenerator:
                     c_primitive_type = self._get_primitive_c_type(var_type)
                     self._emit_declaration(c_primitive_type, var_name, is_top_level)
                     init_c = self.expr_generator.generate_expression(value)
-                    # Unwrap dynamic_value if assigning from dictionaries/mixed arrays
+                    
+                    # Super intelligent: wrap eray literals in strdup
+                    if str(var_type) == "eray" and value.__class__.__name__ == 'StringNode':
+                        self.main_generator.used_features.add("string")
+                        init_c = f"tusmo_strdup({init_c})"
+                        
+                    # Unwrap walbo if assigning from dictionaries/mixed arrays
                     right_type = self.main_generator.semantic_checker.get_expression_type(value, skip_context_check=True)
-                    if str(right_type) == "dynamic_value":
+                    if str(right_type) == "walbo" and value.__class__.__name__ != 'CCallNode':
                         unwrap_map = {
                             "tiro": "as_tiro",
                             "jajab": "as_jajab",

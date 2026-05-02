@@ -27,7 +27,7 @@ class SemanticChecker:
         self.is_lhs = False
 
     def _is_valid_type(self, type_node):
-        primitive_types = {"tiro", "jajab", "eray", "xaraf", "miyaa", "waxbo", "qaamuus"}
+        primitive_types = {"tiro", "jajab", "eray", "xaraf", "miyaa", "waxbo", "qaamuus", "walbo"}
 
         if isinstance(type_node, ArrayTypeNode):
             if type_node.element_type is None:
@@ -63,7 +63,7 @@ class SemanticChecker:
         dt = str(declared_type).strip()
         vt = str(value_type).strip()
         if dt == vt: return True
-        if dt in ('dynamic_value', 'unknown', 'c_dynamic') or vt in ('dynamic_value', 'unknown', 'c_dynamic'):
+        if dt in ('walbo', 'unknown', 'c_dynamic') or vt in ('walbo', 'unknown', 'c_dynamic'):
             return True
         if vt in ('waxbo', 'nooc:waxbo'):
             if any(dt.startswith(t) for t in ['tix:', 'eray', 'qaamuus']): return True
@@ -111,7 +111,7 @@ class SemanticChecker:
         if isinstance(node, FStringNode): return "eray"
         if isinstance(node, DictionaryInitializationNode): return "qaamuus"
         if isinstance(node, QaabQiimeNode): return node.struct_name
-        if isinstance(node, CCallNode): return "dynamic_value"
+        if isinstance(node, CCallNode): return "walbo"
         if isinstance(node, FunctionCallNode):
             if node.name == 'dherer': return "tiro"
             if node.name == 'nooc': return "eray"
@@ -121,16 +121,16 @@ class SemanticChecker:
             if info:
                 if isinstance(info[1], FunctionTypeNode): return info[1].return_type
                 if info[1] == "hawl": return info[0].return_type
-            return "dynamic_value"
+            return "walbo"
             
         if isinstance(node, ClassInstantiationNode): return node.class_name
         if isinstance(node, ThisNode):
-            return self.current_class.name if self.current_class else "unknown"
+            return getattr(node, 'resolved_class_name', self.current_class.name if self.current_class else "unknown")
         if isinstance(node, WaalidNode):
-            return self.current_class.parent_name if self.current_class and self.current_class.parent_name else "unknown"
+            return getattr(node, 'resolved_parent_name', self.current_class.parent_name if self.current_class and self.current_class.parent_name else "unknown")
         if isinstance(node, MemberAccessNode):
             obj_type = self.get_expression_type(node.object_node)
-            if str(obj_type) in ("dynamic_value", "qaamuus", "unknown"): return "dynamic_value"
+            if str(obj_type) in ("walbo", "qaamuus", "unknown"): return "walbo"
             
             # Resolve inheritance depth
             class_info = self.symbol_table.get(str(obj_type))
@@ -155,8 +155,8 @@ class SemanticChecker:
             
         if isinstance(node, MethodCallNode):
             obj_type = self.get_expression_type(node.object_node)
-            if str(obj_type) in ("dynamic_value", "qaamuus", "eray", "unknown") or str(obj_type).startswith("tix"): 
-                return "dynamic_value" # We assume string/array methods return dynamic or specific values handled at runtime
+            if str(obj_type) in ("walbo", "qaamuus", "eray", "unknown") or str(obj_type).startswith("tix"): 
+                return "walbo" # We assume string/array methods return dynamic or specific values handled at runtime
                 
             class_info = self.symbol_table.get(str(obj_type))
             if class_info and class_info[1] == 'class_definition':
@@ -170,7 +170,7 @@ class SemanticChecker:
                         current_class = parent_info[0] if parent_info else None
                     else:
                         break
-            return "dynamic_value"
+            return "walbo"
             
         if isinstance(node, IdentifierNode):
             info = self.symbol_table.get(node.name)
@@ -305,7 +305,7 @@ class SemanticChecker:
         arr_type = self.check(node.array_expr)
         elem_type = "unknown"
         if isinstance(arr_type, ArrayTypeNode):
-            elem_type = arr_type.element_type if arr_type.element_type else "dynamic_value"
+            elem_type = arr_type.element_type if arr_type.element_type else "walbo"
         elif str(arr_type) == "eray":
             elem_type = "xaraf"
         self.symbol_table.push_scope()
@@ -323,6 +323,7 @@ class SemanticChecker:
     def check_CharNode(self, node: CharNode): return "xaraf"
     def check_BooleanNode(self, node: BooleanNode): return "miyaa"
     def check_WaxboNode(self, node: WaxboNode): return "waxbo"
+    def check_CCallNode(self, node: CCallNode): return "walbo"
     def check_ArrayAccessNode(self, node: ArrayAccessNode):
         self.check(node.array_name_node)
         self.check(node.index_expression)
@@ -394,25 +395,80 @@ class SemanticChecker:
              
         if info[1] == "hawl":
             func_node = info[0]
-            if len(node.params) != len(func_node.params):
-                required_params = [p for p in func_node.params if p.default_value is None]
-                if len(node.params) < len(required_params) or len(node.params) > len(func_node.params):
+            
+            # Support Named Arguments & Defaults
+            ordered_args = [None] * len(func_node.params)
+            provided_names = set()
+            
+            # First pass: Positional arguments
+            positional_count = 0
+            for i, arg in enumerate(node.params):
+                if isinstance(arg, NamedArgument):
+                    break # Stop positional at the first named argument
+                if i >= len(func_node.params):
                     raise SemanticError(
-                        ERR_ARG_COUNT_MISMATCH(node.name, len(func_node.params), len(node.params)),
+                        ERR_ARG_COUNT_MISMATCH(node.name, len(func_node.params), len(node.params)), 
+                        node.filename, node.line
+                    )
+                ordered_args[i] = arg
+                provided_names.add(func_node.params[i].name)
+                positional_count += 1
+                
+            # Second pass: Named arguments
+            for i in range(positional_count, len(node.params)):
+                arg = node.params[i]
+                if not isinstance(arg, NamedArgument):
+                    raise SemanticError(
+                        ERR_POSITIONAL_AFTER_NAMED(node.name), 
+                        node.filename, node.line
+                    )
+                
+                # Find the parameter in the function signature
+                param_idx = -1
+                for p_idx, p in enumerate(func_node.params):
+                    if p.name == arg.name:
+                        param_idx = p_idx
+                        break
+                
+                if param_idx == -1:
+                    raise SemanticError(
+                        ERR_UNRECOGNIZED_NAMED_ARG(arg.name, node.name), 
+                        node.filename, node.line
+                    )
+                
+                if func_node.params[param_idx].name in provided_names:
+                    raise SemanticError(
+                        ERR_DUPLICATE_NAMED_ARG(arg.name, node.name), 
+                        node.filename, node.line
+                    )
+                
+                ordered_args[param_idx] = arg.value
+                provided_names.add(arg.name)
+                
+            # Third pass: Apply defaults for missing arguments
+            for i, p in enumerate(func_node.params):
+                if ordered_args[i] is None:
+                    if p.default_value is not None:
+                        ordered_args[i] = p.default_value
+                    else:
+                        raise SemanticError(
+                            ERR_MISSING_ARG(p.name, node.name, "...", "..."), 
+                            node.filename, node.line
+                        )
+            
+            # Store ordered_args for the code generator to use
+            node.ordered_args = ordered_args
+            
+            # Check argument types against the function signature
+            for i, arg in enumerate(ordered_args):
+                arg_type = self.check(arg)
+                expected_type = func_node.params[i].param_type
+                if not self._are_types_compatible(expected_type, arg_type):
+                    raise SemanticError(
+                        ERR_ARG_TYPE_MISMATCH_SIMPLE(i+1, node.name, str(expected_type), str(arg_type)),
                         node.filename,
                         node.line
                     )
-            
-            for i, arg in enumerate(node.params):
-                if i < len(func_node.params):
-                    arg_type = self.check(arg)
-                    expected_type = func_node.params[i].param_type
-                    if not self._are_types_compatible(expected_type, arg_type):
-                        raise SemanticError(
-                            ERR_ARG_TYPE_MISMATCH_SIMPLE(i+1, node.name, str(expected_type), str(arg_type)),
-                            node.filename,
-                            node.line
-                        )
             
             return func_node.return_type
             
@@ -455,8 +511,9 @@ class SemanticChecker:
         if node.op in ('==', '!=', '>', '<', '>=', '<='):
             return "miyaa"
             
+        # Logical operations
         if node.op in ('iyo', 'ama'):
-            if str(left_type) != 'miyaa' or str(right_type) != 'miyaa':
+            if not self._are_types_compatible('miyaa', left_type) or not self._are_types_compatible('miyaa', right_type):
                  raise SemanticError(
                     ERR_BINARY_OP_TYPE_MISMATCH(str(left_type), str(right_type), node.op),
                     node.filename,
@@ -532,7 +589,11 @@ class SemanticChecker:
         return self.get_expression_type(node)
         
     def check_ThisNode(self, node: ThisNode):
+        if self.current_class:
+            node.resolved_class_name = self.current_class.name
         return self.get_expression_type(node)
         
     def check_WaalidNode(self, node: WaalidNode):
+        if self.current_class and getattr(self.current_class, 'parent_name', None):
+            node.resolved_parent_name = self.current_class.parent_name
         return self.get_expression_type(node)

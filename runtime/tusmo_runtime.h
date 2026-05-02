@@ -157,10 +157,10 @@ char* tusmo_strdup(const char* s);
 char* hel_str();
 
 // --- I/O Functions (from io.c) ---
-void tusmo_qor_dynamic_value(TusmoValue val);
+void tusmo_qor_walbo(TusmoValue val);
 
 // --- Generic Printing (from io.c) ---
-void tusmo_qor_dynamic_value(TusmoValue val);
+void tusmo_qor_walbo(TusmoValue val);
 
 // --- Generic Printing (from io.c) ---
 // 1D arrays

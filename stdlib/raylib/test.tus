@@ -3,20 +3,20 @@ keen "core";
 keyd:eray user_input = "";
 keyd:miyaa was_clicked = been;
 
-bilow(800, 600, "Tusmo Raylib - Text Input Test");
+bilowDaaqada(800, 600, "Tusmo Raylib - Final Somali API Test");
 
-inta ay (daaqadu_ma_xirantahay() == been) {
-    bilaaw_sawirka();
-    nadiifi_asalka(MADOW);
+inta ay (daaqadaMaXirantahay() == been) {
+    bilowSawirka();
+    nadiifiShaashada(MADOW);
 
-    kuqor("Type something and press the Submit button:", 100, 50, 24, CAD);
+    qoraalKuQor("Raylib using improved Tusmo Structs & Somali Names!", 100, 50, 24, CAD);
 
     // Text input box
-    sawir_qoraal_geli(100, 100, 400, 50, user_input, CAD, BULUUG, JAALLE);
-    user_input = qoraal_geli_update(user_input, 30);
+    sawirQoraalGalis(100, 100, 400, 50, user_input, CAD, BULUUG, JAALLE);
+    user_input = cusboonaysiiQoraalGalis(user_input, 30);
 
     // Submit button
-    keyd:miyaa submit_btn = badhan(100, 170, 200, 50, "Submit", CAS, MADOW);
+    keyd:miyaa submit_btn = sameeBadhan(100, 170, 200, 50, "Submit", CAS, MADOW);
 
     // Track click
     haddii (submit_btn == haa) {
@@ -25,11 +25,11 @@ inta ay (daaqadu_ma_xirantahay() == been) {
 
     // Show submitted text
     haddii (was_clicked == haa) {
-        kuqor("You typed: " + user_input, 100, 240, 24, CAGAAR);
-        kuqor("Press BACKSPACE to clear and try again!", 100, 270, 18, JAALLE);
+        qoraalKuQor("You typed: " + user_input, 100, 240, 24, CAGAAR);
+        qoraalKuQor("Press BACKSPACE to clear and try again!", 100, 270, 18, JAALLE);
     }
 
-    dhameey_sawirka();
+    dhameeySawirka();
 }
 
-xir_daaqada();
+xirDaaqada();

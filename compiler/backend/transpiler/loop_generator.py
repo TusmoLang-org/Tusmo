@@ -87,7 +87,7 @@ class LoopGenerator:
             
             if element_tusmo_type is None:
                 iterator_c_type = "TusmoValue"
-                self.symbol_table.set(item_var, 'dynamic_value')
+                self.symbol_table.set(item_var, 'walbo')
                 self.main_generator.c_code += f"        {iterator_c_type} {item_var} = {array_c}->data[{index_var}];\n"
             elif str(element_tusmo_type) == 'qaamuus':
                 tmp_value_var = self.main_generator.get_temp_var() + "_val"

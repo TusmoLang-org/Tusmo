@@ -1,0 +1,21 @@
+keen "types";
+
+hawl helFar(faylka: eray) : walbo { 
+    """
+    Wuxuu soo rurisaa nooc far ah (tusaale: .ttf) si loo isticmaalo.
+    - faylka: Magaca farta la rabo
+    """
+    soo_celi ___c__call_("Tusmo_LoadFont", faylka); 
+}
+
+hawl kuqor(far: walbo, qoraal: eray, booska: Boos2D, cabir: jajab, tint: Midab) : waxbo { 
+    """
+    Wuxuu qoraal ku sawiraa shaashada isagoo isticmaalaya nooc far ah.
+    - far: Farta horey loo soo ruriyay
+    - qoraal: Erayada la rabo in la qoro
+    - booska: Halka laga qorayo
+    - cabir: Cabbirka farta
+    - tint: Midabka qoraalka
+    """
+    ___c__call_("Tusmo_DrawTextEx", far, qoraal, booska, cabir, 2.0, tint); 
+}

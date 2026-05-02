@@ -1,0 +1,17 @@
+keen "types";
+
+hawl istaabasho(meesha: Boos2D, rec: AfarGees) : miyaa { 
+    """
+    Wuxuu hubiyaa in boos(Boos2D) uu gudaha u galay leydi (AfarGees). 
+    Wuxuu u fiican yahay is-taabashada Mouse-ka.
+    """
+    soo_celi ___c__call_("Tusmo_CheckCollisionPointRec", meesha, rec); 
+}
+
+hawl hubiIskuDhacAfarGees(rec1: AfarGees, rec2: AfarGees) : miyaa { 
+    """
+    Wuxuu hubiyaa in laba AfarGees isku dheceen ama is_dhaafeen.
+    Wuxuu soo celiyaa 'haa' haddii uu jiro isku_dhac.
+    """
+    soo_celi ___c__call_("Tusmo_CheckCollisionRecs", rec1, rec2); 
+}

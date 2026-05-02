@@ -201,7 +201,7 @@ def ERR_NAMED_ARG_DUPLICATE(name, context):
     return f"Halbeegga '{name}' laba jeer ayaad siisay hawsha '{context}', sidee wax u wadaa?."
 
 def ERR_ARG_MISSING(name, context):
-    return f"Halbeegga '{name}' ayaa ka dhiman hawsha '{context}'. Maxaad ugu tagaysaa asiga?"
+    return f"Halbeegga '{name}' ayaa ka dhiman hawsha '{context}'. Maxaad uga tagtay isaga?"
 
 def ERR_CLASS_NAME_NOT_CAPITAL(name):
     return f"""Magaca kooxda '{name}' waa inuu ku bilaawdaa xaraf weyn (Capital)!
@@ -371,4 +371,3 @@ def ERR_ASSIGNMENT_NON_LVALUE():
 
         \033[1;31m x + 1 = 5 \033[1;35m // 'x + 1' waa expression, lama yeeli karo assignment
         \033[1;32m x = 5 \033[1;35m // 'x' keliya ayaa la gelin karaa."""
-        # Can only assign to variables, not expressions

@@ -1,0 +1,102 @@
+// stdlib/raylib/types.tus
+
+// 1. Headers first
+___c__code_("""
+#define Color RaylibColor
+#define Vector2 RaylibVector2
+#define Rectangle RaylibRectangle
+#include "stdlib/raylib/raylib.h"
+#undef Color
+#undef Vector2
+#undef Rectangle
+""");
+
+// 2. Data Structures
+qaab Midab { keyd:xaraf r; keyd:xaraf g; keyd:xaraf b; keyd:xaraf a; }
+qaab Boos2D { keyd:jajab x; keyd:jajab y; }
+qaab AfarGees { keyd:jajab x; keyd:jajab y; keyd:jajab width; keyd:jajab height; }
+
+// 3. The Wrappers
+___c__code_("""
+void Tusmo_ClearBackground(Midab color) {
+    ClearBackground(*(RaylibColor*)&color);
+}
+void Tusmo_DrawText(const char *text, int posX, int posY, int fontSize, Midab color) {
+    DrawText(text, posX, posY, fontSize, *(RaylibColor*)&color);
+}
+void Tusmo_DrawRectangle(double x, double y, double w, double h, Midab color) {
+    DrawRectangle((int)x, (int)y, (int)w, (int)h, *(RaylibColor*)&color);
+}
+void Tusmo_DrawRectangleRec(AfarGees rec, Midab color) {
+    RaylibRectangle r = { (float)rec.x, (float)rec.y, (float)rec.width, (float)rec.height };
+    DrawRectangleRec(r, *(RaylibColor*)&color);
+}
+void Tusmo_DrawRectangleLines(double x, double y, double w, double h, Midab color) {
+    DrawRectangleLines((int)x, (int)y, (int)w, (int)h, *(RaylibColor*)&color);
+}
+void Tusmo_DrawCircle(double x, double y, double rad, Midab color) {
+    DrawCircle((int)x, (int)y, (float)rad, *(RaylibColor*)&color);
+}
+bool Tusmo_CheckCollisionPointRec(Boos2D point, AfarGees rec) {
+    RaylibVector2 p = { (float)point.x, (float)point.y };
+    RaylibRectangle r = { (float)rec.x, (float)rec.y, (float)rec.width, (float)rec.height };
+    return CheckCollisionPointRec(p, r);
+}
+bool Tusmo_CheckCollisionRecs(AfarGees rec1, AfarGees rec2) {
+    RaylibRectangle r1 = { (float)rec1.x, (float)rec1.y, (float)rec1.width, (float)rec1.height };
+    RaylibRectangle r2 = { (float)rec2.x, (float)rec2.y, (float)rec2.width, (float)rec2.height };
+    return CheckCollisionRecs(r1, r2);
+}
+Boos2D Tusmo_GetMousePosition() {
+    RaylibVector2 pos = GetMousePosition();
+    Boos2D bpos = { (double)pos.x, (double)pos.y };
+    return bpos;
+}
+void* Tusmo_LoadFont(const char* fileName) {
+    Font* f = malloc(sizeof(Font));
+    *f = LoadFont(fileName);
+    return f;
+}
+void Tusmo_DrawTextEx(void* fontPtr, const char *text, Boos2D position, float fontSize, float spacing, Midab tint) {
+    if (!fontPtr) return;
+    RaylibVector2 p = { (float)position.x, (float)position.y };
+    DrawTextEx(*(Font*)fontPtr, text, p, fontSize, spacing, *(RaylibColor*)&tint);
+}
+void* Tusmo_LoadTexture(const char* fileName) {
+    Texture2D* t = malloc(sizeof(Texture2D));
+    *t = LoadTexture(fileName);
+    return t;
+}
+void Tusmo_DrawTextureEx(void* texPtr, Boos2D position, float rotation, float scale, Midab tint) {
+    if (!texPtr || ((Texture2D*)texPtr)->id == 0) return;
+    RaylibVector2 p = { (float)position.x, (float)position.y };
+    DrawTextureEx(*(Texture2D*)texPtr, p, rotation, scale, *(RaylibColor*)&tint);
+}
+void* Tusmo_LoadSound(const char* fileName) {
+    Sound* s = malloc(sizeof(Sound));
+    *s = LoadSound(fileName);
+    return s;
+}
+void Tusmo_PlaySound(void* soundPtr) {
+    if (!soundPtr || ((Sound*)soundPtr)->stream.buffer == NULL) return;
+    PlaySound(*(Sound*)soundPtr);
+}
+""");
+
+// Constants
+qeex CAD    = (Midab){255, 255, 255, 255};
+qeex MADOW  = (Midab){0, 0, 0, 255};
+qeex CAS    = (Midab){230, 41, 55, 255};
+qeex BULUUG = (Midab){0, 121, 241, 255};
+qeex CAGAAR = (Midab){0, 228, 48, 255};
+qeex JAALLE = (Midab){253, 249, 0, 255};
+qeex CIRKA   = (Midab){135, 206, 235, 255};
+
+// Linker Flags
+TUSMO_XIDID "stdlib/raylib/libraylib.a";
+TUSMO_XIDID "-lm.maya";
+TUSMO_XIDID "-lGL.maya";
+TUSMO_XIDID "-lX11.maya";
+TUSMO_XIDID "-lpthread.maya";
+TUSMO_XIDID "-ldl.maya";
+TUSMO_XIDID "-lrt.maya";

@@ -73,7 +73,7 @@ void tusmo_qaamuus_set(TusmoQaamuus* qaamuus, const char* key, TusmoValue value)
 }
 
 // Forward declaration for recursive printing
-void tusmo_qor_dynamic_value(TusmoValue val);
+void tusmo_qor_walbo(TusmoValue val);
 
 void tusmo_qaamuus_print(TusmoQaamuus* qaamuus) {
     printf("{");
@@ -85,7 +85,7 @@ void tusmo_qaamuus_print(TusmoQaamuus* qaamuus) {
                 printf(", ");
             }
             printf("\"%s\": ", entry->key);
-            tusmo_qor_dynamic_value(entry->value);
+            tusmo_qor_walbo(entry->value);
             first = 0;
             entry = entry->next;
         }

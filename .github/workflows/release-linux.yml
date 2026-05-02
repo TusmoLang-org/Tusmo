@@ -1,0 +1,99 @@
+name: release-linux
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            triplet: linux-x86_64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgc-dev xz-utils curl
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller ply requests pygls lsprotocol
+
+      - name: Download zig (Linux)
+        run: |
+          mkdir -p zig
+          curl --retry 5 --retry-delay 5 --retry-connrefused -L https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz -o zig.tar.xz
+          tar -xf zig.tar.xz --strip-components=1 -C zig
+          echo "ZIG=$(pwd)/zig/zig" >> $GITHUB_ENV
+
+      - name: Build tusmo CLI (onedir)
+        run: |
+          pyinstaller --onedir tusmo.py \
+            --hidden-import compiler \
+            --hidden-import compiler.frontend \
+            --hidden-import compiler.midend \
+            --hidden-import compiler.backend \
+            --hidden-import ply.lex \
+            --hidden-import ply.yacc \
+            --hidden-import requests \
+            --add-data "compiler:compiler" \
+            --add-data "runtime:runtime" \
+            --add-data "stdlib:stdlib"
+
+      - name: Build VS Code extension (VSIX)
+        run: |
+          cd Extension
+          npm ci
+          npm install -g @vscode/vsce
+          vsce package --out ../tusmo-vscode.vsix
+
+      - name: Build hover server (onedir)
+        run: |
+          pyinstaller --onefile LSP.py \
+            -n tusmo-hover \
+            --hidden-import compiler \
+            --hidden-import compiler.frontend \
+            --hidden-import compiler.midend \
+            --hidden-import compiler.backend \
+            --hidden-import ply.lex \
+            --hidden-import ply.yacc \
+            --hidden-import pygls \
+            --hidden-import lsprotocol \
+            --hidden-import lsprotocol.types \
+            --add-data "compiler:compiler"
+
+      - name: Collect bundle (Linux)
+        shell: bash
+        run: |
+          mkdir -p bundle/lib bundle/include bundle/bin bundle/runtime bundle/stdlib bundle/toolchain
+          cp -r runtime stdlib bundle/
+          cp /usr/lib/x86_64-linux-gnu/libgc.a bundle/lib/
+          cp -r /usr/include/gc bundle/include/
+          cp -r dist/tusmo/* bundle/bin/
+          cp dist/tusmo-hover bundle/bin/
+          cp "$ZIG" bundle/toolchain/zig
+          printf '%s\n' '#!/usr/bin/env bash' 'exec "$(dirname "$0")/zig" cc "$@"' > bundle/toolchain/cc
+          chmod +x bundle/toolchain/cc
+
+      - name: Package
+        shell: bash
+        run: tar -czf tusmo-${{ matrix.triplet }}.tar.gz -C bundle .
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            tusmo-${{ matrix.triplet }}.tar.gz
+            tusmo-vscode.vsix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

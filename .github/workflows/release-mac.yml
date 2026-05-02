@@ -1,0 +1,90 @@
+name: release-mac
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            triplet: macos-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          brew update
+          brew install zig boehmgc
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller ply requests pygls lsprotocol
+
+      - name: Build tusmo CLI (onedir)
+        run: |
+          pyinstaller --onedir tusmo.py \
+            --hidden-import compiler \
+            --hidden-import compiler.frontend \
+            --hidden-import compiler.midend \
+            --hidden-import compiler.backend \
+            --hidden-import ply.lex \
+            --hidden-import ply.yacc \
+            --hidden-import requests \
+            --add-data "compiler:compiler" \
+            --add-data "runtime:runtime" \
+            --add-data "stdlib:stdlib"
+
+      - name: Build hover server (onefile)
+        run: |
+          pyinstaller --onefile LSP.py \
+            -n tusmo-hover \
+            --hidden-import compiler \
+            --hidden-import compiler.frontend \
+            --hidden-import compiler.midend \
+            --hidden-import compiler.backend \
+            --hidden-import ply.lex \
+            --hidden-import ply.yacc \
+            --hidden-import pygls \
+            --hidden-import lsprotocol \
+            --hidden-import lsprotocol.types \
+            --add-data "compiler:compiler"
+
+      - name: Collect bundle
+        shell: bash
+        run: |
+          mkdir -p bundle/lib bundle/include bundle/bin bundle/runtime bundle/stdlib bundle/toolchain
+          cp -r runtime stdlib bundle/
+          GC_ROOT=$(brew --prefix boehmgc)
+          cp "$GC_ROOT/lib/libgc.a" bundle/lib/
+          cp -r "$GC_ROOT/include/gc" bundle/include/
+          cp -r dist/tusmo/* bundle/bin/
+          cp dist/tusmo-hover bundle/bin/
+          cp "$(which zig)" bundle/toolchain/zig
+          cat > bundle/toolchain/cc <<'EOS'
+          #!/usr/bin/env bash
+          exec "$(dirname "$0")/zig" cc "$@"
+          EOS
+          chmod +x bundle/toolchain/cc
+
+      - name: Package
+        shell: bash
+        run: tar -czf tusmo-${{ matrix.triplet }}.tar.gz -C bundle .
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            tusmo-${{ matrix.triplet }}.tar.gz
+          tag_name: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

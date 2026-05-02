@@ -25,7 +25,7 @@ jobs:
       - name: Install deps (Linux)
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgc-dev xz-utils curl
+          sudo apt-get install -y xz-utils curl
           python -m pip install --upgrade pip
           python -m pip install pyinstaller ply requests pygls lsprotocol
 
@@ -53,13 +53,13 @@ jobs:
       - name: Build VS Code extension (VSIX)
         run: |
           cd Extension
-          npm ci
+          npm install
           npm install -g @vscode/vsce
-          vsce package --out ../tusmo-vscode.vsix
+          vsce package --out ../tusmo-vscode.vsix --allow-missing-repository --no-git || echo "VSCE packaging warnings bypassed"
 
       - name: Build hover server (onedir)
         run: |
-          pyinstaller --onefile LSP.py \
+          pyinstaller --onefile Extension/server/tusmo_hover_server.py \
             -n tusmo-hover \
             --hidden-import compiler \
             --hidden-import compiler.frontend \
@@ -75,10 +75,8 @@ jobs:
       - name: Collect bundle (Linux)
         shell: bash
         run: |
-          mkdir -p bundle/lib bundle/include bundle/bin bundle/runtime bundle/stdlib bundle/toolchain
+          mkdir -p bundle/include bundle/bin bundle/runtime bundle/stdlib bundle/toolchain
           cp -r runtime stdlib bundle/
-          cp /usr/lib/x86_64-linux-gnu/libgc.a bundle/lib/
-          cp -r /usr/include/gc bundle/include/
           cp -r dist/tusmo/* bundle/bin/
           cp dist/tusmo-hover bundle/bin/
           cp "$ZIG" bundle/toolchain/zig

@@ -26,7 +26,7 @@ jobs:
       - name: Install deps
         run: |
           brew update
-          brew install zig boehmgc
+          brew install zig
           python -m pip install --upgrade pip
           python -m pip install pyinstaller ply requests pygls lsprotocol
 
@@ -46,7 +46,7 @@ jobs:
 
       - name: Build hover server (onefile)
         run: |
-          pyinstaller --onefile LSP.py \
+          pyinstaller --onefile Extension/server/tusmo_hover_server.py \
             -n tusmo-hover \
             --hidden-import compiler \
             --hidden-import compiler.frontend \
@@ -62,11 +62,8 @@ jobs:
       - name: Collect bundle
         shell: bash
         run: |
-          mkdir -p bundle/lib bundle/include bundle/bin bundle/runtime bundle/stdlib bundle/toolchain
+          mkdir -p bundle/include bundle/bin bundle/runtime bundle/stdlib bundle/toolchain
           cp -r runtime stdlib bundle/
-          GC_ROOT=$(brew --prefix boehmgc)
-          cp "$GC_ROOT/lib/libgc.a" bundle/lib/
-          cp -r "$GC_ROOT/include/gc" bundle/include/
           cp -r dist/tusmo/* bundle/bin/
           cp dist/tusmo-hover bundle/bin/
           cp "$(which zig)" bundle/toolchain/zig

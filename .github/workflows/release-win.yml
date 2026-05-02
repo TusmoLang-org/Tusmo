@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps (MSYS2 + libgc from pacman community)
+      - name: Install deps (MSYS2)
         uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -29,13 +29,6 @@ jobs:
             mingw-w64-x86_64-make
             mingw-w64-x86_64-pkgconf
             tar
-
-      - name: Install libgc (pacman community)
-        shell: bash
-        run: |
-          pacman -Sy --noconfirm mingw-w64-x86_64-libgc || pacman -S --noconfirm mingw-w64-x86_64-libgc || true
-          # fallback: use msys2 repo package name if different
-          pacman -S --noconfirm libgc || true
 
       - name: Install zig
         shell: powershell
@@ -65,7 +58,7 @@ jobs:
       - name: Build hover server (onefile)
         shell: pwsh
         run: |
-          pyinstaller --onefile LSP.py `
+          pyinstaller --onefile Extension/server/tusmo_hover_server.py `
             -n tusmo-hover `
             --hidden-import compiler `
             --hidden-import compiler.frontend `
@@ -84,15 +77,10 @@ jobs:
         shell: bash
         run: |
           zig_path=$(which zig)
-          mkdir -p bundle/lib bundle/include bundle/bin bundle/runtime bundle/stdlib bundle/toolchain
+          mkdir -p bundle/include bundle/bin bundle/runtime bundle/stdlib bundle/toolchain
           cp -r runtime stdlib bundle/
           cp -r dist/tusmo/* bundle/bin/
           cp dist/tusmo-hover.exe bundle/bin/
-          # try both mingw and msys paths for libgc
-          if [ -f /mingw64/lib/libgc.a ]; then cp /mingw64/lib/libgc.a bundle/lib/; fi
-          if [ -f /mingw64/include/gc/gc.h ]; then cp -r /mingw64/include/gc bundle/include/; fi
-          if [ -f /usr/lib/libgc.a ]; then cp /usr/lib/libgc.a bundle/lib/; fi
-          if [ -d /usr/include/gc ]; then cp -r /usr/include/gc bundle/include/; fi
           cp "$zig_path" bundle/toolchain/zig.exe
           cat > bundle/toolchain/cc.bat <<'EOS'
           @echo off

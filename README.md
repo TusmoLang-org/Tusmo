@@ -54,6 +54,101 @@ main();
 ## Sida Loo Isticmaalo (Usage)
 Si aad ugu shaqeysiiso koodkaaga Tusmo, fur Terminal-ka oo ku qor:
 ```bash
+tusmo magaca_faylkaaga.tus
+```
+
+## Faylasha Halkan Ku Jira (Repository Structure)
+- `/compiler` – Maskaxda luuqadda: Qaybta turjumeysa (Transpiler) iyo falanqeeyaha naxwaha.
+- `/runtime` – Koodka C ee asalka u ah Tusmo, xakameynaya xusuusta, tixaha (arrays), qaamuusyada (dictionaries), iyo I/O.
+- `/stdlib` – Maktabadaha caadiga ah ee Tusmo (Sida Raylib, OS, HTTP, WebSockets).
+- `/Extension` – VS Code Extension-ka ee rasmiga ah oo ay ku jirto *Tusmo Language Server Protocol (LSP)*.
+-beddelayn (Constants/Macros), isticmaal `qeex`. Tani xawaaraha ayay badisaa maxaa yeelay toos ayaa loogu beddelaa C.
+
+```tus
+qeex PI = 3.14159;
+qeex MAGACA_BARTA = "Tusmo Hub";
+
+hawl main(): waxbo {
+    keyd:jajab goobo = PI * 10.0;
+    qor(MAGACA_BARTA);
+}
+```
+
+### 3. Wareegyada (Loops)
+Tusmo waxay leedahay qaabab kala duwan oo wareeg (Loops) loo sameeyo.
+
+**Wareegga Tirooyinka (For Range):**
+```tus
+// Waxay qoraysaa tirooyinka 1 ilaa 5
+soco i laga bilaabo 1..5 {
+    qor("Tirada waa: ", i);
+}
+```
+
+**Wareegga Shuruudda (While Loop):**
+```tus
+keyd:tiro x = 0;
+inta ay (x < 3) {
+    qor("Wali wuu socdaa...");
+    x = x + 1;
+}
+```
+
+### 4. Qaabdhismeedka (Structs)
+`qaab` waa hab lagu ururiyo xogo kala duwan oo hal meel ku wada jira. Waa (Value Type) oo xawaare aad u sarreeya ku orda!
+
+```tus
+// 1. Dhisida Qaabka (Defining the Struct)
+qaab Qof {
+    keyd:eray magac;
+    keyd:tiro da;
+}
+
+hawl main(): waxbo {
+    // 2. Abuurida (Instantiation)
+    keyd:Qof qof1 = (Qof){"Cali", 25};
+    
+    // 3. Isticmaalka (Usage)
+    qor("Magacu waa: ", qof1.magac);
+    qor("Da'diisu waa: ", qof1.da);
+}
+
+main();
+```
+
+---
+
+## Tusaale Degdeg ah (Quick Example)
+Halkan waa tusaale fudud oo muujinaya daaqad ciyaar oo raylib ah:
+
+```tus
+keen "stdlib/raylib/core";
+
+qeex BALLAC = 800;
+qeex DHEER = 600;
+
+hawl main(): waxbo {
+    bilowDaaqada(BALLAC, DHEER, "Tusmo Raylib Tijaabo");
+    XaddidFps(60);
+
+    inta ay (daaqadaMaXirantahay() == been) {
+        bilowSawirka();
+        nadiifiShaashada(MADOW);
+        
+        sawirGoobo(400.0, 300.0, 50.0, CAGAAR);
+        qoraalKuQor("Tusmo waa cajiib!", 250, 400, 30, CAD);
+        
+        dhameeySawirka();
+    }
+    xirDaaqada();
+}
+
+main();
+```
+
+## Sida Loo Isticmaalo (Usage)
+Si aad ugu shaqeysiiso koodkaaga Tusmo, fur Terminal-ka oo ku qor:
+```bash
 tusmo.py magaca_faylkaaga.tus
 ```
 

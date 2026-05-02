@@ -76,6 +76,16 @@ class SemanticChecker:
     def check(self, node):
         if node is None: return
         if isinstance(node, list) and not self.active_cleanup_stack:
+             # --- PRE-PASS: Register all types (Structs/Classes) to allow out-of-order usage ---
+             for item in node:
+                 if item.__class__.__name__ == 'ClassNode':
+                     self.symbol_table.set(item.name, 'class_definition', value=item)
+                 elif item.__class__.__name__ == 'QaabNode':
+                     self.symbol_table.set(item.name, 'struct_definition', value=item)
+                 elif item.__class__.__name__ == 'QeexNode':
+                     if isinstance(item.value, IdentifierNode) and item.name == item.value.name:
+                         self.symbol_table.set(item.name, "c_type", value=item.value)
+
              # DO NOT push/pop a global scope for symbol_table because c_code_generator needs it later
              self.tracker.push_scope()
              for item in node: self.check(item)

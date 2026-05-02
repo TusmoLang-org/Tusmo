@@ -146,9 +146,9 @@ class CCodeGenerator:
             
         final_c_code = (
             f"{header_include}"
-            f"{embedded_section}"
             f"{self.class_definitions}"
             f"{self.global_declarations}"
+            f"{embedded_section}"
             f"{self.function_definitions}"
             f"int main(void) {{\n"
             f"{self.c_code}"
@@ -177,12 +177,6 @@ class CCodeGenerator:
                 struct_code += f"    {c_type} {member.var_name};\n"
             struct_code += f"}} {node.name};\n\n"
             self.global_declarations += struct_code
-        elif isinstance(node, EmbeddedCNode):
-            # If inside a function, put in c_code. Else, put in global_declarations.
-            if self.inside_function:
-                self.c_code += f"    {node.code}\n"
-            else:
-                self.global_declarations += f"{node.code}\n"
         else:
             method_name = f"_generate_{type(node).__name__.lower()}"
             method = getattr(self, method_name, self._unhandled_node)

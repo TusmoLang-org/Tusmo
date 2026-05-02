@@ -1,6 +1,6 @@
 keen "types";
 
-hawl bilowDaaqada(ballac: tiro, dhirir: tiro, cinwaan: eray) : waxbo { 
+hawl bilowDaaqada(ballac: tiro, dheer: tiro, cinwaan: eray) : waxbo { 
     """
     Wuxuu furaa daaqad cusub oo lagu ciyaaro.
     - ballac: Balaca daaqada (pixels)

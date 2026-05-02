@@ -1,3 +1,20 @@
+# Ignore everything in the root by default
+/*
+
+# ------------------------------------------------------------------
+# EXPLICITLY ALLOWED FOLDERS AND FILES (Do not ignore these)
+# ------------------------------------------------------------------
+!/README.md
+!/compiler/
+!/Extension/
+!/runtime/
+!/stdlib/
+!/tusmo.py
+!/.gitignore
+
+# ------------------------------------------------------------------
+# IGNORE SPECIFIC JUNK FILES INSIDE ALLOWED FOLDERS
+# ------------------------------------------------------------------
 # Python
 __pycache__/
 *.pyc
@@ -9,42 +26,10 @@ __pycache__/
 parsetab.py
 tusmo_lib_index.json
 
-# Libraries and downloads
-.lib/
-*.deb
-
-# Test, Playground, and Example directories
-algo/
-MatrixMultiplicationRust/
-test/
-test_websocket/
-testlib/
-tijaabo/
-examples/
-
-# IDE / Editor / Profiling
-.codex
-*.massif
-.vscode/
-
-# Root-level temporary and test files
-rust
-rust.rs
-salaam.c
-salaam.o
-test_
-test_.c
-test_.tus
-test_file.txt
-test_memory.tus
-tusmo
-tusmo.tus
-speed_test*
-test_qaab_qeex*
-
-# Web / Node
+# Node / JS
 node_modules/
 
-# Temporary Doc Files
-output.txt
-mkdocs.yml
+# IDE / Profiling
+.vscode/
+*.massif
+.codex

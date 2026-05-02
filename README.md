@@ -1,121 +1,64 @@
-# Tusmo
+# Tusmo Programming Language 🇸🇴
 
-A Somali programming language that compiles to C.
+Tusmo waa luuqad (programming language) casri ah oo ku qoran Af-Soomaali. Waxay isku daraysaa xawaaraha C/C++ iyo badbaadada Memory-ga (memory safety) ee luuqadaha casriga ah sida Rust, iyadoo aan xitaa isticmaalin Garbage Collector (GC) culeys keena.
 
-## What is Tusmo?
+Waxaa loo dhisay in lagu sameeyo barnaamijyo waaweyn, ciyaaro (games), iyo adeegyo xawaare sare u baahan.
 
-Tusmo is a statically-typed programming language that uses Somali keywords and syntax. It compiles to C code, then to a binary using Zig (bundled).
+## Astaamaha Ugu Waaweyn (Key Features)
 
-## Quick Start
+**Xawaare Sare (High Performance):** Tusmo waxay si toos ah isugu beddeshaa koodka C (`Transpiler`), waxaana la dhisay iyadoo la isticmaalayo `gcc -O3 ama zig` si ay u ordo xawaaraha ugu sarreeya ee kumbuyuutarkaagu oggol yahay.
 
-### Linux/macOS
+**Badbaadada Xusuusta (Memory Safety):** Waxay leedahay nidaam xusuus-ilaalineed oo aad u casri ah. Koodkaagu waligiis ma yeelanayo "Memory Leaks" ama shilal (Crashes) aan la garanayn.
 
-```bash
-# Install
-curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash
+**Qaabdhismeed Casri ah (OOP & Structs):** 
+- `qaab` (Structs): Qaabdhismeedyo xawaare sare leh oo si toos ah xusuusta (stack) u fadhiisanaya sidii C.
+- `koox` (Classes): Luqadan waxay leedahay `koox`(class) casri ah oo wata dhaxal (Inheritance) iyo faham buuxa oo Object-Oriented ah.
 
-# Run
-tusmo hello.tus
-```
+**Desktop Development, Ciyaaraha 2D games, & Garaafikada (Game Engine Ready):** Waxaa si buuxda ugu dhex jirta maktabadda garaafikada **Raylib**, taas oo boqolkiiba boqol loo tarjumay Af-Soomaali (sida `bilowDaaqada()`, `sawirAfarGees()`).
 
-### Windows
+**VS Code (Extension):** Tusmo waxay leedahay extension u gooni ah oo leh *Syntax Highlighting*, *Auto-complete dropdowns*, iyo *Hover documentation* oo ku tusiya macluumaadka shaqo kasta inta aadan qorin!
 
-```powershell
-# Install (run in PowerShell as Administrator)
-irm https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.ps1 | iex
+## Habka Loogu Yeero (Module System)
+Tusmo waxay leedahay nidaam soo-dejineed ee lagu yaqaano afka qalaad (module import) oo aad u awood badan:
+- `keen "module";` – Waxay soo uruurisaa dhamaan code-ka ku qoran module-ka(faylka la keenayo).
+- `isticmaal {hawl1, koox2, varibale3} kujira "module";` – Waxay soo qaadataa oo keliya waxaad u baahan tahay, iyadoo iska indho tiraysa wax yaabaha aadan u baahneen si looga fogaado "Dead Code" si uu u noqdo program mid xawaare leh, size-kisu yaryahay.
 
-# Run
-tusmo hello.tus
-```
+## Tusaale Degdeg ah (Quick Example)
+Halkan waa tusaale fudud oo muujinaya daaqad ciyaar oo raylib ah:
 
 ```tus
-// hello.tus
-qor("Hello, Somaliland!");
-```
+keen "stdlib/raylib/core";
 
-## Features
+qeex BALLAC = 800;
+qeex DHEER = 600;
 
-- **Somali Syntax** - Native Somali keywords (`keyd`, `haddii`, `soco`, `koox`)
-- **Static Typing** - Variables have explicit types
-- **Object-Oriented** - Classes with inheritance
-- **Garbage Collection** - Automatic memory management
-- **Standard Library** - File I/O, HTTP, sockets, time, random
+hawl main(): waxbo {
+    bilowDaaqada(BALLAC, DHEER, "Tusmo Raylib Tijaabo");
+    XaddidFps(60);
 
-## Language Example
-
-```tus
-// Variables
-keyd:eray magac = "Tusmo";
-keyd:tiro da = 5;
-
-// Conditionals
-haddii (da > 3) {
-    qor("Waa weyn!");
-}
-
-// Loops
-soco i laga bilaabo 0 .. 5 {
-    qor(i);
-}
-
-// Functions
-hawl greet(name: eray) : waxbo {
-    qor("Soo dhawow " + name);
-}
-
-// Classes
-koox Qof {
-    keyd:eray name;
-    
-    dhis(n: eray) : waxbo {
-        kan.name = n;
+    inta ay (daaqadaMaXirantahay() == been) {
+        bilowSawirka();
+        nadiifiShaashada(MADOW);
+        
+        sawirGoobo(400.0, 300.0, 50.0, CAGAAR);
+        qoraalKuQor("Tusmo waa cajiib!", 250, 400, 30, CAD);
+        
+        dhameeySawirka();
     }
+    xirDaaqada();
 }
 
-keyd:Qof p1 = Qof("Ali") cusub;
+main();
 ```
 
-## Documentation
+## Sida Loo Isticmaalo (Usage)
+Si aad ugu shaqeysiiso koodkaaga Tusmo, fur Terminal-ka oo ku qor:
+```bash
+tusmo.py magaca_faylkaaga.tus
+```
 
-For full documentation, visit: **[Tusmo Docs](https://tusmolang.github.io/Tusmo/)**
-
-### Getting Started
-- [Installation](https://tusmolang.github.io/Tusmo/getting-started)
-- [How It Works](https://tusmolang.github.io/Tusmo/how-it-works)
-
-### Language Reference
-- [Variables](https://tusmolang.github.io/Tusmo/variables)
-- [Strings](https://tusmolang.github.io/Tusmo/strings)
-- [Arrays](https://tusmolang.github.io/Tusmo/arrays)
-- [Dictionaries](https://tusmolang.github.io/Tusmo/dictionaries)
-- [Conditions](https://tusmolang.github.io/Tusmo/conditions)
-- [Loops](https://tusmolang.github.io/Tusmo/loops)
-- [Functions](https://tusmolang.github.io/Tusmo/functions)
-- [Classes](https://tusmolang.github.io/Tusmo/classes)
-- [Operators](https://tusmolang.github.io/Tusmo/operators)
-
-### Standard Library
-- [Stdlib Overview](https://tusmolang.github.io/Tusmo/stdlib)
-- [OS Module](https://tusmolang.github.io/Tusmo/stdlib-os)
-- [Wakhti (Time)](https://tusmolang.github.io/Tusmo/stdlib-wakhti)
-- [Nasiib (Random)](https://tusmolang.github.io/Tusmo/stdlib-nasiib)
-- [Xiriiriye (Sockets)](https://tusmolang.github.io/Tusmo/stdlib-xiriiriye)
-- [WebXiriiriye (WebSocket)](https://tusmolang.github.io/Tusmo/stdlib-webxiriiriye)
-- [HTTP](https://tusmolang.github.io/Tusmo/stdlib-http)
-
-## Requirements
-
-None! The bundled release includes:
-- Zig compiler
-- Boehm GC
-- Runtime libraries
-
-Just download and run.
-
-## License
-
-MIT
-
----
-
-Made with ❤️ for the Somali developer community.
+## Faylasha Halkan Ku Jira (Repository Structure)
+- `/compiler` – Maskaxda luuqadda: Qaybta turjumeysa (Transpiler) iyo falanqeeyaha naxwaha.
+- `/runtime` – Koodka C ee asalka u ah Tusmo, xakameynaya xusuusta, tixaha (arrays), qaamuusyada (dictionaries), iyo I/O.
+- `/stdlib` – Maktabadaha caadiga ah ee Tusmo (Sida Raylib, OS, HTTP, WebSockets).
+- `/Extension` – VS Code Extension-ka ee rasmiga ah oo ay ku jirto *Tusmo Language Server Protocol (LSP)*.

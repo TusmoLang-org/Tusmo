@@ -633,22 +633,58 @@ class SemanticChecker:
         return node.class_name
 
     def check_MemberAccessNode(self, node: MemberAccessNode):
-        self.check(node.object_node)
-        return self.get_expression_type(node)
-        
+        obj_type = self.check(node.object_node)
+
+        # Prevent accessing members on primitive types (except classes/structs)
+        primitive_types = {"tiro", "jajab", "eray", "xaraf", "miyaa", "waxbo"}
+        if str(obj_type) in primitive_types:
+             raise SemanticError(ERR_NOT_A_CLASS(str(obj_type)), node.filename, node.line)
+
+        # Check if the member exists
+        res_type = self.get_expression_type(node)
+        if res_type == "unknown":
+             raise SemanticError(ERR_MEMBER_NOT_FOUND(str(obj_type), node.member_name), node.filename, node.line)
+
+        return res_type
+
     def check_MethodCallNode(self, node: MethodCallNode):
-        self.check(node.object_node)
+        obj_type = self.check(node.object_node)
         for arg in node.args_list:
             self.check(arg)
-            # Super intelligent: Record Move for 'gali'!
-            if node.method_name == 'gali':
-                val_node = arg.value if isinstance(arg, NamedArgument) else arg
-                if isinstance(val_node, IdentifierNode):
-                    arg_type = self.get_expression_type(val_node)
-                    if self.tracker.is_heap_type(arg_type):
-                        self.tracker.record_move(val_node.name, node)
-        return self.get_expression_type(node)
-        
+
+        # Basic validation for string/array methods (handled as walbo for now)
+        if str(obj_type) == "eray":
+            valid_str_methods = {"XarafWeyn", "XarafYar", "kaReeb", "Bkareeb", "Mkareeb", "kuBadal", "sooRaadi", "lagaHelay", "qaybi"}
+            if node.method_name not in valid_str_methods:
+                raise SemanticError(ERR_METHOD_NOT_FOUND_ON_STRING(node.method_name), node.filename, node.line)
+            return "walbo"
+
+        if str(obj_type).startswith("tix") or str(obj_type) == "tix":
+            valid_arr_methods = {"gali", "kasaar", "dherer"}
+            if node.method_name not in valid_arr_methods:
+                raise SemanticError(ERR_METHOD_NOT_FOUND_ON_ARRAY(node.method_name), node.filename, node.line)
+            return "walbo"
+
+        # Resolve the method in the class hierarchy
+        res_type = self.get_expression_type(node)
+        if res_type == "walbo": # Check if it's truly found in a class
+             class_info = self.symbol_table.get(str(obj_type))
+             if class_info and class_info[1] == 'class_definition':
+                 found = False
+                 current_class = class_info[0]
+                 while current_class:
+                     if any(m.name == node.method_name for m in current_class.methods):
+                         found = True
+                         break
+                     if getattr(current_class, 'parent_name', None):
+                         parent_info = self.symbol_table.get(current_class.parent_name)
+                         current_class = parent_info[0] if parent_info else None
+                     else:
+                         break
+                 if not found:
+                     raise SemanticError(ERR_MEMBER_NOT_FOUND(str(obj_type), node.method_name), node.filename, node.line)
+
+        return res_type
     def check_ThisNode(self, node: ThisNode):
         if self.current_class:
             node.resolved_class_name = self.current_class.name

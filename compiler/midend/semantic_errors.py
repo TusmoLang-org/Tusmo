@@ -233,6 +233,12 @@ def ERR_UNINITIALIZED_VARIABLE(name):
 
         \033[1;31m qor({name}); \033[1;35m // '{name}' booskiisii waa eber. Ma waxaad moodday inuu hawada ka dhalanayo?
         \033[1;32m {name} = 10; qor({name}); \033[1;35m // Horta qiime sii intaadan u yeerin!"""
+
+def ERR_FORBIDDEN_NAME(name):
+    return f"""Magaca '{name}' lama isticmaali karo!
+    
+        \033[1;31m keyd:tiro {name} = 10; \033[1;35m // '{name}' waa magac u gaar ah luuqadda C (Reserved Keyword).
+        \033[1;32m keyd:tiro {name}_cusub = 10; \033[1;35m // Fadlan isticmaal magac kale oo aan khilaafayn C."""
 # ============================================================================
 # Missing Error Functions - Added to fix semantic analyzer crashes
 # These 18 functions were being called but not defined in semantic_errors.py

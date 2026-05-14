@@ -63,7 +63,7 @@ class CCodeGenerator:
 
     def mangle_name(self, name):
         if name in self.FORBIDDEN_C_NAMES:
-            return f"tusmo_{name}"
+            return f"__tusmo_{name}__"
         return name
 
     def get_temp_var(self):

@@ -1,4 +1,4 @@
-from compiler.frontend.parser.ast_nodes import ArrayTypeNode
+from compiler.frontend.parser.ast_nodes import ArrayTypeNode, FunctionTypeNode
 
 class KeydGenerator:
     def __init__(self, main_generator, expr_generator):
@@ -15,6 +15,17 @@ class KeydGenerator:
 
         # Add the variable to the symbol table for the current scope
         self.symbol_table.set(var_name, var_type)
+
+        # Handle Function Type (Function Pointers)
+        if isinstance(var_type, FunctionTypeNode):
+            decl = self.main_generator.get_c_type(var_type, name=var_name)
+            self._emit_declaration_raw(decl, is_top_level)
+            if value:
+                init_c = self.expr_generator.generate_expression(value)
+                self.main_generator.c_code += f"    {var_name} = {init_c};\n"
+            else:
+                self.main_generator.c_code += f"    {var_name} = NULL;\n"
+            return
 
         # Handle qaamuus type
         if str(var_type) == "qaamuus":
@@ -156,6 +167,12 @@ class KeydGenerator:
             self.main_generator.global_declarations += f"{c_type} {var_name};\n"
         else:
             self.main_generator.c_code += f"    {c_type} {var_name};\n"
+
+    def _emit_declaration_raw(self, decl, is_top_level):
+        if is_top_level:
+            self.main_generator.global_declarations += f"{decl};\n"
+        else:
+            self.main_generator.c_code += f"    {decl};\n"
 
     def generate_default_init(self, var_name, var_type):
         """Generates an assignment to a default value if no initializer was provided."""

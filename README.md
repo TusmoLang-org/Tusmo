@@ -1,16 +1,18 @@
-# Tusmo Programming Language 🇸🇴
+# Tusmo Programming Language
 
-Tusmo waa luuqad barnaamijyeed (programming language) casri ah oo ku qoran Af-Soomaali. Waxay isku daraysaa xawaaraha C/C++ iyo badbaadada xusuusta (memory safety) ee luuqadaha casriga ah sida Rust, iyadoo aan xitaa isticmaalin Garbage Collector (GC) culeys keena.
+Tusmo waa luuqad (programming language) casri ah oo ku qoran Af-Soomaali. Waxay isku darsatay xawaaraha C/C++ iyo badbaadada memory-ga (memory safety) ee luuqadaha casriga ah sida Rust, iyadoo aan xitaa la isticmaalin Garbage Collector (GC) kaas oo keeni kara culeys.
 
-Waxaa loo dhisay in lagu sameeyo barnaamijyo waaweyn, ciyaaro (games), iyo adeegyo xawaare sare u baahan.
+Waxaa loo dhisay in ay noqoto luuqad keywords-geeda 100% ah native somaali, xawaare sare leh, ayna ufuddaato in developers-ka kale ee somaliyeed ay si ufud ugu dhisaan web development, software-ro waaweyn, 2D/3D video games, iyo barnaamijyada u baahan xawaare sare iyadoo isticmalaya luuqada afsomaaliga ah iyo developer-ka ku cusub saaxad programing-ka.
+
+sidoo kale luuqadan waxay u diyaarsanatahay in ay yeelato frameworks/libraries madaam artitechturekeeda ee ku aadan helida 
 
 ## Astaamaha Ugu Waaweyn (Key Features)
 
-🚀 **Xawaare Sare (High Performance):** Tusmo waxay si toos ah isugu beddeshaa koodka C (`Transpiler`), waxaana la dhisay iyadoo la isticmaalayo `gcc -O3` si ay u ordo xawaaraha ugu sarreeya ee kumbuyuutarkaagu oggol yahay.
+**Xawaare Sare (High Performance):** Tusmo waxay si toos ah isugu beddeshaa C code (`Transpiler`), waxaana la dhisay iyadoo la isticmaalayo `gcc -O3 ama zig` si ay u hesho xawaaraha ugu sarreeya ee kumbuyuutarkaagu awoodo.
 
-🛡️ **Badbaadada Xusuusta (Memory Safety):** Waxay leedahay nidaam xusuus-ilaalineed oo aad u casri ah (Lifetime Tracking iyo Move Semantics). Koodkaagu waligiis ma yeelanayo "Memory Leaks" ama shilal (Crashes) aan la garanayn.
+**Badbaadada Memory-ga (Memory Safety):** Waxay leedahay nidaam memory-ilaalineed oo aad u casri ah. Koodkaagu waligiis ma yeelanayo "Memory Leaks" ama shilal (Crashes) aan la garanayn.
 
-🏗️ **Qaabdhismeed Casri ah (OOP & Structs):** 
+**Qaabdhismeed Casri ah (OOP & Structs):** 
 - `qaab` (Structs): Qaabdhismeedyo xawaare sare leh oo si toos ah xusuusta (stack) u fadhiisanaya sidii C.
 - `koox` (Classes): Barnaamijyo casri ah oo wata dhaxal (Inheritance) iyo faham buuxa oo Object-Oriented ah.
 

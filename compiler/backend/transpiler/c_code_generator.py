@@ -38,6 +38,7 @@ class CCodeGenerator:
 
         self.c_code = ""
         self.temp_var_counter = 0
+        self.lambda_counter = 0
         self.global_declarations = ""
         self.function_definitions = ""
         self.class_definitions = ""
@@ -85,13 +86,18 @@ class CCodeGenerator:
             method_call_c = self.expr_generator.generate_expression(node)
             self.c_code += f"    {method_call_c};\n"
 
-    def get_c_type(self, tusmo_type):
+    def get_c_type(self, tusmo_type, name=""):
         if isinstance(tusmo_type, FunctionTypeNode):
             return_type = self.get_c_type(tusmo_type.return_type)
             param_types = [self.get_c_type(p) for p in tusmo_type.param_types]
             if not param_types:
                 param_types.append("void")
-            return f"{return_type} (*)({', '.join(param_types)})"
+            
+            if name:
+                return f"{return_type} (*{name})({', '.join(param_types)})"
+            else:
+                return f"{return_type} (*)({', '.join(param_types)})"
+
         if isinstance(tusmo_type, ArrayTypeNode):
             return self.array_generator.get_c_type_from_tusmo_type(tusmo_type)
 
@@ -265,7 +271,7 @@ class CCodeGenerator:
         self.embedded_c_chunks.append((node.code, node))
     def _generate_whilenode(self, node: WhileNode): self.loop_generator.generate_while(node)
     def _generate_dowhilenode(self, node: DoWhileNode): self.loop_generator.generate_do_while(node)
-    def _generate_forrangenode(self, node: ForRangeNode): self.loop_generator.generate_for_range(node)
+    def _generate_forrangenode(self, node: ForRangeNode): self.loop_generator.generate_for_range(node);
     def _generate_foreachnode(self, node: ForEachNode): self.loop_generator.generate_for_each(node)
     def _generate_keennode(self, node: KeenNode): pass
     def _generate_isticmaalnode(self, node: IsticmaalNode): pass

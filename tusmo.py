@@ -9,6 +9,13 @@ import platform
 import urllib.request
 import urllib.error
 import requests
+from tusmo_cli import (
+    handle_download_command,
+    handle_list_catalog_command,
+    handle_remove_command,
+    handle_update_lib_command,
+    handle_baahiyaha_command,
+)
 
 sys.path.append(os.path.dirname(__file__))
 from pathlib import Path
@@ -63,6 +70,12 @@ Doorashooyinka (Options):
 --c:                                  Waxay keydinaysaa fayl-ka `C` ee la sameeyay, halkii laga tiri lahaa (tusaale: tusmo <*.tus> --c).
 
 download / dagso / soo_degso / soo_dajiso:   waxay soo dejinaysaa maktabadda(libararies) aad rabto (tusaale: tusmo download <libarary_name> ama tusmo dagso <magaca_maktabada>)
+tir-maktabad / uninstall / remove / tir:     waxay tirtiraysaa maktabad la rakibay (tusaale: tusmo tir-maktabad <magaca_maktabada>)
+cusbooneysii-maktabad / cusboonaysii-lib / update-lib:  waxay cusboonaysiisaa maktabad la rakibay (tusaale: tusmo cusbooneysii-maktabad <magaca_maktabada>)
+maktabado:                                    waxay ku tusaysaa dhammaan maktabadaha index-ka adigoo isticmaalaya arrow selection.
+baahiyaha:                                    waxay akhrinaysaa baahiyaha.json kadibna si toos ah ayey u rakibaysaa dhammaan maktabadaha ku qoran.
+--no-color:                                   waxay damisaa midabada output-ka.
+--non-interactive / -y:                       waxay ka dhigaysaa hab aan su'aalo lahayn (CI-friendly).
 update / cusboonaysii / casriye:    waxay isku dayaysaa inay is casriyeyso iyadoo soo dejinaysa nooca ugu dambeeya ee Tusmo (tusaale: tusmo update ama tusmo cusboonaysii).
 """
         print(msg)
@@ -121,114 +134,6 @@ def update_tusmo(command=None):
             print(f"\nKhalad ayaa dhacay: {e}")
         
         sys.exit(0)
-
-def download_libraries(all_args):
-    import shutil
-    import zipfile
-    import tempfile
-    import urllib.request
-    import urllib.error
-    import json
-
-    if len(all_args) != 3:
-        return False
-
-    command = all_args[1].lower()
-    if command not in ["install", "-i", "-d", "dagso", "soo_degso", "soo_dajiso", "soo_daji"]:
-        return False
-
-    raw_name = all_args[2]
-    if "=" in raw_name:
-        library_name, version = raw_name.split("=", 1)
-        version = version.strip()
-    else:
-        library_name, version = raw_name, None
-
-    # --- Akhri kataloogga rasmiga ah: TusmoLang-org/index ---
-    def fetch_catalog(url):
-        try:
-            with urllib.request.urlopen(url, timeout=10) as resp:
-                status = getattr(resp, "status", None)
-                if status not in (None, 200):
-                    return None
-                data = resp.read().decode("utf-8")
-                return json.loads(data).get("packages", [])
-        except Exception:
-            return None
-
-    catalog_candidates = [
-        os.environ.get("TUSMO_CATALOG_URL"),
-        "https://raw.githubusercontent.com/TusmoLang-org/index/main/TusmoLang-org/catalog.json",
-        "https://raw.githubusercontent.com/TusmoLang-org/index/main/catalog.json",
-    ]
-
-    catalog = []
-    for catalog_url in [c for c in catalog_candidates if c]:
-        catalog = fetch_catalog(catalog_url)
-        if catalog:
-            break
-
-    if not catalog:
-        print(
-            f"Ma awoodi in aan akhriyo kataloogga rasmiga ah (TusmoLang-org/index). Fadlan hubi internet-kaaga, ama dejiso TUSMO_CATALOG_URL oo tilmaamaysa catalog.json."
-        )
-        return True
-
-    pkg = next((p for p in catalog if p.get("name") == library_name), None)
-    if not pkg:
-        print(f"Maktabadda '{library_name}' lagama helin central-ka. Fadlan hubi magaca maktabadda ama eeg katalogga TusmoLang-org/index.")
-        return True
-
-    repo_url = pkg.get("repo")
-    available_versions = pkg.get("versions", [])
-    if version:
-        if version not in available_versions:
-            print(f"Nooca '{version}' lagama helin '{library_name}'. Noocyada jira: {', '.join(available_versions)}")
-            return True
-        chosen_version = version
-    else:
-        chosen_version = pkg.get("latest") or (available_versions[0] if available_versions else None)
-        if not chosen_version:
-            print(f"'{library_name}' lagama helin version-kan.")
-            return True
-
-    repo = repo_url.rstrip("/").split("/")[-1]
-    target_dir = os.path.abspath(os.path.join(os.getcwd(), ".lib", repo))
-    os.makedirs(os.path.dirname(target_dir), exist_ok=True)
-
-    print(f"\n[Tusmo] Waxaa la soo dejinayaa '{repo}' ... "
-          f"nooca {chosen_version} ka socda {repo_url}")
-
-    # Download ZIP (tag if specified, else main) — avoids any auth prompts
-    if chosen_version:
-        zip_url = f"{repo_url}/archive/refs/tags/{chosen_version}.zip"
-    else:
-        zip_url = f"{repo_url}/archive/refs/heads/main.zip"
-
-    try:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            zip_path = os.path.join(tmpdir, "lib.zip")
-            with urllib.request.urlopen(zip_url, timeout=30) as resp:
-                status = getattr(resp, "status", 200)
-                if status not in (200, None):
-                    raise RuntimeError(f"HTTP {status}")
-                with open(zip_path, "wb") as f:
-                    shutil.copyfileobj(resp, f)
-
-            with zipfile.ZipFile(zip_path, "r") as zf:
-                zf.extractall(tmpdir)
-                # GitHub zips root as repo-<branch/tag>
-                extracted_root = next(Path(tmpdir).glob(f"{repo}-*"))
-                if os.path.exists(target_dir):
-                    shutil.rmtree(target_dir)
-                shutil.move(str(extracted_root), target_dir)
-            print("Waxaa laguu soo dajiyaya ZIP gudaha .lib/")
-    except Exception as e:
-        print(f"Waa lagu guuldareystay soo dejinta '{library_name}': {e}")
-        print(f"   URL la isku dayay: {zip_url}")
-        return True
-
-    return True
 
 def update_libraries(command=None):
     pass
@@ -295,7 +200,15 @@ def main():
     help(sys.argv[1])
     version(sys.argv[1])
     list_libraries(sys.argv[1])
-    if download_libraries(sys.argv[0:3]):
+    if handle_list_catalog_command(sys.argv):
+        sys.exit(0)
+    if handle_download_command(sys.argv):
+        sys.exit(0)
+    if handle_baahiyaha_command(sys.argv):
+        sys.exit(0)
+    if handle_remove_command(sys.argv):
+        sys.exit(0)
+    if handle_update_lib_command(sys.argv):
         sys.exit(0)
     update_tusmo(sys.argv[1])
     

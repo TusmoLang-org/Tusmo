@@ -5,7 +5,7 @@ koox Xiriiriye {
         Tusaale:
             keyd:Xiriiriye socket = Xiriiriye() cusub;
 
-        Methods:
+        Hawlaha:
            - samee_server(port:eray) => eray
            - dhageyso(saf_sugid_ugu_badan:tiro) => tiro
            - aqbal() => eray

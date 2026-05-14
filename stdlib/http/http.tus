@@ -44,7 +44,7 @@ char* c_http_read(int client_fd) {
         free(buffer);
         return NULL;
     }
-    buffer[n] = '\0';
+    buffer[n] = 0;
     return buffer;
 }
 
@@ -52,6 +52,67 @@ void c_http_send(int client_fd, const char* response) {
     send(client_fd, response, strlen(response), 0);
     close(client_fd);
 }
+
+void c_http_send_response(int client_fd, int status, const char* content_type, const char* body) {
+    if (!content_type) content_type = "text/plain; charset=utf-8";
+    if (!body) body = "";
+
+    const char* status_text = "OK";
+    switch (status) {
+        case 201: status_text = "Created"; break;
+        case 400: status_text = "Bad Request"; break;
+        case 404: status_text = "Not Found"; break;
+        case 405: status_text = "Method Not Allowed"; break;
+        case 500: status_text = "Internal Server Error"; break;
+        default: status_text = "OK"; break;
+    }
+
+    int body_len = (int)strlen(body);
+    char header[512];
+    int hn = snprintf(
+        header, sizeof(header),
+        "HTTP/1.1 %d %s\\r\\nContent-Type: %s\\r\\nContent-Length: %d\\r\\nConnection: close\\r\\n\\r\\n",
+        status, status_text, content_type, body_len
+    );
+    if (hn < 0) {
+        close(client_fd);
+        return;
+    }
+
+    send(client_fd, header, (size_t)hn, 0);
+    if (body_len > 0) {
+        send(client_fd, body, (size_t)body_len, 0);
+    }
+    close(client_fd);
+}
+
+char* c_http_method(const char* raw) {
+    if (!raw) return strdup("GET");
+    const char* sp = strchr(raw, ' ');
+    if (!sp) return strdup("GET");
+    size_t n = (size_t)(sp - raw);
+    char* out = (char*)malloc(n + 1);
+    if (!out) return strdup("GET");
+    memcpy(out, raw, n);
+    out[n] = 0;
+    return out;
+}
+
+char* c_http_path(const char* raw) {
+    if (!raw) return strdup("/");
+    const char* sp1 = strchr(raw, ' ');
+    if (!sp1) return strdup("/");
+    sp1++;
+    const char* sp2 = strchr(sp1, ' ');
+    if (!sp2) return strdup("/");
+    size_t n = (size_t)(sp2 - sp1);
+    char* out = (char*)malloc(n + 1);
+    if (!out) return strdup("/");
+    memcpy(out, sp1, n);
+    out[n] = 0;
+    return out;
+}
+
 """);
 
 koox Codsi {
@@ -62,14 +123,15 @@ koox Codsi {
 
     dhis(fd: tiro, raw: eray) : waxbo {
         kan._client_fd = fd;
-        kan.hab = "GET"; 
-        kan.waddo = "/";
-        kan.xambaare = raw;
+        keyd:eray raw_hab = raw + "";
+        keyd:eray raw_waddo = raw + "";
+        kan.hab = ___c__call_("c_http_method", raw_hab);
+        kan.waddo = ___c__call_("c_http_path", raw_waddo);
+        kan.xambaare = "";
     }
 
     hawl jawaab(status: tiro, content_type: eray, body: eray) : waxbo {
-        keyd:eray response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" + body;
-        ___c__call_("c_http_send", kan._client_fd, response);
+        ___c__call_("c_http_send_response", kan._client_fd, status, content_type, body);
     }
 }
 
@@ -95,15 +157,13 @@ koox HttpServer {
     hawl dhageyso(maamule: hawl(Codsi): waxbo) : waxbo {
         inta ay (kan._socda) {
             keyd:tiro client_fd = -1;
-            keyd:eray raw = waxbo;
-            keyd:Codsi codsi = waxbo;
 
             client_fd = ___c__call_("c_http_accept", kan._fd);
             
             haddii (client_fd != -1) {
-                raw = ___c__call_("c_http_read", client_fd);
-                haddii (raw != waxbo) {
-                    codsi = Codsi(client_fd, raw) cusub;
+                keyd:eray codsi_raw = ___c__call_("c_http_read", client_fd);
+                haddii (codsi_raw != waxbo) {
+                    keyd:Codsi codsi = Codsi(client_fd, codsi_raw) cusub;
                     maamule(codsi);
                 } haddii_kale {
                     ___c__call_("close", client_fd);

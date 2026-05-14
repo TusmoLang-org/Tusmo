@@ -9,7 +9,7 @@ from compiler.frontend.parser.ast_nodes import (
     ClassNode, ClassInstantiationNode, MemberAccessNode, ThisNode, CCallNode, WaalidNode,
     DictionaryInitializationNode, DictionaryAccessNode, DictionaryAssignmentNode,
     FunctionTypeNode, ParameterNode, BreakNode, ContinueNode, NamedArgument, TypeLiteralNode, WaxboNode,
-    QeexNode, QaabNode, QaabQiimeNode
+    QeexNode, QaabNode, QaabQiimeNode, LambdaNode
 )
 from compiler.midend.symbol_table import SymbolTable
 from compiler.midend.built_in_fn import functions_
@@ -133,6 +133,10 @@ class SemanticChecker:
                 if info[1] == "hawl": return info[0].return_type
             return "walbo"
             
+        if isinstance(node, LambdaNode):
+            param_types = [p.param_type for p in node.params]
+            return FunctionTypeNode(node.line, param_types, node.return_type, node.filename)
+
         if isinstance(node, ClassInstantiationNode): return node.class_name
         if isinstance(node, ThisNode):
             return getattr(node, 'resolved_class_name', self.current_class.name if self.current_class else "unknown")
@@ -185,7 +189,16 @@ class SemanticChecker:
         if isinstance(node, IdentifierNode):
             info = self.symbol_table.get(node.name)
             if info:
-                # info[1] is the type (string or ASTNode)
+                # If the identifier is a function, reconstruct its full FunctionTypeNode
+                if info[1] == "hawl":
+                    func_node = info[0]
+                    return FunctionTypeNode(
+                        func_node.line, 
+                        [p.param_type for p in func_node.params], 
+                        func_node.return_type, 
+                        func_node.filename
+                    )
+                # Otherwise return the standard type string
                 return str(info[1]).strip()
             return "unknown"
         
@@ -276,6 +289,44 @@ class SemanticChecker:
         self.symbol_table.pop_scope()
         
         self.current_function = old_function
+
+    def check_LambdaNode(self, node: LambdaNode):
+        # Determine return type
+        if node.is_concise:
+            # For concise lambdas (=> expr), we'll infer the type after checking the expression
+            pass
+        else:
+            self._ensure_valid_type(node.return_type, node)
+
+        for p in node.params:
+            self._ensure_valid_type(p.param_type, p)
+
+        old_function = self.current_function
+        self.current_function = node # Lambda acts as a function context for 'soo_celi'
+        
+        self.symbol_table.push_scope()
+        self.tracker.push_scope()
+        for p in node.params:
+            self.symbol_table.set(p.name, str(p.param_type).strip())
+            self.tracker.record_definition(p.name, p.param_type, p, is_initialized=True)
+        
+        ret_type = node.return_type
+        if node.is_concise:
+            # In concise lambdas, the body is a single expression
+            ret_type = self.check(node.body)
+            # Update the node's return_type for code generation
+            node.return_type = ret_type
+        else:
+            # Check the body statements
+            self.check(node.body)
+        
+        node.cleanup_vars = self.tracker.pop_scope()
+        self.symbol_table.pop_scope()
+        self.current_function = old_function
+
+        # Return the FunctionTypeNode representing this lambda
+        param_types = [p.param_type for p in node.params]
+        return FunctionTypeNode(node.line, param_types, ret_type, node.filename)
 
     def check_IfNode(self, node: IfNode):
         node.cases_cleanup = []

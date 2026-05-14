@@ -8,6 +8,16 @@ koox WebXiriiriye {
         
         Tusaale:
             keyd:WebXiriiriye ws = WebXiriiriye() cusub;
+        Hawlaha:
+         - kor_u_qaad
+         - dir_qoraal
+         - dir_binary
+         - soo_hel_fariin
+         - dir_ping
+         - dir_pong
+         - xir
+         - lagu_xirmay
+
         """
     keyd:eray socket_handle;
     keyd:miyaa waa_xiran;
@@ -141,12 +151,12 @@ koox WebXiriiriye {
         }
     }
     
-    shaqo ma_xiran(): miyaa {
+    shaqo lagu_xirmay(): miyaa {
         """
-        Hubi haddii connection waa mid xiran (Check if connected)
+        Hubi haddii (xiriir)connection uu jiro (Check if connected)
         
         Soo celisa:
-            miyaa: run haddii xiran, been haddii kale
+            miyaa: run haddii (xiriir)connection uu jrio, been haddii kale
         """
         soo_celi kan.waa_xiran;
     }

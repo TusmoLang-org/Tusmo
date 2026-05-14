@@ -19,7 +19,7 @@ from .ast_nodes import (
     NumberNode, FloatNode, IdentifierNode, StringNode, CharNode,
     BinaryOpNode, FStringNode, BooleanNode, TernaryOpNode,
     ThisNode, DictionaryInitializationNode,
-    FunctionTypeNode, TypeLiteralNode, AssignmentNode, QeexNode, QaabNode
+    FunctionTypeNode, TypeLiteralNode, AssignmentNode, QeexNode, QaabNode, LambdaNode
 )
 
 # Start rule
@@ -170,7 +170,8 @@ def p_expression(p):
                   | array_type_query
                   | builtin_function_call
                   | function_call
-                  | c_call_expression'''
+                  | c_call_expression
+                  | anonymous_function'''
     p[0] = p[1]
 
 def p_simple_expression(p):

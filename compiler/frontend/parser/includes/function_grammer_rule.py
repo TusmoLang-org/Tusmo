@@ -1,5 +1,5 @@
 # function_grammer_rule.py (Updated)
-from compiler.frontend.parser.ast_nodes import FunctionNode, FunctionCallNode, ParameterNode
+from compiler.frontend.parser.ast_nodes import FunctionNode, FunctionCallNode, ParameterNode, LambdaNode
 
 def p_function_declaration(p):
     '''function_declaration : HAWL IDENTIFIER LPAREN parameter_list RPAREN COLON type_specifier body_statements
@@ -14,6 +14,18 @@ def p_function_declaration(p):
     filename = p.lexer.filename
     if p[6] == ':' or p[6] == '=>':
          p[0] = FunctionNode(return_type=p[7], name=p[2], params=p[4], body=p[8], line=line, filename=filename)
+
+def p_anonymous_function(p):
+    '''anonymous_function : HAWL LPAREN parameter_list RPAREN ARROW expression
+                          | HAWL LPAREN parameter_list RPAREN COLON type_specifier body_statements'''
+    line = p.lineno(1)
+    filename = p.lexer.filename
+    if p[5] == '=>':
+        # Concise one-liner: hawl(params) => expression
+        p[0] = LambdaNode(params=p[3], return_type=None, body=p[6], is_concise=True, line=line, filename=filename)
+    else:
+        # Full block: hawl(params): type { body }
+        p[0] = LambdaNode(params=p[3], return_type=p[6], body=p[7], is_concise=False, line=line, filename=filename)
 
 def p_parameter_list(p):
     '''parameter_list : parameter_list COMMA parameter

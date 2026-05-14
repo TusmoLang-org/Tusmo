@@ -6,7 +6,7 @@ from compiler.frontend.parser.ast_nodes import (
     FunctionCallNode, ArrayAccessNode, ArrayTypeNode, MethodCallNode,
     ClassInstantiationNode, MemberAccessNode, ThisNode, WaalidNode, ArrayInitializationNode, ArrayTypeQueryNode,
     ASTNode, CCallNode, DictionaryInitializationNode, DictionaryAccessNode, FunctionTypeNode, NamedArgument, TypeLiteralNode, WaxboNode,
-    QaabQiimeNode
+    QaabQiimeNode, LambdaNode, FunctionNode, ReturnStatementNode
 )
 
 from compiler.backend.transpiler.expression_errors import *
@@ -61,6 +61,9 @@ class ExpressionGenerator:
         elif isinstance(node, DictionaryInitializationNode):
             self.main_generator.used_features.add("dictionary")
             return self.main_generator.dictionary_generator.generate_initialization(node)
+
+        elif isinstance(node, LambdaNode):
+            return self._generate_lambda(node)
 
         elif isinstance(node, DictionaryAccessNode):
             self.main_generator.used_features.add("dictionary")
@@ -381,6 +384,40 @@ class ExpressionGenerator:
         s = s.replace('\r', '\\r')
         s = s.replace('\t', '\\t')
         return f'"{s}"'
+
+    def _generate_lambda(self, node):
+        """Generates a global C function for an anonymous function and returns its name."""
+        self.main_generator.lambda_counter += 1
+        lambda_name = f"__tusmo_lambda_{self.main_generator.lambda_counter}"
+        node.generated_name = lambda_name
+
+        # Prepare the body
+        if node.is_concise:
+            # For concise lambdas: hawl(x) => x + 1
+            # We wrap the expression in a return statement
+            body = [ReturnStatementNode(node.body, line=node.line, filename=node.filename)]
+        else:
+            # For block lambdas: hawl(x) { qor(x); soo_celi x + 1 }
+            body = node.body
+
+        # Create a temporary FunctionNode to leverage existing function generation logic
+        temp_func_node = FunctionNode(
+            return_type=node.return_type,
+            name=lambda_name,
+            params=node.params,
+            body=body,
+            line=node.line,
+            filename=node.filename
+        )
+        # Copy metadata needed for cleanup
+        if hasattr(node, 'cleanup_vars'):
+            temp_func_node.cleanup_vars = node.cleanup_vars
+
+        # Generate the C function definition
+        self.main_generator.function_generator.generate(temp_func_node)
+
+        # Return the function name (which acts as a function pointer in C)
+        return lambda_name
 
     def _generate_fstring(self, node: FStringNode):
         self.main_generator.used_features.add("string")

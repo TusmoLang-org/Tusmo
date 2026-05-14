@@ -13,37 +13,51 @@ class ExpressionNode(ASTNode):
     pass
 
 class NumberNode(ExpressionNode):
-    """Kani waxa uu matali donaa tiro(int)"""
+    """Kani waxa uu matali donaa tiro(int)
+     - value
+    """
     def __init__(self, value, line=None, filename=None):
         super().__init__(line, filename)
         self.value = value
 
 class FloatNode(ExpressionNode):
-    """Kani waxa uu matali donaa jajab(float)"""
+    """Kani waxa uu matali donaa jajab(float)
+     - value
+    """
     def __init__(self, value, line=None, filename=None):
         super().__init__(line, filename)
         self.value = value
 
 class StringNode(ExpressionNode):
-    """Kani waxa uu matali donaa eray(string)"""
+    """Kani waxa uu matali donaa eray(string)
+     - value
+    """
     def __init__(self, value, line=None, filename=None):
         super().__init__(line, filename)
         self.value = value
 
 class CharNode(ExpressionNode):
-    """Kani waxa uu matali donaa xaraf(char)"""
+    """Kani waxa uu matali donaa xaraf(char)
+     - value
+    """
     def __init__(self, value, line=None, filename=None):
         super().__init__(line, filename)
         self.value = value
 
 class IdentifierNode(ExpressionNode):
-    """Kani waxa uu matali donaa magaca(Identifier) loo bixiyo : variable, function, class, iwm."""   
+    """Kani waxa uu matali donaa magaca(Identifier) loo bixiyo : variable, function, class, iwm.
+     - name
+    """   
     def __init__(self, name, line=None, filename=None):
         super().__init__(line, filename)
         self.name = name
 
 class TernaryOpNode(ExpressionNode):
-    """Kani waxa uu matali donaa hawlgalka ternary, tusaale ahaan: xalada ? haddii_run_noqoto : haddii_been_noqoto"""
+    """Kani waxa uu matali donaa hawlgalka ternary, tusaale ahaan: xalada ? haddii_run_noqoto : haddii_been_noqoto
+    - condition
+    - if_true
+    - if_else
+    """
     def __init__(self, condition, if_true, if_false, line=None, filename=None):
         super().__init__(line, filename)
         self.condition = condition
@@ -51,13 +65,20 @@ class TernaryOpNode(ExpressionNode):
         self.if_false = if_false
 
 class BooleanNode(ExpressionNode):
-    """Kani waxa uu matali donaa qiimaha boolean (run ama been)"""
+    """Kani waxa uu matali donaa qiimaha boolean (run ama been)
+     - value
+    """
     def __init__(self, value, line=None, filename=None):
         super().__init__(line, filename)
         self.value = value
 
 class BinaryOpNode(ExpressionNode):
-    """Kani waxa uu matali donaa hawlgalka binary(sida ku darta, ka jarta iwm), tusaale ahaan: x + y, x * y, iwm."""
+    """Kani waxa uu matali donaa hawlgalka binary(sida ku darta, ka jarta iwm), tusaale ahaan: x + y, x * y, iwm.
+     - left
+     - op (operator, +, -, *, etc)
+     - right
+     - type
+    """
     def __init__(self, left, op, right, line=None, filename=None):
         super().__init__(line, filename)
         self.left = left
@@ -66,20 +87,29 @@ class BinaryOpNode(ExpressionNode):
         self.type = "binary_op"
 
 class FStringNode(ExpressionNode):
-    """Kani waxa uu matali donaa f-string, oo ah isku darka erayo iyo expressions, tusaale ahaan: f"Magacaygu waa {magac}." """
+    """Kani waxa uu matali donaa f-string, oo ah isku darka erayo iyo expressions, tusaale ahaan: f"Magacaygu waa {magac}." 
+     - parts
+     - type
+    """
     def __init__(self, parts, line=None, filename=None):
         super().__init__(line, filename)
         self.parts = parts
         self.type = "fstring"
 
 class TypeLiteralNode(ExpressionNode):
-    """Kani waxa uu matali donaa nooc la isticmaalay sida literal, tusaale ahaan: tiro, eray, ama magaca class."""
+    """Kani waxa uu matali donaa nooc la isticmaalay sida literal, tusaale ahaan: tiro, eray, ama magaca class.
+     - type_name
+    """
     def __init__(self, type_name, line=None, filename=None):
         super().__init__(line, filename)
         self.type_name = type_name
 
 class KeydNode(ASTNode):
-    """Kani waxa uu matali donaa  keydinta, tusaale ahaan: keyd x: tiro = 5"""
+    """Kani waxa uu matali donaa  keydinta, tusaale ahaan: keyd x: tiro = 5
+     - var_name
+     - var_type
+     - value
+    """
     def __init__(self, var_name, var_type, value, line, filename):
         super().__init__(line, filename)
         self.var_name = var_name
@@ -87,7 +117,11 @@ class KeydNode(ASTNode):
         self.value = value
 
 class AssignmentNode(ASTNode):
-    """Kani waxa uu matali donaa  qoondeynta, tusaale ahaan: x = 5, ama x += 1"""
+    """Kani waxa uu matali donaa  qoondeynta, tusaale ahaan: x = 5, ama x += 1
+     - identifier
+     - op (operator)
+     - expression
+    """
     def __init__(self, identifier, op, expression, line, filename):
         super().__init__(line, filename)
         self.identifier = identifier
@@ -95,13 +129,16 @@ class AssignmentNode(ASTNode):
         self.expression = expression
 
 class ReturnStatementNode(ASTNode):
-    """Kani waxa uu matali donaa  soo celinta, tusaale ahaan: soo celi x + y"""
+    """Kani waxa uu matali donaa  soo celinta, tusaale ahaan: soo celi x + y
+     - expression
+    """
     def __init__(self, expression, line=None, filename=None):
         super().__init__(line, filename)
         self.expression = expression
 
 class BreakNode(ASTNode):
-    """Kani waxa uu matali donaa  'joog' (break)."""
+    """Kani waxa uu matali donaa  'joog' (break).
+    """
     def __init__(self, line=None, filename=None):
         super().__init__(line, filename)
 
@@ -111,33 +148,45 @@ class ContinueNode(ASTNode):
         super().__init__(line, filename)
 
 class EmbeddedCNode(ASTNode):
-    """Kani waxa uu matali donaa   ___c__code_  kaas oo xambaar C code"""
+    """Kani waxa uu matali donaa   ___c__code_  kaas oo xambaar C code
+     - code
+    """
     def __init__(self, code, line=None, filename=None):
         super().__init__(line, filename)
         self.code = code
 
 class QorNode(ASTNode):
-    """Kani waxa uu matali donaa  'Qor' , tusaale ahaan: qor(x + y)"""
+    """Kani waxa uu matali donaa  'Qor' , tusaale ahaan: qor(x + y)
+     - expressions
+    """
     def __init__(self, line, expressions, filename):
         super().__init__(line, filename)
         self.expressions = expressions
 
 class HelNode(ASTNode):
-    """Kani waxa uu matali donaa  'Hel' , tusaale ahaan: hel(x)"""
+    """Kani waxa uu matali donaa  'Hel' , tusaale ahaan: hel(x)
+     - identifier
+     - prompt
+    """
     def __init__(self, line, identifier, filename, prompt=None):
         super().__init__(line, filename)
         self.identifier = identifier
         self.prompt = prompt
 
 class IfNode(ASTNode):
-    """Kani waxa uu matali donaa  'Haddii' , tusaale ahaan: haddii x > 0: qor("x waa positive")"""
+    """Kani waxa uu matali donaa  'Haddii' , tusaale ahaan: haddii x > 0: qor("x waa positive")
+     - cases
+     - else_case
+    """
     def __init__(self, cases, else_case=None, line=None, filename=None):
         super().__init__(line, filename)
         self.cases = cases
         self.else_case = else_case
 
 class ArrayTypeNode(ASTNode):
-    """Kani waxa uu matali donaa nooca array, tusaale ahaan: tix:tiro, ama tix:eray, iwm."""
+    """Kani waxa uu matali donaa nooca array, tusaale ahaan: tix:tiro, ama tix:eray, iwm.
+     - element_type
+    """
     def __init__(self, line, element_type=None, filename=None):
         super().__init__(line, filename)
         self.element_type = element_type 
@@ -167,7 +216,10 @@ class ArrayTypeNode(ASTNode):
         return 0
 
 class FunctionTypeNode(ASTNode):
-    """Kani waxa uu matali donaa nooca hawlgalka, tusaale ahaan: hawl(x:tiro, y:eray):eray"""
+    """Kani waxa uu matali donaa nooca hawlgalka, tusaale ahaan: hawl(x:tiro, y:eray):eray
+     - param_types
+     - return_type
+    """
     def __init__(self, line, param_types, return_type, filename=None):
         super().__init__(line, filename)
         self.param_types = param_types
@@ -183,33 +235,50 @@ class FunctionTypeNode(ASTNode):
         return f"hawl({param_str}):{self.return_type}"
 
 class ArrayInitializationNode(ExpressionNode):
-    """Kani waxa uu matali donaa array bilow ah taas oo leh elements, tusaale ahaan: keyd:tix:tiro = [1, 2, 3]"""
+    """Kani waxa uu matali donaa array bilow ah taas oo leh elements, tusaale ahaan: keyd:tix:tiro = [1, 2, 3]
+     - elements
+    """
     def __init__(self, line, elements, filename):
         super().__init__(line, filename)
         self.elements = elements
 
 class ArrayAccessNode(ExpressionNode):
-    """Kani waxa uu matali donaa helitaanka element ka mid ah array, tusaale ahaan: arr[0]"""
+    """Kani waxa uu matali donaa helitaanka element ka mid ah array, tusaale ahaan: arr[0]
+     - array_name_node
+     - index_expression
+    """
     def __init__(self, line, array_name_node, index_expression, filename):
         super().__init__(line, filename)
         self.array_name_node = array_name_node
         self.index_expression = index_expression
 
 class ArrayTypeQueryNode(ExpressionNode):
-    """Kani waxa uu matali donaa nooca gaarka ah ee tix si loo weydiiyo nooca element ee array. tusaale ahaan: nooc(arr[0])"""
+    """Kani waxa uu matali donaa nooca gaarka ah ee tix si loo weydiiyo nooca element ee array. tusaale ahaan: nooc(arr[0])
+     - identifier
+    """
     def __init__(self, line, identifier, filename):
         super().__init__(line, filename)
         self.identifier = identifier
 
 class ArrayAssignmentNode(ASTNode):
-    """Kani waxa uu matali donaa qoondeynta element ka mid ah array, tusaale ahaan: arr[0] = 10"""
+    """Kani waxa uu matali donaa qoondeynta element ka mid ah array, tusaale ahaan: arr[0] = 10
+     - array_access_node
+     - value_expression
+    """
     def __init__(self, line, array_access_node, value_expression, filename):
         super().__init__(line, filename)
         self.array_access_node = array_access_node
         self.value_expression = value_expression
 
 class FunctionNode(ASTNode):
-    """Kani waxa uu matali donaa  'Hawl' , tusaale ahaan: hawl isku_dar(x:tiro, y:tiro):tiro { soo celi x + y }"""
+    """Kani waxa uu matali donaa  'Hawl' , tusaale ahaan: hawl isku_dar(x:tiro, y:tiro):tiro { soo celi x + y }
+     - name
+     - params
+     - return_type
+     - body
+     - docstring
+
+    """
     def __init__(self, return_type, name, params, body, line, filename):
         super().__init__(line, filename)
         self.return_type = return_type
@@ -219,7 +288,11 @@ class FunctionNode(ASTNode):
         self.docstring = None
 
 class ParameterNode(ASTNode):
-    """Kani waxa uu matali donaa hal parameter ee hawl, tusaale ahaan: x:tiro, ama y:eray = "default" """
+    """Kani waxa uu matali donaa hal parameter ee hawl, tusaale ahaan: x:tiro, ama y:eray = "default" 
+     - name
+     - param_type
+     - default_value
+    """
     def __init__(self, name, param_type, default_value=None, line=None, filename=None):
         super().__init__(line, filename)
         self.name = name
@@ -227,14 +300,21 @@ class ParameterNode(ASTNode):
         self.default_value = default_value
 
 class NamedArgument(ASTNode):
-    """Kani waxa uu matali donaa hal argument oo magac leh ee loo gudbiyo hawl, tusaale ahaan: x=5, ama y="hello" """
+    """Kani waxa uu matali donaa hal argument oo magac leh ee loo gudbiyo hawl, tusaale ahaan: x=5, ama y="hello" 
+     - name
+     - value
+    """
     def __init__(self, name, value, line=None, filename=None):
         super().__init__(line, filename)
         self.name = name
         self.value = value
 
 class FunctionCallNode(ExpressionNode):
-    """Kani waxa uu matali donaa wicitaanka hawl, tusaale ahaan: isku_dar(5, 10), ama isku_dar(x=5, y=10)"""
+    """Kani waxa uu matali donaa wicitaanka hawl, tusaale ahaan: isku_dar(5, 10), ama isku_dar(x=5, y=10)
+     - name
+     - params
+     - ordered_args
+    """
     def __init__(self, name, params, line, filename):
         super().__init__(line, filename)
         self.name = name
@@ -242,21 +322,33 @@ class FunctionCallNode(ExpressionNode):
         self.ordered_args = None
 
 class WhileNode(ASTNode):
-    """Kani waxa uu matali donaa  'inta ay' , tusaale ahaan: inta ay x < 10 { qor(x); x += 1 }"""
+    """Kani waxa uu matali donaa  'inta ay' , tusaale ahaan: inta ay x < 10 { qor(x); x += 1 }
+     - condition
+     - body
+    """
     def __init__(self, line, condition, body, filename):
         super().__init__(line, filename)
         self.condition = condition
         self.body = body
 
 class DoWhileNode(ASTNode):
-    """Kani waxa uu matali donaa  'samee...inta ay' , tusaale ahaan: samee { qor(x); x += 1 } inta ay x < 10"""
+    """Kani waxa uu matali donaa  'samee...inta ay' , tusaale ahaan: samee { qor(x); x += 1 } inta ay x < 10
+     - body
+     - condition
+    """
     def __init__(self, line, body, condition, filename):
         super().__init__(line, filename)
         self.body = body
         self.condition = condition
 
 class ForRangeNode(ASTNode):
-    """Kani waxa uu matali donaa  'soco identifier laga bilaawo' oo leh xadka, tusaale ahaan: soco i laga bilaabo 0..10 { qor(i) }"""
+    """Kani waxa uu matali donaa  'soco identifier laga bilaawo' oo leh xadka, tusaale ahaan: soco i laga bilaabo 0..10 { qor(i) }
+     - iterator_var_name
+     - start_expr
+     - end_expr
+     - increase
+     - body
+    """
     def __init__(self, line, iterator_var_name, start_expr, end_expr,  body, filename, increase=True):
         super().__init__(line, filename)
         self.iterator_var_name = iterator_var_name
@@ -266,7 +358,11 @@ class ForRangeNode(ASTNode):
         self.body = body
 
 class ForEachNode(ASTNode):
-    """Kani waxa uu matali donaa  'soco identifier kasta laga helo' oo leh array, tusaale ahaan: soco item kasta laga helo arr { qor(item) }"""
+    """Kani waxa uu matali donaa  'soco identifier kasta laga helo' oo leh array, tusaale ahaan: soco item kasta laga helo arr { qor(item) }
+     - iterator_var_name
+     - array_expr
+     - body
+    """
     def __init__(self, line, iterator_var_name, array_expr, body, filename):
         super().__init__(line, filename)
         self.iterator_var_name = iterator_var_name
@@ -274,7 +370,12 @@ class ForEachNode(ASTNode):
         self.body = body
 
 class MethodCallNode(ExpressionNode):
-    """Kani waxa uu matali donaa wicitaanka method ee object, tusaale ahaan: qof1.magac(), ama qof1.magac(x=5)"""
+    """Kani waxa uu matali donaa wicitaanka method ee object, tusaale ahaan: qof1.magac(), ama qof1.magac(x=5) 
+     - object_node
+     - method_name
+     - args_list
+     - ordered_args
+    """
     def __init__(self, line, object_node, method_name, args_list, filename):
         super().__init__(line, filename)
         self.object_node = object_node
@@ -283,7 +384,9 @@ class MethodCallNode(ExpressionNode):
         self.ordered_args = None
 
 class KeenNode(ASTNode):
-    """Kani waxa uu matali donaa keenista module kale oo dhameystiran, tusaale ahaan: keen math"""
+    """Kani waxa uu matali donaa keenista module kale oo dhameystiran, tusaale ahaan: keen math
+     - filename
+    """
     def __init__(self, line, filename_to_import, source_filename):
         super().__init__(line, source_filename)
         self.filename = filename_to_import
@@ -292,7 +395,10 @@ class KeenNode(ASTNode):
         return f"keen: {self.filename}"
 
 class IsticmaalNode(ASTNode):
-    """Kani waxa uu matali donaa keenista module qeybo ka mid ah, tusaale ahaan: isticmaal {iskudar, kalajar} kujira math"""
+    """Kani waxa uu matali donaa keenista module qeybo ka mid ah, tusaale ahaan: isticmaal {iskudar, kalajar} kujira math 
+     - names
+     - module
+    """
     def __init__(self, line, names_to_import, filename_to_import, source_filename):
         super().__init__(line, source_filename)
         self.names = names_to_import
@@ -302,7 +408,13 @@ class IsticmaalNode(ASTNode):
         return f"isticmaal: {self.names} kujira {self.module}"
 
 class ClassNode(ASTNode):
-    """Kani waxa uu matali donaa  'Koox' , tusaale ahaan: Koox Qof {  }"""
+    """Kani waxa uu matali donaa  'Koox' , tusaale ahaan: Koox Qof {  }
+        - name
+        - members
+        - methods
+        - docstring
+        - parent_name
+    """
     def __init__(self, name, members, methods, line, filename, parent_name=None):
         super().__init__(line, filename)
         self.name = name
@@ -312,7 +424,11 @@ class ClassNode(ASTNode):
         self.parent_name = parent_name
 
 class ClassInstantiationNode(ExpressionNode):
-    """Kani waxa uu matali donaa abuurista object cusub oo ka mid ah class, tusaale ahaan: keyd:Qof qof1 = Qof() cusub;"""
+    """Kani waxa uu matali donaa abuurista object cusub oo ka mid ah class, tusaale ahaan: keyd:Qof qof1 = Qof() cusub;
+     - class_name
+     - constructor_args
+     - ordered_args
+    """
     def __init__(self, class_name, constructor_args, line, filename):
         super().__init__(line, filename)
         self.class_name = class_name
@@ -320,7 +436,10 @@ class ClassInstantiationNode(ExpressionNode):
         self.ordered_args = None
 
 class MemberAccessNode(ExpressionNode):
-    """Kani waxa uu matali donaa helitaanka member ka mid ah object, tusaale ahaan: qof1.magac, ama qof1.magac = "Ali" """
+    """Kani waxa uu matali donaa helitaanka member ka mid ah object, tusaale ahaan: qof1.magac, ama qof1.magac = "Ali" 
+     - object_node
+     - member_name
+    """
     def __init__(self, object_node, member_name, line, filename):
         super().__init__(line, filename)
         self.object_node = object_node
@@ -337,7 +456,10 @@ class WaalidNode(ExpressionNode):
         super().__init__(line, filename)
 
 class CCallNode(ExpressionNode):
-    """Kani waxa uu matali donaa wicitaanka hawlaha ku qoran luuqada C, tusaale ahaan: __c__code__ printf("Hello, World!"); """
+    """Kani waxa uu matali donaa wicitaanka hawlaha ku qoran luuqada C, tusaale ahaan: __c__code__ printf("Hello, World!"); 
+     - c_function_name
+     - args
+    """
     def __init__(self, c_function_name, args, line, filename):
         super().__init__(line, filename)
         self.c_function_name = c_function_name
@@ -347,29 +469,54 @@ class CCallNode(ExpressionNode):
         return f"CCallNode({self.c_function_name}, {self.args})"
 
 class DictionaryInitializationNode(ExpressionNode):
-    """Kani waxa uu matali donaa dictionary(qaamuus), tusaale ahaan: {"magac": "Ali", "da": 25}."""
+    """Kani waxa uu matali donaa dictionary(qaamuus), tusaale ahaan: {"magac": "Ali", "da": 25}.
+     - pairs
+    """
     def __init__(self, line, pairs, filename):
         super().__init__(line, filename)
         self.pairs = pairs
 
 class DictionaryAccessNode(ExpressionNode):
-    """Kani waxa uu matali donaa helitaanka dictionary, tusaale ahaan: my_dict["key"]."""
+    """Kani waxa uu matali donaa helitaanka dictionary, tusaale ahaan: my_dict["key"].
+     - dictionary_node
+     - key_node
+    """
     def __init__(self, line, dictionary_node, key_node, filename):
         super().__init__(line, filename)
         self.dictionary_node = dictionary_node
         self.key_node = key_node
 
 class DictionaryAssignmentNode(ASTNode):
-    """Kani waxa uu matali donaa qoondeynta dictionary, tusaale ahaan: my_dict["key"] = value."""
+    """Kani waxa uu matali donaa qoondeynta dictionary, tusaale ahaan: my_dict["key"] = value.
+     - dictionary_access_node
+     - value_node
+    """
     def __init__(self, line, dictionary_access_node, value_node, filename):
         super().__init__(line, filename)
         self.dictionary_access_node = dictionary_access_node
         self.value_node = value_node
 
+class LambdaNode(ExpressionNode):
+    """Kani waxa uu matali donaa hawl aan magac lahayn (anonymous function/lambda).
+     - params
+     - return_type
+     - body
+     - is_concise
+    """
+    def __init__(self, params, return_type, body, is_concise, line, filename):
+        super().__init__(line, filename)
+        self.params = params
+        self.return_type = return_type
+        self.body = body
+        self.is_concise = is_concise
+        self.generated_name = None # Waxaa buuxin doona code generator-ka
+
 
 
 class Xidid(ASTNode):
-    '''Xidid waa linker haddhoo ku xiriirin doono c static files-ka uu ugudbin doono gcc-ga'''
+    '''Xidid waa linker haddhoo ku xiriirin doono c static files-ka uu ugudbin doono gcc-ga
+     - aqoonsi
+    '''
     dhamaan_xogta = []
     def __init__(self, aqoonsi):
         self.aqoonsi = aqoonsi
@@ -386,14 +533,20 @@ class WaxboNode(ExpressionNode):
         return "waxbo"
 
 class QeexNode(ASTNode):
-    """Kani waxa uu matali donaa keyword-ka 'qeex' (C #define)."""
+    """Kani waxa uu matali donaa keyword-ka 'qeex' (C #define).
+     - name
+     - value
+    """
     def __init__(self, name, value, line, filename):
         super().__init__(line, filename)
         self.name = name
         self.value = value
 
 class QaabNode(ASTNode):
-    """Kani waxa uu matali donaa keyword-ka 'qaab' (C struct)."""
+    """Kani waxa uu matali donaa keyword-ka 'qaab' (C struct).
+     - name
+     - members
+    """
     def __init__(self, name, members, line, filename):
         super().__init__(line, filename)
         self.name = name
@@ -402,6 +555,9 @@ class QaabNode(ASTNode):
 class QaabQiimeNode(ExpressionNode):
     """Kani waxa uu matali donaa dhisidda struct-ga (C Compound Literal).
     Tusaale: (Midab){255, 255, 255, 255}
+
+     - struct_name
+     - values
     """
     def __init__(self, struct_name, values, line, filename):
         super().__init__(line, filename)

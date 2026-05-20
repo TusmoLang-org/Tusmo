@@ -1,0 +1,171 @@
+// stdlib/core.tus
+// Kani waa laf-dhabarta Tusmo. Si toos ah ayuu u xiriiraa compiler-ka.
+
+TUSMO_XIDID "runtime/type_conversion.c.maya";
+TUSMO_XIDID "runtime/string.c.maya";
+TUSMO_XIDID "runtime/array.c.maya";
+TUSMO_XIDID "runtime/array_generic.c.maya";
+TUSMO_XIDID "runtime/dictionary.c.maya";
+TUSMO_XIDID "runtime/io.c.maya";
+
+hawl nooc(x: walbo) : eray {
+    """
+    Soo celi nooca xogta ee variable-ka.
+    Tusaale: qor(nooc(10)); // Waxay soo celinaysaa "tiro"
+    """
+    soo_celi ___c__call_("tusmo_type_of", x);
+}
+
+hawl dherer(x: walbo) : tiro {
+    """
+    Soo celi dhererka xogta (xarafka erayga ama tirada walxaha tixda).
+    Tusaale: qor(dherer("Tusmo")); // Waxay soo celinaysaa 5
+    """
+    soo_celi ___c__call_("tusmo_dherer", x);
+}
+
+
+// type conversion functions
+hawl eray(x: walbo) : eray {
+    """
+    Waxay u beddeshaa xogta in ay noqoto 'eray' (String).
+    Tusaale: qor(eray(100)); // Waxay soo celinaysaa "100"
+    """
+    soo_celi ___c__call_("tusmo_to_eray", x);
+}
+
+hawl tiro(x: walbo) : tiro {
+    """
+    Waxay u beddeshaa xogta in ay noqoto 'tiro' (Integer).
+    Tusaale: qor(tiro("50")); // Waxay soo celinaysaa 50
+    """
+    soo_celi ___c__call_("tusmo_to_tiro", x);
+}
+
+hawl jajab(x: walbo) : jajab {
+    """
+    Waxay u beddeshaa xogta in ay noqoto 'jajab' (Float).
+    Tusaale: qor(jajab("3.14")); // Waxay soo celinaysaa 3.140000
+    """
+    soo_celi ___c__call_("tusmo_to_jajab", x);
+}
+
+hawl miyaa(x: walbo) : miyaa {
+    """
+    Waxay u beddeshaa xogta in ay noqoto 'miyaa' (Boolean).
+    Tusaale: qor(miyaa(1)); // Waxay soo celinaysaa run
+    """
+    soo_celi ___c__call_("tusmo_to_miyaa", x);
+}
+
+
+
+// ascii conversion functions
+hawl qor_tiro(x: xaraf) : tiro {
+    """
+    Waxay u beddeshaa xaraf in uu noqdo lambarkiisa ASCII (ASCII Int).
+    Tusaale: qor(qor_tiro('A')); // Waxay soo celinaysaa 65
+    """
+    soo_celi ___c__call_("(int)", x);
+}
+
+hawl qor_xaraf(x: tiro) : xaraf {
+    """
+    Waxay u beddeshaa lambar ASCII ah in uu noqdo xarafkiisa.
+    Tusaale: qor(qor_xaraf(65)); // Waxay soo celinaysaa 'A'
+    """
+    soo_celi ___c__call_("(char)", x);
+}
+
+// =========================================================
+// STRING METHODS (Hababka Erayada)
+// =========================================================
+
+hawl XarafWeyn(x: eray) : eray {
+    """
+    Waxay ka dhigtaa dhammaan xarfaha erayga kuwa waaweyn.
+    Tusaale: qor("tusmo".XarafWeyn()); // Waxay soo celinaysaa "TUSMO"
+    """
+    soo_celi ___c__call_("tusmo_str_upper", x);
+}
+
+hawl XarafYar(x: eray) : eray {
+    """
+    Waxay ka dhigtaa dhammaan xarfaha erayga kuwa yaryar.
+    Tusaale: qor("TUSMO".XarafYar()); // Waxay soo celinaysaa "tusmo"
+    """
+    soo_celi ___c__call_("tusmo_str_lower", x);
+}
+
+hawl kaReeb(x: eray) : eray {
+    """
+    Waxay ka jartaa banaanada (spaces) labada dhinac ee erayga.
+    Tusaale: qor("  tusmo  ".kaReeb()); // Waxay soo celinaysaa "tusmo"
+    """
+    soo_celi ___c__call_("tusmo_str_trim", x);
+}
+
+hawl Bkareeb(x: eray) : eray {
+    """
+    Waxay ka jartaa banaanada (spaces) dhinaca bidix (bilowga) ee erayga.
+    """
+    soo_celi ___c__call_("tusmo_str_ltrim", x);
+}
+
+hawl Mkareeb(x: eray) : eray {
+    """
+    Waxay ka jartaa banaanada (spaces) dhinaca midig (dhammaadka) ee erayga.
+    """
+    soo_celi ___c__call_("tusmo_str_rtrim", x);
+}
+
+hawl kuBadal(x: eray, qadim: eray, kan_cusub: eray) : eray {
+    """
+    Waxay ku beddeshaa qayb ka mid ah erayga qayb kale.
+    Tusaale: qor("axmed waa arday".kuBadal("axmed", "cali")); 
+    """
+    soo_celi ___c__call_("tusmo_str_replace", x, qadim, kan_cusub);
+}
+
+hawl sooRaadi(x: eray, baadiGoob: eray) : tiro {
+    """
+    Waxay soo celisaa booska (index) ay ka bilaabato qaybta la raadinayo. 
+    Haddii aan la helin, waxay soo celinaysaa -1.
+    """
+    soo_celi ___c__call_("tusmo_str_find", x, baadiGoob);
+}
+
+hawl lagaHelay(x: eray, baadiGoob: eray) : miyaa {
+    """
+    Waxay hubisaa in qaybta la raadinayo laga helay erayga dhexdiisa.
+    """
+    soo_celi ___c__call_("tusmo_str_contains", x, baadiGoob);
+}
+
+hawl qaybi(x: eray, kalaSooce: eray) : tix:eray {
+    """
+    Waxay u kala qaybisaa erayga tix (array) iyadoo la isticmaalayo kala-soocaha (delimiter).
+    Tusaale: qor("a,b,c".qaybi(",")); // Waxay soo celinaysaa ["a", "b", "c"]
+    """
+    soo_celi ___c__call_("tusmo_str_split", x, kalaSooce);
+}
+
+// =========================================================
+// DICTIONARY METHODS (Hababka Qaamuuska)
+// =========================================================
+
+hawl majiraa(x: qaamuus, fure: eray) : miyaa {
+    """
+    Waxay hubisaa in fure gaar ah uu ku jiro qaamuuska.
+    Tusaale: qor(student.majiraa("magac")); // run ama been
+    """
+    soo_celi ___c__call_("tusmo_qaamuus_has_key", x, fure);
+}
+
+hawl kasaar(x: qaamuus, fure: eray) : waxbo {
+    """
+    Waxay ka saartaa fure iyo qiimihiisa qaamuuska.
+    Tusaale: student.kasaar("magac");
+    """
+    ___c__call_("tusmo_qaamuus_delete", x, fure);
+}

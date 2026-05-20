@@ -1,20 +1,22 @@
 // xisaab.tus - Maktabadda Xisaabta (Math Library)
 // Luqadda Soomaaliga ee xisaabta
 
-"""
-Maktabadda Xisaabta waxay bixisaa hawlaha xisaabta ee caadiga ah.
-Waxaad isticmaali kartaa hawlahaas si aad u sameyso xisaabo kala duwan.
-
-Tusaale:
-    keen "xisaab";
-    
-    keyd:Xisaab math = Xisaab() cusub;
-    keyd:jajab result = math.la_sin(3.14159);
-    keyd:jajab result2 = math.la_cos(0);
-    keyd:jajab result3 = math.la_sqrt(16);
-"""
+TUSMO_XIDID "runtime/math.c.maya";
 
 koox Xisaab {
+    """
+    Maktabadda Xisaabta waxay bixisaa hawlaha xisaabta ee caadiga ah.
+    Waxaad isticmaali kartaa hawlahaas si aad u sameyso xisaabo kala duwan.
+
+    Tusaale:
+        keen "xisaab";
+        
+        keyd:Xisaab math = Xisaab() cusub;
+        keyd:jajab result = math.la_sin(3.14159);
+        keyd:jajab result2 = math.la_cos(0);
+        keyd:jajab result3 = math.la_sqrt(16);
+    """
+
     // Sin - trigonometry
     shaqo la_sin(x:jajab) => jajab {
         soo_celi ___c__call_("tusmo_sin", x);

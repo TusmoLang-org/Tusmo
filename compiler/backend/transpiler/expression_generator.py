@@ -10,7 +10,6 @@ from compiler.frontend.parser.ast_nodes import (
 )
 
 from compiler.backend.transpiler.expression_errors import *
-from compiler.midend.built_in_fn import functions_ as built_in_functions
 class ExpressionGenerator:
     def __init__(self, main_generator):
         self.main_generator = main_generator
@@ -58,15 +57,15 @@ class ExpressionGenerator:
             return self._generate_fstring(node)
         elif isinstance(node, ArrayInitializationNode):
             return self._generate_array_initialization(node)
+        elif isinstance(node, ArrayTypeQueryNode):
+            return self._generate_array_type_query(node)
         elif isinstance(node, DictionaryInitializationNode):
-            self.main_generator.used_features.add("dictionary")
             return self.main_generator.dictionary_generator.generate_initialization(node)
-
         elif isinstance(node, LambdaNode):
             return self._generate_lambda(node)
 
         elif isinstance(node, DictionaryAccessNode):
-            self.main_generator.used_features.add("dictionary")
+
             return self.main_generator.dictionary_generator.generate_access(node)
 
         elif isinstance(node, QaabQiimeNode):
@@ -82,7 +81,7 @@ class ExpressionGenerator:
 
             # Case 1: It's a direct dictionary variable. Generate a get() call.
             if str(base_type) == 'qaamuus':
-                self.main_generator.used_features.add("dictionary")
+
                 # Wrap dictionary variable in null check
                 safe_base = f"TUSMO_SAFE_ACCESS({base_expr_c}, \"{node.filename}\", {node.line})"
                 return f"tusmo_qaamuus_get({safe_base}, {index_c})"
@@ -94,10 +93,10 @@ class ExpressionGenerator:
                 self.main_generator.c_code += f"    TusmoValue {temp_var} = {base_expr_c};\n"
                 
                 if str(index_type) == 'eray':
-                    self.main_generator.used_features.add("dictionary")
+
                     return f"tusmo_qaamuus_get({temp_var}.value.as_qaamuus, {index_c})"
                 else:
-                    self.main_generator.used_features.add("array")
+
                     # Use tusmo_tix_mixed_get_nested which handles type-switching for typed nested arrays
                     return f"tusmo_tix_mixed_get_nested({temp_var}, {index_c})"
 
@@ -119,7 +118,7 @@ class ExpressionGenerator:
             if str(object_type) == "walbo":
                 # Check if it's coming from an array access (tix:qaamuus element)
                 if isinstance(node.object_node, ArrayAccessNode):
-                    self.main_generator.used_features.add("dictionary")
+
                     key_c = f'"{node.member_name}"'
                     return f"tusmo_qaamuus_get({object_c}.value.as_qaamuus, {key_c})"
            
@@ -177,81 +176,52 @@ class ExpressionGenerator:
         if isinstance(object_type, ArrayTypeNode) or str(object_type).startswith('tix'):
             return self.main_generator.array_generator.generate_method_call(node)
         
-        if str(object_type) == 'qaamuus':
-            self.main_generator.used_features.add("dictionary")
+        # Primitive Method Fallback
+        if getattr(node, 'is_primitive_method', False):
+            # Translate obj.method(arg) to method(obj, arg)
             object_c = self.generate_expression(node.object_node)
             args = self._unwrap_args(getattr(node, "ordered_args", None), node.args_list)
             
-            if node.method_name == 'kasaar':
-                key_c = self.generate_expression(args[0])
-                safe_object = f"TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})"
-                return f"tusmo_qaamuus_delete({safe_object}, {key_c})"
+            # Since the function is globally defined, it might be an inline C call or normal function
+            c_func_name = self.main_generator.mangle_name(node.method_name)
             
-            if node.method_name == 'majiraa':
-                key_c = self.generate_expression(args[0])
-                safe_object = f"TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})"
-                return f"tusmo_qaamuus_has_key({safe_object}, {key_c})"
-        
-        # Handle string methods
-        if str(object_type) == 'eray':
-            self.main_generator.used_features.add("string")
-            object_c = self.generate_expression(node.object_node)
-            args = self._unwrap_args(getattr(node, "ordered_args", None), node.args_list)
-            safe_object = f"TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})"
-            
-            # XarafWeyn() - uppercase
-            if node.method_name == 'XarafWeyn':
-                return f"tusmo_str_upper({safe_object})"
-            
-            # XarafYar() - lowercase
-            if node.method_name == 'XarafYar':
-                return f"tusmo_str_lower({safe_object})"
-            
-            # kaReeb() - trim
-            if node.method_name == 'kaReeb':
-                return f"tusmo_str_trim({safe_object})"
-            
-            # Bkareeb() - left trim (trim start)
-            if node.method_name == 'Bkareeb':
-                return f"tusmo_str_ltrim({safe_object})"
-            
-            # Mkareeb() - right trim (trim end)
-            if node.method_name == 'Mkareeb':
-                return f"tusmo_str_rtrim({safe_object})"
-            
-            # kuBadal(old, new) - replace
-            if node.method_name == 'kuBadal':
-                if len(args) != 2:
-                    raise Cilad("kuBadal() waxay u baahan tahay 2 qayb (qadim, cusub)")
-                old_c = self.generate_expression(args[0])
-                new_c = self.generate_expression(args[1])
-                return f"tusmo_str_replace({safe_object}, {old_c}, {new_c})"
-            
-            # sooRaadi(substr) - find index
-            if node.method_name == 'sooRaadi':
-                if len(args) != 1:
-                    raise Cilad("sooRaadi() waxay u baahan tahay 1 qayb")
-                substr_c = self.generate_expression(args[0])
-                return f"tusmo_str_find({safe_object}, {substr_c})"
-            
-            # lagaHelay(substr) - contains check
-            if node.method_name == 'lagaHelay':
-                if len(args) != 1:
-                    raise Cilad("lagaHelay() waxay u baahan tahay 1 qayb")
-                substr_c = self.generate_expression(args[0])
-                return f"tusmo_str_contains({safe_object}, {substr_c})"
-            
-            # qaybi(delimiter) - split
-            if node.method_name == 'qaybi':
-                self.main_generator.used_features.add("array")  # qaybi returns tix:eray
-                if len(args) != 1:
-                    raise Cilad("qaybi() needs 1 argument (delimiter)")
-                delim_c = self.generate_expression(args[0])
-                return f"tusmo_str_split({safe_object}, {delim_c})"
-            
-            # Unknown string method - raise error
-            raise Cilad(f"Hawsha '{node.method_name}' ma ahan mid jirta oo ku shuban eray (string). Hawlgalaha erayga waa: XarafWeyn, XarafYar, kaReeb, Bkareeb, Mkareeb, kuBadal, sooRaadi, lagaHelay, qaybi")
-        
+            # Get the function signature to correctly wrap/duplicate arguments
+            info = self.symbol_table.get(node.method_name)
+            if info and info[1] == "hawl":
+                func_node = info[0]
+                wrapped_args = []
+                
+                # Build list of raw C expressions for all arguments (including the object)
+                all_args_c = [object_c] + [self.generate_expression(arg) for arg in args]
+                
+                for i, arg_c in enumerate(all_args_c):
+                    if i < len(func_node.params):
+                        param_type = str(func_node.params[i].param_type)
+                        
+                        # --- THE CLONING STRATEGY ---
+                        # If the function receives an 'eray', it will free it.
+                        # We MUST give it a clone (tusmo_strdup) to protect the original variable.
+                        if param_type == "eray":
+                             # Avoid double duplication if it's already a fresh heap string
+                             if not arg_c.startswith("tusmo_strdup") and not arg_c.startswith("tusmo_concat_cstr") and not arg_c.startswith("tusmo_to_eray"):
+                                 arg_c = f"tusmo_strdup({arg_c})"
+                        
+                        elif param_type == "walbo":
+                            # Wrap the argument into a TusmoValue struct literal
+                            if i == 0:
+                                arg_type = object_type
+                            else:
+                                arg_type = self.get_expression_type(args[i-1])
+                            
+                            if str(arg_type) != "walbo":
+                                type_enum = self._get_tusmo_type_enum(arg_type)
+                                member = self._get_union_member(arg_type)
+                                arg_c = f"(TusmoValue){{ .type = {type_enum}, .value.{member} = {arg_c} }}"
+                    wrapped_args.append(arg_c)
+                return f"{c_func_name}({', '.join(wrapped_args)})"
+            else:
+                 return f"{c_func_name}({object_c}, {', '.join([self.generate_expression(arg) for arg in args])})"
+
         # Guard against NULL objects before method call
         # object_c = self.generate_expression(node.object_node)
         # However, for regular methods, we wrap cast_object_c which is used as 'kan'
@@ -291,7 +261,22 @@ class ExpressionGenerator:
         args = self._unwrap_args(getattr(node, "ordered_args", None), node.args_list)
         # Wrap the 'kan' (first argument) in a null check
         safe_kan = f"TUSMO_SAFE_ACCESS({cast_object_c}, \"{node.filename}\", {node.line})"
-        arg_exprs = [safe_kan] + [self.generate_expression(arg) for arg in args]
+        
+        arg_exprs = [safe_kan]
+        method_node = getattr(node, 'method_node', None)
+        
+        for i, arg in enumerate(args):
+            arg_c = self.generate_expression(arg)
+            
+            # --- THE CLONING STRATEGY (for methods) ---
+            if method_node and i < len(method_node.params):
+                param_type = str(method_node.params[i].param_type)
+                if param_type == "eray":
+                     if not arg_c.startswith("tusmo_strdup") and not arg_c.startswith("tusmo_concat_cstr") and not arg_c.startswith("tusmo_to_eray"):
+                         arg_c = f"tusmo_strdup({arg_c})"
+            
+            arg_exprs.append(arg_c)
+
         return f"{mangled_name}({', '.join(arg_exprs)})"
 
     def _generate_binary_op(self, node):
@@ -300,12 +285,12 @@ class ExpressionGenerator:
         left_type = self.get_expression_type(node.left)
         right_type = self.get_expression_type(node.right)
         if node.op == '+' and ('eray' in (str(left_type), str(right_type))):
-            self.main_generator.used_features.add("string")
+
             left_c_converted = self._ensure_string_operand(left_c, left_type)
             right_c_converted = self._ensure_string_operand(right_c, right_type)
             return f"tusmo_concat_cstr({left_c_converted}, {right_c_converted})"
         if node.op in ('==', '!=') and ('eray' in (str(left_type), str(right_type))):
-            self.main_generator.used_features.add("string")
+
             cmp = f"strcmp({left_c}, {right_c})"
             if node.op == '==':
                 return f"({cmp} == 0)"
@@ -336,14 +321,14 @@ class ExpressionGenerator:
                 
                 # Case 1: Other side is a dynamic value
                 if other_type == "walbo":
-                    self.main_generator.used_features.add("conversion")
-                    self.main_generator.used_features.add("string")
+
+
                     res = f'(strcmp(tusmo_type_of({other_c}), "{type_name}") == 0)'
                     return res if is_equal else f"(!{res})"
                 
                 # Case 2: Other side is already a string (e.g. nooc(x) == tiro)
                 elif other_type == "eray":
-                    self.main_generator.used_features.add("string")
+
                     res = f'(strcmp({other_c}, "{type_name}") == 0)'
                     return res if is_equal else f"(!{res})"
                 
@@ -420,7 +405,7 @@ class ExpressionGenerator:
         return lambda_name
 
     def _generate_fstring(self, node: FStringNode):
-        self.main_generator.used_features.add("string")
+
         segments = []
         for part_type, part_value in node.parts:
             if part_type == "text":
@@ -438,36 +423,13 @@ class ExpressionGenerator:
             result = f"tusmo_concat_cstr({result}, {segment})"
         return result
 
+    def _generate_array_type_query(self, node: ArrayTypeQueryNode):
+        resolved_type = self.main_generator.resolve_array_query_type(node.identifier)
+        return f"tusmo_strdup({self._escape_c_string_literal(resolved_type)})"
+
     def _generate_ccall(self, node):
         '''Registering c call fn'''
         c_function_name = node.c_function_name
-        if c_function_name in ["tusmo_init_random", "tusmo_random_int", "tusmo_random_double"]:
-            self.main_generator.used_features.add("nasiib")
-        
-        elif "tusmo_time" in c_function_name or "tusmo_get" in c_function_name:
-            self.main_generator.used_features.add("wakhti")
-        
-        elif "tusmo_os" in c_function_name:
-            self.main_generator.used_features.add("os")
-            if c_function_name == "tusmo_os_list_dir":
-                self.main_generator.used_features.add("array")
-        elif "tusmo_http" in c_function_name:
-            self.main_generator.used_features.add("http")
-            if c_function_name == "tusmo_http_server_accept":
-                self.main_generator.used_features.add("dictionary")
-            if c_function_name == "tusmo_http_qaamuus_to_json":
-                self.main_generator.used_features.add("dictionary")
-        elif "tusmo_socket" in c_function_name:
-            self.main_generator.used_features.add("socket")
-        elif "tusmo_ws" in c_function_name:
-            self.main_generator.used_features.add("websocket")
-            self.main_generator.used_features.add("socket")  # WebSocket needs socket
-            self.main_generator.used_features.add("dictionary")  # For decode_frame result
-        elif "tusmo_gl" in c_function_name:
-            self.main_generator.used_features.add("opengl")
-        elif c_function_name in ["tusmo_sin", "tusmo_cos", "tusmo_sqrt", "tusmo_abs_d", 
-                                  "tusmo_pow", "tusmo_floor", "tusmo_ceil", "tusmo_round"]:
-            self.main_generator.used_features.add("math")
         c_args = [self.generate_expression(arg) for arg in node.args]
 
         return f'{c_function_name}({", ".join(c_args)})'
@@ -480,106 +442,32 @@ class ExpressionGenerator:
         if expr_type_str in ('eray', 'c_dynamic', 'unknown'):
             return expr_code
         if expr_type_str == 'xaraf':
-            self.main_generator.used_features.add("string")
+
             return f'tusmo_str_format("%c", {expr_code})'
         if expr_type_str == 'tiro':
-            self.main_generator.used_features.add("string")
+
             return f'tusmo_str_format("%d", {expr_code})'
         if expr_type_str == 'jajab':
-            self.main_generator.used_features.add("string")
+
             return f'tusmo_str_format("%f", {expr_code})'
         if expr_type_str == 'miyaa':
             return f"(({expr_code}) ? \"run\" : \"been\")"
         if expr_type_str == 'walbo':
-            self.main_generator.used_features.add("conversion")
-            self.main_generator.used_features.add("string")
+
+
             return f"tusmo_to_eray({expr_code})"
         
         raise Cilad(ERR_FSTRING_TYPE())
 
     def _generate_function_call(self, node: FunctionCallNode):
-        # Handle Type Casting Functions
-        if node.name in ["eray", "tiro", "jajab", "miyaa"]:
-            self.main_generator.used_features.add("conversion")
-            args = self._unwrap_args(getattr(node, "ordered_args", None), node.params)
-            if len(args) != 1:
-                raise Cilad(ERR_CAST_ARG_COUNT(node.name, len(args)))
-            
-            arg_node = args[0]
-            arg_c = self.generate_expression(arg_node)
-            arg_type = self.get_expression_type(arg_node)
-
-            # If the argument is already a TusmoValue (dynamic array element), pass it straight through.
-            if str(arg_type) == "walbo":
-                c_func_name = f"tusmo_to_{node.name}"
-                return f"{c_func_name}({arg_c})"
-
-            # Create a TusmoValue struct on the stack
-            val_var = self.main_generator.get_temp_var()
-            self.main_generator.c_code += f"    TusmoValue {val_var};\n"
-            self.main_generator.c_code += f"    {val_var}.type = {self._get_tusmo_type_enum(arg_type)};\n"
-            self.main_generator.c_code += f"    {val_var}.value.{self._get_union_member(arg_type)} = {arg_c};\n"
-
-            c_func_name = f"tusmo_to_{node.name}"
-            return f"{c_func_name}({val_var})"
-
-        if node.name in built_in_functions:
-            feature = built_in_functions[node.name].get("feature")
-            if feature:
-                self.main_generator.used_features.add(feature)
-        if node.name == 'dherer':
-            if len(node.params) != 1:
-                raise Cilad(ERR_DHERER_ARG_COUNT(len(node.params)))
-            arg_expr = self.generate_expression(node.params[0])
-            arg_type = self.main_generator.semantic_checker.get_expression_type(node.params[0], skip_context_check=True)
-            if str(arg_type) == 'eray':
-                return f"strlen({arg_expr})"
-            elif isinstance(arg_type, ArrayTypeNode) or str(arg_type).startswith("tix") or str(arg_type) == "walbo":
-                return f"{arg_expr}->size"
-            else:
-                raise Cilad(ERR_DHERER_TYPE(arg_type))
-        if node.name == 'nooc':
-            if len(node.params) != 1:
-                raise Cilad(ERR_NOOC_ARG_COUNT())
-            arg_node = node.params[0]
-            # Special case: nooc(arr[]) asks for the element type of a tix.
-            if isinstance(arg_node, ArrayTypeQueryNode):
-                base_type = self.main_generator.semantic_checker.get_expression_type(arg_node, skip_context_check=True)
-                if not isinstance(base_type, ArrayTypeNode):
-                    raise Cilad(ERR_NOOC_TIX_QUERY())
-                self.main_generator.used_features.add("array")
-                elem_type = base_type.element_type
-                type_str = "tix:dynamic" if elem_type is None else f"tix:{elem_type}"
-                return f'"{type_str}"'
-
-            arg_type = self.main_generator.semantic_checker.get_expression_type(arg_node, skip_context_check=True)
-            if isinstance(arg_type, ArrayTypeNode):
-                self.main_generator.used_features.add("array")
-            # If it's a mixed-array element (walbo), ask the runtime for the actual tag.
-            if str(arg_type) == "walbo":
-                self.main_generator.used_features.add("conversion")
-                arg_expr = self.generate_expression(arg_node)
-                return f"tusmo_type_of({arg_expr})"
-            type_str = str(arg_type)
-            return f'"{type_str}"'
-        
-        # qor_tiro() - convert char to integer (ASCII value)
-        if node.name == 'qor_tiro':
-            if len(node.params) != 1:
-                raise Cilad("qor_tiro() waxay u baahan tahay 1 parameter (xaraf)")
-            arg_expr = self.generate_expression(node.params[0])
-            return f"(int)({arg_expr})"
-        
-        # qor_xaraf() - convert integer (ASCII) to char
-        if node.name == 'qor_xaraf':
-            if len(node.params) != 1:
-                raise Cilad("qor_xaraf() waxay u baahan tahay 1 parameter (tiro)")
-            arg_expr = self.generate_expression(node.params[0])
-            return f"(char)({arg_expr})"
         if node.name == 'tix_cayiman':
-            self.main_generator.used_features.add("array")
             raise Cilad(ERR_TIX_CAYIMAN_USAGE())
-        
+
+        args = self._unwrap_args(getattr(node, "ordered_args", None), node.params)
+
+        if node.name == "nooc" and len(args) == 1 and isinstance(args[0], ArrayTypeQueryNode):
+            return self._generate_array_type_query(args[0])
+
         func_info = self.symbol_table.get(node.name)
         if not func_info:
             # This should have been caught by the semantic analyzer, but as a safeguard:
@@ -589,8 +477,20 @@ class ExpressionGenerator:
         if isinstance(func_info[1], FunctionTypeNode):
             # Indirect call through a variable
             c_func_name = self.main_generator.mangle_name(node.name)
-            args = self._unwrap_args(getattr(node, "ordered_args", None), node.params)
-            arg_exprs = [self.generate_expression(arg) for arg in args]
+            
+            arg_exprs = []
+            for i, arg in enumerate(args):
+                arg_c = self.generate_expression(arg)
+                if i < len(func_info[1].param_types):
+                    param_type = str(func_info[1].param_types[i])
+                    if param_type == "walbo":
+                        arg_type = self.get_expression_type(arg)
+                        if str(arg_type) != "walbo":
+                            type_enum = self._get_tusmo_type_enum(arg_type)
+                            member = self._get_union_member(arg_type)
+                            arg_c = f"(TusmoValue){{ .type = {type_enum}, .value.{member} = {arg_c} }}"
+                arg_exprs.append(arg_c)
+                
             return f"{c_func_name}({', '.join(arg_exprs)})"
         else:
             # Direct function call
@@ -598,7 +498,6 @@ class ExpressionGenerator:
             if func_node is None:
                 # Symbol exists but is not a callable with AST body (e.g. c_type/constant).
                 raise Cilad(ERR_FUNC_NOT_FOUND(node.name))
-            args = self._unwrap_args(getattr(node, "ordered_args", None), node.params)
 
             arg_exprs = []
             for i, arg in enumerate(args):
@@ -610,8 +509,15 @@ class ExpressionGenerator:
                     if param_type == "eray":
                         # If the argument is not already a safe heap allocation (like a previous strdup or concat), duplicate it.
                         if not arg_c.startswith("tusmo_strdup") and not arg_c.startswith("tusmo_concat_cstr") and not arg_c.startswith("tusmo_to_eray"):
-                            self.main_generator.used_features.add("string")
+
                             arg_c = f"tusmo_strdup({arg_c})"
+                    elif param_type == "walbo":
+                        # Wrap the argument into a TusmoValue struct literal
+                        arg_type = self.get_expression_type(arg)
+                        if str(arg_type) != "walbo":
+                            type_enum = self._get_tusmo_type_enum(arg_type)
+                            member = self._get_union_member(arg_type)
+                            arg_c = f"(TusmoValue){{ .type = {type_enum}, .value.{member} = {arg_c} }}"
                             
                 arg_exprs.append(arg_c)
             
@@ -631,24 +537,50 @@ class ExpressionGenerator:
             return f"{c_func_name}({', '.join(arg_exprs)})"
 
     def _get_tusmo_type_enum(self, type_str):
+        t_str = str(type_str)
         type_map = {
             "tiro": "TUSMO_TIRO",
             "jajab": "TUSMO_JAJAB",
             "eray": "TUSMO_ERAY",
             "miyaa": "TUSMO_MIYAA",
             "xaraf": "TUSMO_XARAF",
+            "qaamuus": "TUSMO_QAAMUUS",
         }
-        return type_map.get(str(type_str), "TUSMO_ERAY") # Default to string for unknown
+        if t_str in type_map:
+            return type_map[t_str]
+        
+        if "tix" in t_str:
+            if t_str == "tix:tiro": return "TUSMO_TIX_TIRO"
+            if t_str == "tix:eray": return "TUSMO_TIX_ERAY"
+            if t_str == "tix:jajab": return "TUSMO_TIX_JAJAB"
+            if t_str == "tix:miyaa": return "TUSMO_TIX_MIYAA"
+            if t_str == "tix:xaraf": return "TUSMO_TIX_XARAF"
+            return "TUSMO_TIX"
+            
+        return "TUSMO_ERAY" # Default to string for unknown
 
     def _get_union_member(self, type_str):
+        t_str = str(type_str)
         member_map = {
             "tiro": "as_tiro",
             "jajab": "as_jajab",
             "eray": "as_eray",
             "miyaa": "as_miyaa",
             "xaraf": "as_xaraf",
+            "qaamuus": "as_qaamuus",
         }
-        return member_map.get(str(type_str), "as_eray")
+        if t_str in member_map:
+            return member_map[t_str]
+        
+        if "tix" in t_str:
+            if t_str == "tix:tiro": return "as_tiro_tix"
+            if t_str == "tix:eray": return "as_eray_tix"
+            if t_str == "tix:jajab": return "as_jajab_tix"
+            if t_str == "tix:miyaa": return "as_miyaa_tix"
+            if t_str == "tix:xaraf": return "as_xaraf_tix"
+            return "as_tix"
+            
+        return "as_eray"
 
     def _unwrap_args(self, ordered, raw_list):
         if ordered is not None:

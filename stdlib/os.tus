@@ -1,3 +1,5 @@
+TUSMO_XIDID "runtime/os.c.maya";
+
 koox Os {
     """
     Kooxda Os waxa ay ka koobantahay  19 hawlood oo kala nidaaminaya faylasha iyo sytem-ka:

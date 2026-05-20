@@ -1,5 +1,4 @@
-keen "types";
-
+isticmaal {Boos2D, AfarGees} ee kujira "types";
 hawl istaabasho(meesha: Boos2D, rec: AfarGees) : miyaa { 
     """
     Wuxuu hubiyaa in boos(Boos2D) uu gudaha u galay leydi (AfarGees). 

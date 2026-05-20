@@ -2,6 +2,8 @@
 // WebSocket library for Tusmo with Somali keywords
 // WebXiriiriye = WebSocket
 
+TUSMO_XIDID "runtime/websocket.c.maya";
+
 koox WebXiriiriye {
             """
         Bilow WebSocket madhan (Initialize empty WebSocket)

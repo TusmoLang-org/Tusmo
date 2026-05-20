@@ -19,7 +19,7 @@ def p_struct_literal(p):
     p[0] = QaabQiimeNode(p[2], p[5], p.lineno(1), p.lexer.filename)
 
 def p_qaab_declaration(p):
-    '''qaab_declaration : QAAB IDENTIFIER LBRACE struct_member_list RBRACE'''
+    '''qaab_declaration : QAAB IDENTIFIER LBRACE struct_member_list RBRACE SEMICOLON'''
     p[0] = QaabNode(p[2], p[4], p.lineno(1), p.lexer.filename)
 
 def p_struct_member_list(p):

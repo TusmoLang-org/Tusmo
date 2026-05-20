@@ -68,17 +68,17 @@ def p_empty(p):
 
 def p_statement(p):
     '''statement : declaration
-                 | qor_statement
-                 | hel
-                 | assignment_statement
-                 | condition_statement
-                 | statement_return
-                 | expression SEMICOLON
-                 | keen_import
-                 | isticmaal_import
+                  | qor_statement
+                  | hel
+                  | assignment_statement
+                  | condition_statement
+                  | statement_return
+                  | statement_xidid
+                  | expression SEMICOLON
+                  | keen_import
+                  | isticmaal_import
     '''
     p[0] = p[1]
-
 def p_assignment_statement(p):
     '''assignment_statement : expression EQUALS expression SEMICOLON'''
     p[0] = AssignmentNode(p[1], p[2], p[3], p.lineno(2), p.lexer.filename)
@@ -168,7 +168,6 @@ def p_expression(p):
                   | dictionary_initialization
                   | array_access
                   | array_type_query
-                  | builtin_function_call
                   | function_call
                   | c_call_expression
                   | anonymous_function'''

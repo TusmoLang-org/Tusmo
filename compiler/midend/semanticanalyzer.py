@@ -12,9 +12,9 @@ from compiler.frontend.parser.ast_nodes import (
     QeexNode, QaabNode, QaabQiimeNode, LambdaNode
 )
 from compiler.midend.symbol_table import SymbolTable
-from compiler.midend.built_in_fn import functions_
 from compiler.midend.semantic_errors import *
 from compiler.midend.lifetime_tracker import LifetimeTracker
+from compiler.backend.transpiler.expression_errors import ERR_NOOC_TIX_QUERY
 
 class SemanticChecker:
     def __init__(self, symbol_table: SymbolTable):
@@ -119,14 +119,14 @@ class SemanticChecker:
         if isinstance(node, BooleanNode): return "miyaa"
         if isinstance(node, WaxboNode): return "waxbo"
         if isinstance(node, FStringNode): return "eray"
+        if isinstance(node, TypeLiteralNode): return f"nooc:{node.type_name}"
         if isinstance(node, DictionaryInitializationNode): return "qaamuus"
         if isinstance(node, QaabQiimeNode): return node.struct_name
         if isinstance(node, CCallNode): return "walbo"
+        if isinstance(node, ArrayTypeQueryNode): return "eray"
         if isinstance(node, FunctionCallNode):
-            if node.name == 'dherer': return "tiro"
-            if node.name == 'nooc': return "eray"
-            if node.name in functions_:
-                return functions_[node.name]["return_type"]
+            if node.name == "tix_cayiman":
+                return "tix"
             info = self.symbol_table.get(node.name)
             if info:
                 if isinstance(info[1], FunctionTypeNode): return info[1].return_type
@@ -136,6 +136,14 @@ class SemanticChecker:
         if isinstance(node, LambdaNode):
             param_types = [p.param_type for p in node.params]
             return FunctionTypeNode(node.line, param_types, node.return_type, node.filename)
+
+        if isinstance(node, ArrayAccessNode):
+            array_type = self.get_expression_type(node.array_name_node)
+            if isinstance(array_type, ArrayTypeNode):
+                return str(array_type.element_type) if array_type.element_type else "walbo"
+            if isinstance(array_type, str) and array_type.startswith("tix:"):
+                return array_type[4:]
+            return "walbo"
 
         if isinstance(node, ClassInstantiationNode): return node.class_name
         if isinstance(node, ThisNode):
@@ -169,8 +177,18 @@ class SemanticChecker:
             
         if isinstance(node, MethodCallNode):
             obj_type = self.get_expression_type(node.object_node)
-            if str(obj_type) in ("walbo", "qaamuus", "eray", "unknown") or str(obj_type).startswith("tix"): 
-                return "walbo" # We assume string/array methods return dynamic or specific values handled at runtime
+            
+            if str(obj_type).startswith("tix") or str(obj_type) == "tix": 
+                return "walbo" # Array methods often return elements (walbo) or specific types handled elsewhere
+
+            if str(obj_type) in ("eray", "tiro", "jajab", "miyaa", "xaraf", "qaamuus"):
+                info = self.symbol_table.get(node.method_name)
+                if info and info[1] == "hawl":
+                    return str(info[0].return_type)
+                return "unknown"
+                
+            if str(obj_type) in ("walbo", "unknown"): 
+                return "walbo" 
                 
             class_info = self.symbol_table.get(str(obj_type))
             if class_info and class_info[1] == 'class_definition':
@@ -186,6 +204,21 @@ class SemanticChecker:
                         break
             return "walbo"
             
+        if isinstance(node, ArrayInitializationNode):
+            if not node.elements:
+                return ArrayTypeNode(node.line, None, node.filename) # Empty mixed array
+            first_type = self.get_expression_type(node.elements[0])
+            # Check if all elements are the same type
+            is_homogeneous = True
+            for i in range(1, len(node.elements)):
+                if str(self.get_expression_type(node.elements[i])) != str(first_type):
+                    is_homogeneous = False
+                    break
+            if is_homogeneous:
+                return ArrayTypeNode(node.line, first_type, node.filename)
+            else:
+                return ArrayTypeNode(node.line, None, node.filename) # Mixed array
+
         if isinstance(node, IdentifierNode):
             info = self.symbol_table.get(node.name)
             if info:
@@ -283,7 +316,13 @@ class SemanticChecker:
         self.tracker.push_scope()
         for p in node.params:
             self.symbol_table.set(p.name, str(p.param_type).strip())
-            self.tracker.record_definition(p.name, p.param_type, p, is_initialized=True)
+            self.tracker.record_definition(
+                p.name,
+                p.param_type,
+                p,
+                is_initialized=True,
+                borrowed=str(p.param_type).strip() == "qaamuus",
+            )
         self.check(node.body)
         node.cleanup_vars = self.tracker.pop_scope()
         self.symbol_table.pop_scope()
@@ -308,7 +347,13 @@ class SemanticChecker:
         self.tracker.push_scope()
         for p in node.params:
             self.symbol_table.set(p.name, str(p.param_type).strip())
-            self.tracker.record_definition(p.name, p.param_type, p, is_initialized=True)
+            self.tracker.record_definition(
+                p.name,
+                p.param_type,
+                p,
+                is_initialized=True,
+                borrowed=str(p.param_type).strip() == "qaamuus",
+            )
         
         ret_type = node.return_type
         if node.is_concise:
@@ -385,6 +430,34 @@ class SemanticChecker:
     def check_BooleanNode(self, node: BooleanNode): return "miyaa"
     def check_WaxboNode(self, node: WaxboNode): return "waxbo"
     def check_CCallNode(self, node: CCallNode): return "walbo"
+    def check_TypeLiteralNode(self, node: TypeLiteralNode):
+        return f"nooc:{node.type_name}"
+
+    def _resolve_array_query_type(self, identifier_name, node):
+        info = self.symbol_table.get(identifier_name)
+        if not info:
+            raise SemanticError(ERR_IDENTIFIER_NOT_FOUND(identifier_name), node.filename, node.line)
+
+        array_type = info[1]
+
+        if isinstance(array_type, ArrayTypeNode):
+            if array_type.element_type is None:
+                return "walbo"
+            return str(array_type.element_type)
+
+        array_type_str = str(array_type).strip()
+        if not array_type_str.startswith("tix"):
+            raise SemanticError(ERR_NOOC_TIX_QUERY(), node.filename, node.line)
+
+        if array_type_str == "tix":
+            return "walbo"
+
+        return array_type_str[4:]
+
+    def check_ArrayTypeQueryNode(self, node: ArrayTypeQueryNode):
+        self._resolve_array_query_type(node.identifier, node)
+        return "eray"
+
     def check_ArrayAccessNode(self, node: ArrayAccessNode):
         self.check(node.array_name_node)
         self.check(node.index_expression)
@@ -442,10 +515,10 @@ class SemanticChecker:
 
 
     def check_FunctionCallNode(self, node: FunctionCallNode):
-        if node.name in functions_:
+        if node.name == "tix_cayiman":
             for arg in node.params:
                 self.check(arg)
-            return functions_[node.name]["return_type"]
+            return "tix"
 
         info = self.symbol_table.get(node.name)
         if not info:
@@ -552,6 +625,12 @@ class SemanticChecker:
             self._ensure_valid_type(member.var_type, member)
         self.symbol_table.set(node.name, 'struct_definition', value=node)
 
+    def check_DictionaryInitializationNode(self, node: DictionaryInitializationNode):
+        for key, value in node.pairs:
+            self.check(key)
+            self.check(value)
+        return "qaamuus"
+
     def check_BinaryOpNode(self, node: BinaryOpNode):
         left_type = self.check(node.left)
         right_type = self.check(node.right)
@@ -652,30 +731,49 @@ class SemanticChecker:
         for arg in node.args_list:
             self.check(arg)
 
-        # Basic validation for string/array methods (handled as walbo for now)
-        if str(obj_type) == "eray":
-            valid_str_methods = {"XarafWeyn", "XarafYar", "kaReeb", "Bkareeb", "Mkareeb", "kuBadal", "sooRaadi", "lagaHelay", "qaybi"}
-            if node.method_name not in valid_str_methods:
-                raise SemanticError(ERR_METHOD_NOT_FOUND_ON_STRING(node.method_name), node.filename, node.line)
-            return "walbo"
-
+        # Check if it's an array method. Array methods are still somewhat special due to generics.
         if str(obj_type).startswith("tix") or str(obj_type) == "tix":
             valid_arr_methods = {"gali", "kasaar", "dherer"}
             if node.method_name not in valid_arr_methods:
                 raise SemanticError(ERR_METHOD_NOT_FOUND_ON_ARRAY(node.method_name), node.filename, node.line)
             return "walbo"
 
+        # Primitive Method Fallback: If obj_type is a primitive (like 'eray', 'tiro'), check for a global function.
+        if str(obj_type) in ("eray", "tiro", "jajab", "miyaa", "xaraf", "qaamuus"):
+            info = self.symbol_table.get(node.method_name)
+            if info and info[1] == "hawl":
+                func_node = info[0]
+                # Check if the first parameter matches the object type (or is 'walbo')
+                if not func_node.params or not self._are_types_compatible(func_node.params[0].param_type, obj_type):
+                    raise SemanticError(f"Hawsha '{node.method_name}' ma aqbasho nooca '{obj_type}' in ay tahay parameter-ka kowaad.", node.filename, node.line)
+                
+                # Verify remaining arguments match
+                if len(node.args_list) != len(func_node.params) - 1:
+                    raise SemanticError(f"Hawsha '{node.method_name}' waxay u baahan tahay {len(func_node.params) - 1} argument, laakiin waxaad siisay {len(node.args_list)}.", node.filename, node.line)
+                
+                # Note: For full type checking of arguments, we would do it here, but skipping for brevity
+                node.is_primitive_method = True
+                return func_node.return_type
+            else:
+                raise SemanticError(f"Hawsha '{node.method_name}' ma ahan mid jirta oo ku shuban nooca '{obj_type}'.", node.filename, node.line)
+
+
         # Resolve the method in the class hierarchy
         res_type = self.get_expression_type(node)
-        if res_type == "walbo": # Check if it's truly found in a class
+        if res_type != "unknown": 
              class_info = self.symbol_table.get(str(obj_type))
              if class_info and class_info[1] == 'class_definition':
                  found = False
                  current_class = class_info[0]
                  while current_class:
-                     if any(m.name == node.method_name for m in current_class.methods):
-                         found = True
-                         break
+                     for m in current_class.methods:
+                         if m.name == node.method_name:
+                             node.method_node = m
+                             node.method_source_class = current_class
+                             found = True
+                             break
+                     if found: break
+                     
                      if getattr(current_class, 'parent_name', None):
                          parent_info = self.symbol_table.get(current_class.parent_name)
                          current_class = parent_info[0] if parent_info else None

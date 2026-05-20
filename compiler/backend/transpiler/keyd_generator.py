@@ -29,7 +29,7 @@ class KeydGenerator:
 
         # Handle qaamuus type
         if str(var_type) == "qaamuus":
-            self.main_generator.used_features.add("dictionary")
+
             c_type = "TusmoQaamuus*"
             self._emit_declaration(c_type, var_name, is_top_level)
             if value:
@@ -59,20 +59,9 @@ class KeydGenerator:
                         raise ValueError(f"tix_cayiman requires at least one parameter (size) for variable {var_name}")
                     # Generate the appropriate create function based on the declared type
                     size_expr = self.expr_generator.generate_expression(value.params[0])
-                    element_type = var_type.element_type
-                    element_type_str = str(element_type)
+                    create_func = self.main_generator.array_generator.get_create_function(var_type)
                     
-                    if element_type is None or element_type_str == "None" or element_type_str == "qaamuus":
-                        # Mixed/heterogeneous array
-                        init_c = f"tusmo_tix_mixed_create({size_expr})"
-                    elif isinstance(element_type, ArrayTypeNode):
-                        # Multi-dimensional array
-                        init_c = f"tusmo_tix_generic_create({size_expr})"
-                    else:
-                        # Homogeneous array
-                        init_c = f"tusmo_hp_tix_{element_type_str}_create({size_expr})"
-                    
-                    self.main_generator.c_code += f"    {var_name} = {init_c};\n"
+                    self.main_generator.c_code += f"    {var_name} = {create_func}({size_expr});\n"
                 # Check if it's an array initialization
                 elif hasattr(value, '__class__') and value.__class__.__name__ == 'ArrayInitializationNode':
                     # Use the declared type instead of inferred type for empty arrays
@@ -115,7 +104,7 @@ class KeydGenerator:
                     
                     # Super intelligent: wrap eray literals in strdup
                     if str(var_type) == "eray" and value.__class__.__name__ == 'StringNode':
-                        self.main_generator.used_features.add("string")
+
                         init_c = f"tusmo_strdup({init_c})"
                         
                     # Unwrap walbo if assigning from dictionaries/mixed arrays
@@ -133,6 +122,13 @@ class KeydGenerator:
                         member = unwrap_map.get(str(var_type))
                         if member:
                             init_c = f"({init_c}).value.{member}"
+                    
+                    # Wrap into walbo if target is walbo
+                    if str(var_type) == "walbo" and str(right_type) != "walbo":
+                        type_enum = self.expr_generator._get_tusmo_type_enum(right_type)
+                        member = self.expr_generator._get_union_member(right_type)
+                        init_c = f"(TusmoValue){{ .type = {type_enum}, .value.{member} = {init_c} }}"
+
                     self.main_generator.c_code += f"    {var_name} = {init_c};\n"
                     # Move Semantics NULLing
                     if value.__class__.__name__ == 'IdentifierNode' and self.main_generator.semantic_checker.tracker.is_heap_type(var_type):
@@ -154,6 +150,10 @@ class KeydGenerator:
             return "bool"
         elif var_type == "eray":
             return "char*"
+        elif var_type == "qaamuus":
+            return "TusmoQaamuus*"
+        elif var_type == "walbo":
+            return "TusmoValue"
         elif var_type == "waxbo":
             return "void*"
         info = self.symbol_table.get(var_type) if isinstance(var_type, str) else None

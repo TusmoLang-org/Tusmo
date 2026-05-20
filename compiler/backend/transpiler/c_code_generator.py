@@ -69,6 +69,27 @@ class CCodeGenerator:
     def get_temp_var(self):
         self.temp_var_counter += 1
         return f"__tusmo_temp_{self.temp_var_counter}"
+
+    def get_nested_depth_and_base_type(self, tusmo_type_node, depth=0):
+        return self.array_generator.get_nested_depth_and_base_type(tusmo_type_node, depth)
+
+    def resolve_array_query_type(self, identifier_name):
+        info = self.symbol_table.get(identifier_name)
+        if not info:
+            return "walbo"
+
+        array_type = info[1]
+        if isinstance(array_type, ArrayTypeNode):
+            if array_type.element_type is None:
+                return "walbo"
+            return str(array_type.element_type)
+
+        array_type_str = str(array_type).strip()
+        if not array_type_str.startswith("tix"):
+            return "walbo"
+        if array_type_str == "tix":
+            return "walbo"
+        return array_type_str[4:]
     
     # Add this method to the CCodeGenerator class in c_code_generator.py
 
@@ -108,6 +129,8 @@ class CCodeGenerator:
         if t_str == 'xaraf': return 'char'
         if t_str == 'miyaa': return 'bool'
         if t_str == 'waxbo': return 'void'
+        if t_str == 'qaamuus': return 'TusmoQaamuus*'
+        if t_str == 'walbo': return 'TusmoValue'
 
         if isinstance(tusmo_type, str):
             type_info = self.symbol_table.get(tusmo_type)
@@ -213,6 +236,7 @@ class CCodeGenerator:
         if t_str == 'xaraf': return 'char'
         if t_str == 'miyaa': return 'bool'
         if t_str == 'waxbo': return 'void'
+        if t_str == 'qaamuus': return 'TusmoQaamuus*'
         
         # Check symbol table for Tusmo-defined and explicitly-declared C types.
         info = self.symbol_table.get(t_str)
@@ -232,23 +256,23 @@ class CCodeGenerator:
     def _generate_assignmentnode(self, node: AssignmentNode):
         self.keyd_assignment.generate(node)
     def _generate_qornode(self, node: QorNode):
-        self.used_features.add("io")
+
         self.qor_generator.generate(node)
     def _generate_helnode(self, node: HelNode):
-        self.used_features.add("io")
+
         self.hel_generator.generate(node)
     def _generate_ifnode(self, node: IfNode):
         self.condition_generator.generate(node)
     
     def _generate_returnstatementnode(self, node): self.return_generator.generate(node)
     def _generate_arrayassignmentnode(self, node: ArrayAssignmentNode):
-        self.used_features.add("array")
+
         self.array_generator.generate_assignment(node)
     def _generate_dictionaryinitializationnode(self, node: DictionaryInitializationNode):
-        self.used_features.add("dictionary")
+
         self.dictionary_generator.generate_initialization(node)
     def _generate_dictionaryassignmentnode(self, node: DictionaryAssignmentNode):
-        self.used_features.add("dictionary")
+
         self.dictionary_generator.generate_assignment(node)
     def _generate_breaknode(self, node: BreakNode):
         cleanup_code = ""

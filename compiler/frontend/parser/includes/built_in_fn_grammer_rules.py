@@ -5,11 +5,11 @@ from compiler.frontend.parser.ast_nodes import (
 def p_built_in_fn_names(p):
     '''fn_name : GALI
                | TIX_CAYIMAN
-               | DHERER
                | ERAY
                | TIRO
                | JAJAB
                | MIYAA
+               | XARAF
                | KUBADAL
                | KAREEB
                | BKAREEB
@@ -33,12 +33,6 @@ def p_builtin_function_call(p):
     line = p.lineno(2)
     filename = p.lexer.filename
     p[0] = FunctionCallNode(p[1], p[3], line, filename)
-
-def p_nooc_call(p):
-    '''expression : NOOC LPAREN expression RPAREN'''
-    line = p.lineno(1)
-    filename = p.lexer.filename
-    p[0] = FunctionCallNode("nooc", [p[3]], line, filename)
 
 def p_c_call_expression(p):
     '''c_call_expression : C_CALL LPAREN STRING RPAREN

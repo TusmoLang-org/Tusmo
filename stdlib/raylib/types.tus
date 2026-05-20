@@ -12,9 +12,9 @@ ___c__code_("""
 """);
 
 // 2. Data Structures
-qaab Midab { keyd:xaraf r; keyd:xaraf g; keyd:xaraf b; keyd:xaraf a; }
-qaab Boos2D { keyd:jajab x; keyd:jajab y; }
-qaab AfarGees { keyd:jajab x; keyd:jajab y; keyd:jajab width; keyd:jajab height; }
+qaab Midab { keyd:xaraf r; keyd:xaraf g; keyd:xaraf b; keyd:xaraf a; };
+qaab Boos2D { keyd:jajab x; keyd:jajab y; };
+qaab AfarGees { keyd:jajab x; keyd:jajab y; keyd:jajab width; keyd:jajab height; };
 
 // 3. The Wrappers
 ___c__code_("""
@@ -50,11 +50,11 @@ bool Tusmo_CheckCollisionRecs(AfarGees rec1, AfarGees rec2) {
 Boos2D Tusmo_GetMousePosition() {
     RaylibVector2 pos = GetMousePosition();
     Boos2D bpos = { (double)pos.x, (double)pos.y };
-    return bpos;
+    return bpos;Texture2D
 }
 void* Tusmo_LoadFont(const char* fileName) {
     Font* f = malloc(sizeof(Font));
-    *f = LoadFont(fileName);
+    *f = LoadFont(fileName);Tusmo_LoadTexture
     return f;
 }
 void Tusmo_DrawTextEx(void* fontPtr, const char *text, Boos2D position, float fontSize, float spacing, Midab tint) {

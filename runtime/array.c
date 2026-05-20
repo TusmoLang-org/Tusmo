@@ -309,7 +309,8 @@ bool tusmo_hp_tix_tiro_remove(TusmoTixTiro* tix, int value) {
 bool tusmo_hp_tix_eray_remove(TusmoTixEray* tix, char* value) {
     for (size_t i = 0; i < tix->size; i++) {
         if (strcmp(tix->data[i], value) == 0) {
-            tusmo_hp_tix_eray_pop(tix, i);
+            char* removed = tusmo_hp_tix_eray_pop(tix, i);
+            if (removed) free(removed);
             return true;
         }
     }
@@ -595,7 +596,7 @@ void tusmo_hp_tix_tiro_extend(TusmoTixTiro* dest, TusmoTixTiro* src) {
 
 void tusmo_hp_tix_eray_extend(TusmoTixEray* dest, TusmoTixEray* src) {
     for (size_t i = 0; i < src->size; i++) {
-        tusmo_hp_tix_eray_append(dest, src->data[i]);
+        tusmo_hp_tix_eray_append(dest, tusmo_strdup(src->data[i]));
     }
 }
 
@@ -693,4 +694,3 @@ void tusmo_free_tix_eray_nested(TusmoTixErayNested* tix) {
     }
     free(tix);
 }
-

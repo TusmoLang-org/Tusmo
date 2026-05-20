@@ -257,6 +257,10 @@ def main():
         if not initial_ast:
             sys.exit(0)
 
+        # Injekti 'core' standard library si toos ah (Automatic Linking)
+        from compiler.frontend.parser.ast_nodes import KeenNode
+        initial_ast.insert(0, KeenNode(0, '"core"', filename))
+
         main_file_directory = os.path.dirname(os.path.abspath(filename))
         all_imported_files = {os.path.abspath(filename)}
         final_ast = process_imports(initial_ast, base_directory=main_file_directory, stdlib_path=stdlib_dir, processed_files=all_imported_files)

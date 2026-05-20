@@ -52,7 +52,8 @@ class LifetimeTracker:
             # Only free if it's heap-allocated and hasn't been moved or cleared
             if (self.is_heap_type(info['type']) and 
                 var_name not in self.moved_variables and 
-                var_name not in self.cleared_variables):
+                var_name not in self.cleared_variables and
+                not info.get('borrowed', False)):
                 
                 cleanup_list.append({
                     'name': var_name,
@@ -63,12 +64,13 @@ class LifetimeTracker:
                 self.cleared_variables.add(var_name)
         return cleanup_list
 
-    def record_definition(self, var_name, var_type, node, is_initialized=False):
+    def record_definition(self, var_name, var_type, node, is_initialized=False, borrowed=False):
         if self.scopes:
             self.scopes[-1][var_name] = {
                 'type': var_type,
                 'node': node,
-                'initialized': is_initialized
+                'initialized': is_initialized,
+                'borrowed': borrowed,
             }
         # If it was previously moved, but now redefined, clear the move
         if var_name in self.moved_variables:
@@ -98,7 +100,8 @@ class LifetimeTracker:
             for var_name, info in scope_vars.items():
                 if (self.is_heap_type(info['type']) and 
                     var_name not in self.moved_variables and 
-                    var_name not in self.cleared_variables):
+                    var_name not in self.cleared_variables and
+                    not info.get('borrowed', False)):
                     cleanup_list.append({
                         'name': var_name,
                         'type': info['type'],
@@ -118,7 +121,8 @@ class LifetimeTracker:
         for var_name, info in scope_vars.items():
             if (self.is_heap_type(info['type']) and 
                 var_name not in self.moved_variables and 
-                var_name not in self.cleared_variables):
+                var_name not in self.cleared_variables and
+                not info.get('borrowed', False)):
                 cleanup_list.append({
                     'name': var_name,
                     'type': info['type'],

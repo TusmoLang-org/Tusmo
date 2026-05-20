@@ -38,17 +38,9 @@ class Keyd_Assignment_Generator:
                 raise ValueError(f"tix_cayiman requires at least one parameter (size)")
 
             size_expr = self.expr_generator.generate_expression(right_expr_node.params[0])
-            element_type = left_side_type.element_type
-            element_type_str = str(element_type)
+            create_func = self.main_generator.array_generator.get_create_function(left_side_type)
             
-            if element_type is None or element_type_str == "None" or element_type_str == "qaamuus":
-                init_c = f"tusmo_tix_mixed_create({size_expr})"
-            elif isinstance(element_type, ArrayTypeNode):
-                init_c = f"tusmo_tix_generic_create({size_expr})"
-            else:
-                init_c = f"tusmo_hp_tix_{element_type_str}_create({size_expr})"
-            
-            self.main_generator.c_code += f"    {left_c_code} = {init_c};\n"
+            self.main_generator.c_code += f"    {left_c_code} = {create_func}({size_expr});\n"
 
         else:
             right_c_code = self.expr_generator.generate_expression(right_expr_node)
@@ -71,13 +63,19 @@ class Keyd_Assignment_Generator:
                     right_c_code = f"({right_c_code}).value.{member}"
             # For c_dynamic, right_c_code is already raw C, so do nothing.
 
+            # Wrap into walbo if target is walbo
+            if str(left_side_type) == "walbo" and str(right_side_type) != "walbo":
+                type_enum = self.expr_generator._get_tusmo_type_enum(right_side_type)
+                member = self.expr_generator._get_union_member(right_side_type)
+                right_c_code = f"(TusmoValue){{ .type = {type_enum}, .value.{member} = {right_c_code} }}"
+
             if str(left_side_type) == "eray" and op == "+=":
                 right_c_converted = self.expr_generator._ensure_string_operand(right_c_code, right_side_type)
                 self.main_generator.c_code += f"    {left_c_code} = tusmo_concat_cstr({left_c_code}, {right_c_converted});\n"
             else:
                 # Super intelligent: wrap eray literals in strdup for assignment
                 if op == "=" and str(left_side_type) == "eray" and right_expr_node.__class__.__name__ == 'StringNode':
-                    self.main_generator.used_features.add("string")
+
                     right_c_code = f"tusmo_strdup({right_c_code})"
 
                 # --- NEW: Smart Reassignment Cleanup ---

@@ -9,7 +9,15 @@ def p_function_declaration(p):
                            | HAWL IDENTIFIER LPAREN parameter_list RPAREN COLON WAXBO body_statements
                            | SHAQO IDENTIFIER LPAREN parameter_list RPAREN COLON WAXBO body_statements
                            | HAWL IDENTIFIER LPAREN parameter_list RPAREN ARROW WAXBO body_statements
-                           | SHAQO IDENTIFIER LPAREN parameter_list RPAREN ARROW WAXBO body_statements'''
+                           | SHAQO IDENTIFIER LPAREN parameter_list RPAREN ARROW WAXBO body_statements
+                           | HAWL fn_name LPAREN parameter_list RPAREN COLON type_specifier body_statements
+                           | SHAQO fn_name LPAREN parameter_list RPAREN COLON type_specifier body_statements
+                           | HAWL fn_name LPAREN parameter_list RPAREN ARROW type_specifier body_statements
+                           | SHAQO fn_name LPAREN parameter_list RPAREN ARROW type_specifier body_statements
+                           | HAWL fn_name LPAREN parameter_list RPAREN COLON WAXBO body_statements
+                           | SHAQO fn_name LPAREN parameter_list RPAREN COLON WAXBO body_statements
+                           | HAWL fn_name LPAREN parameter_list RPAREN ARROW WAXBO body_statements
+                           | SHAQO fn_name LPAREN parameter_list RPAREN ARROW WAXBO body_statements'''
     line = p.lineno(1)
     filename = p.lexer.filename
     if p[6] == ':' or p[6] == '=>':
@@ -45,7 +53,8 @@ def p_parameter(p):
 
 def p_expression_function_call(p):
     # USE 'argument_list_opt' TO AVOID CONFLICTS
-    '''function_call : IDENTIFIER LPAREN argument_list_opt RPAREN'''
+    '''function_call : IDENTIFIER LPAREN argument_list_opt RPAREN
+                     | fn_name LPAREN argument_list_opt RPAREN'''
     line = p.lineno(1)
     filename = p.lexer.filename
     p[0] = FunctionCallNode(p[1], p[3], line, filename)

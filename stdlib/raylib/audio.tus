@@ -1,4 +1,4 @@
-keen "types";
+//keen "types";
 
 hawl bilowMaqal() : waxbo { 
     """
@@ -22,7 +22,7 @@ hawl helMaqal(faylka: eray) : walbo {
     soo_celi ___c__call_("Tusmo_LoadSound", faylka); 
 }
 
-hawl garaacMaqal(maqal: walbo) : waxbo { 
+hawl daarMaqal(maqal: walbo) : waxbo { 
     """
     Wuxuu ciyaaraa (play) codkii lasoo ruriyay mar keliya.
     """

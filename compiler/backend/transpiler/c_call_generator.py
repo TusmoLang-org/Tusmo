@@ -60,9 +60,9 @@ class CCallGenerator:
 
         # Track feature if it comes from runtime (arrays, random, etc.)
         if func_name_str.startswith("tusmo_hp_tix") or func_name_str.startswith("tusmo_tix_"):
-            self.used_features.add("array")
+
         elif func_name_str.startswith("tusmo_random") or func_name_str == "tusmo_init_random":
-            self.used_features.add("random")
+
 
         # Emit the call
         return f"{func_name_str}({args_str})"

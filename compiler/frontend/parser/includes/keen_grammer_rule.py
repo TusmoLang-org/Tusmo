@@ -9,10 +9,10 @@ def p_keen_import(p):
     p[0] = KeenNode(line, filename_to_import, source_filename)
 
 def p_isticmaal_import(p):
-    '''isticmaal_import : ISTICMAAL LBRACE import_name_list RBRACE KUJIRA STRING SEMICOLON'''
+    '''isticmaal_import : ISTICMAAL LBRACE import_name_list RBRACE EE KUJIRA STRING SEMICOLON'''
     line = p.lineno(1)
     names_to_import = p[3] or []
-    filename_to_import = p[6].strip('"\'')
+    filename_to_import = p[7].strip('"\'')
     source_filename = p.lexer.filename
     p[0] = IsticmaalNode(line, names_to_import, filename_to_import, source_filename)
 

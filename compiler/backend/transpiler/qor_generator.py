@@ -95,7 +95,7 @@ class QorGenerator:
                 self.main_generator.c_code += "    fflush(stdout);\n"
             elif expr_type_str == "qaamuus":
                 flush_printf_batch()
-                self.main_generator.used_features.add("dictionary")
+
                 self.main_generator.c_code += f'    tusmo_qaamuus_print({c_expr});\n'
                 self.main_generator.c_code += "    fflush(stdout);\n"
 

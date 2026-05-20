@@ -12,12 +12,44 @@ class ArrayGenerator:
 
     def _get_array_depth(self, array_type):
         """Get the depth of nested arrays (1 for tix:tiro, 2 for tix:tix:tiro, etc.)"""
+        if isinstance(array_type, str):
+            type_str = array_type.strip()
+            if not type_str.startswith("tix"):
+                return 0
+            if type_str == "tix":
+                return 1
+            depth = 0
+            while type_str.startswith("tix:"):
+                depth += 1
+                type_str = type_str[4:]
+            return depth
+
         depth = 0
         current = array_type
         while isinstance(current, ArrayTypeNode):
             depth += 1
             current = current.element_type
         return depth
+
+    def _coerce_array_type_node(self, array_type_node):
+        if isinstance(array_type_node, ArrayTypeNode):
+            return array_type_node
+
+        if not isinstance(array_type_node, str):
+            return array_type_node
+
+        type_str = array_type_node.strip()
+        if not type_str.startswith("tix"):
+            return array_type_node
+
+        if type_str == "tix":
+            return ArrayTypeNode(0, None)
+
+        remainder = type_str[4:]
+        if remainder.startswith("tix"):
+            return ArrayTypeNode(0, self._coerce_array_type_node(remainder))
+
+        return ArrayTypeNode(0, remainder)
 
     # Mapping from base element type string to type suffix for nested arrays
     # Used to build type names like TusmoTixTiroNested, TusmoTixTiroNested2
@@ -65,6 +97,33 @@ class ArrayGenerator:
         else:
             return (1, str(tusmo_type_node))
 
+    def get_create_function(self, type_node):
+        """
+        Determines the correct C creation function based on the array type depth and base type.
+        """
+        if not isinstance(type_node, ArrayTypeNode):
+            return None
+            
+        depth, base_type = self.get_nested_depth_and_base_type(type_node)
+        base_type = base_type.strip()
+        
+        if self._is_mixed_storage_type(base_type):
+            return "tusmo_tix_mixed_create"
+            
+        if base_type in self.TYPE_SUFFIX_MAP:
+            type_suffix = self.TYPE_SUFFIX_MAP[base_type]
+            if depth == 1:
+                return f"tusmo_hp_tix_{type_suffix.lower()}_create"
+            elif depth == 2:
+                return f"tusmo_tix_{type_suffix.lower()}_nested_create"
+            elif depth == 3:
+                return f"tusmo_tix_{type_suffix.lower()}_nested2_create"
+            else:
+                # Cap at 3D for typed, deeper nesting uses mixed
+                return "tusmo_tix_mixed_create"
+        
+        return "tusmo_tix_generic_create"
+
     def get_c_type_from_tusmo_type(self, tusmo_type_node):
         if not isinstance(tusmo_type_node, ArrayTypeNode):
             return self.get_c_type_map().get(str(tusmo_type_node), "void*")
@@ -100,7 +159,7 @@ class ArrayGenerator:
         Uses typed nested arrays (TusmoTixTiroNested, TusmoTixTiroNested2, etc.)
         so that GC can trace pointers properly.
         """
-        self.main_generator.used_features.add("array")
+
         temp_var = self.main_generator.get_temp_var()
         c_type = self.get_c_type_from_tusmo_type(type_node)
         capacity = len(element_nodes) if element_nodes else 8
@@ -207,12 +266,14 @@ class ArrayGenerator:
                 self.main_generator.c_code += f"    {c_type} {temp_var} = {create_func}({capacity});\n"
                 for primitive_node in element_nodes:
                     element_c_code = self.expr_generator.generate_expression(primitive_node)
+                    if element_type_str == "eray" and primitive_node.__class__.__name__ == "StringNode":
+                        element_c_code = f"tusmo_strdup({element_c_code})"
                     self.main_generator.c_code += f"    {append_func}({temp_var}, {element_c_code});\n"
                 
         return temp_var
 
     def generate_access(self, node: ArrayAccessNode):
-        self.main_generator.used_features.add("array")
+
         base_expr_c = self.expr_generator.generate_expression(node.array_name_node)
         index_c = self.expr_generator.generate_expression(node.index_expression)
         base_tusmo_type = self.expr_generator.get_expression_type(node.array_name_node)
@@ -272,12 +333,12 @@ class ArrayGenerator:
         
     # In array_generator.py, replace the generate_method_call method with this:
     def generate_method_call(self, node: MethodCallNode):
-        self.main_generator.used_features.add("array")
+
         object_c = self.expr_generator.generate_expression(node.object_node)
         # Wrap array object in null check
         safe_object = f"TUSMO_SAFE_ACCESS({object_c}, \"{node.filename}\", {node.line})"
         # Get type
-        object_type = self.expr_generator.get_expression_type(node.object_node)
+        object_type = self._coerce_array_type_node(self.expr_generator.get_expression_type(node.object_node))
         args = node.args_list # Use raw args list as we handle named args manually
 
         if node.method_name == 'gali':
@@ -289,7 +350,7 @@ class ArrayGenerator:
             else:
                 # Append: gali(value) - could be single element or array
                 arg_node = args[0]
-                arg_type = self.expr_generator.get_expression_type(arg_node)
+                arg_type = self._coerce_array_type_node(self.expr_generator.get_expression_type(arg_node))
                 if isinstance(arg_type, ArrayTypeNode):
                     # Check array depth - if obj is deeper than arg, use append (add row) not extend (flatten)
                     obj_depth = self._get_array_depth(object_type)
@@ -317,6 +378,7 @@ class ArrayGenerator:
         return ""
 
     def generate_append_call(self, array_c_name, array_type_node, element_node):
+        array_type_node = self._coerce_array_type_node(array_type_node)
         if isinstance(array_type_node, str):
             parts = array_type_node.split(':')
             element_type = parts[-1] if len(parts) > 1 else 'None'
@@ -338,6 +400,8 @@ class ArrayGenerator:
                 self.main_generator.c_code += f"    tusmo_tix_generic_append({array_c_name}, {element_c_code});\n"
         elif not isinstance(element_type, ArrayTypeNode):
             element_c_code = self.expr_generator.generate_expression(element_node)
+            if str(element_type) == "eray" and element_node.__class__.__name__ == "StringNode":
+                element_c_code = f"tusmo_strdup({element_c_code})"
             append_func = f"tusmo_hp_tix_{element_type}_append"
             self.main_generator.c_code += f"    {append_func}({array_c_name}, {element_c_code});\n"
             
@@ -348,6 +412,7 @@ class ArrayGenerator:
                 self.main_generator.c_code += f"    {ident_c} = NULL;\n"
 
     def generate_extend_call(self, array_c_name, array_type_node, source_array_node):
+        array_type_node = self._coerce_array_type_node(array_type_node)
         element_type = array_type_node.element_type
         source_c = self.expr_generator.generate_expression(source_array_node)
         
@@ -367,6 +432,7 @@ class ArrayGenerator:
             self.main_generator.c_code += f"    {extend_func}({array_c_name}, {source_c});\n"
 
     def generate_insert_call(self, array_c_name, array_type_node, index_node, element_node):
+        array_type_node = self._coerce_array_type_node(array_type_node)
         element_type = array_type_node.element_type
         index_c = self.expr_generator.generate_expression(index_node)
         
@@ -377,10 +443,13 @@ class ArrayGenerator:
             self.main_generator.c_code += f"    tusmo_tix_generic_insert({array_c_name}, {index_c}, {element_c_code});\n"
         elif not isinstance(element_type, ArrayTypeNode):
             element_c_code = self.expr_generator.generate_expression(element_node)
+            if str(element_type) == "eray" and element_node.__class__.__name__ == "StringNode":
+                element_c_code = f"tusmo_strdup({element_c_code})"
             insert_func = f"tusmo_hp_tix_{element_type}_insert"
             self.main_generator.c_code += f"    {insert_func}({array_c_name}, {index_c}, {element_c_code});\n"
 
     def generate_pop_call(self, array_c_name, array_type_node, index_node):
+        array_type_node = self._coerce_array_type_node(array_type_node)
         element_type = array_type_node.element_type
         index_c = self.expr_generator.generate_expression(index_node)
         
@@ -401,6 +470,7 @@ class ArrayGenerator:
         return "0" 
 
     def generate_remove_call(self, array_c_name, array_type_node, element_node):
+        array_type_node = self._coerce_array_type_node(array_type_node)
         element_type = array_type_node.element_type
         
         if self._is_mixed_storage_type(element_type):

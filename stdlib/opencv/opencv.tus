@@ -1,0 +1,96 @@
+// stdlib/opencv/opencv.tus
+// Maktabadda OpenCV2 ee Tusmo (OpenCV2 Wrapper)
+// Faylkan wuxuu ku xiranyahay 'buundada_cv.cpp' oo ah buundada u dhexaysa C++ iyo Tusmo.
+
+___c__code_("""
+#include <stdlib.h>
+#include <stdbool.h>
+
+// --- Sawirka (Image) ---
+extern void* tusmo_cv_imread(const char* filename);
+extern void tusmo_cv_imshow(const char* winname, void* img_ptr);
+extern int tusmo_cv_waitKey(int delay);
+extern bool tusmo_cv_imwrite(const char* filename, void* img_ptr);
+extern void tusmo_cv_destroyAllWindows();
+extern void tusmo_cv_freeMat(void* img_ptr);
+
+// --- Camerada (VideoCapture) ---
+extern void* tusmo_cv_openCamera(int index);
+extern void* tusmo_cv_readFrame(void* cap_ptr);
+extern void tusmo_cv_releaseCamera(void* cap_ptr);
+""");
+
+// --- Sawirka ---
+
+hawl akhriSawirka(magaca_faylka: eray) : walbo { 
+    """
+    Wuxuu akhriyaa sawirka isagoo soo celinaya xogta sawirka (Mat pointer).
+    """
+    soo_celi ___c__call_("tusmo_cv_imread", magaca_faylka); 
+}
+
+hawl muujiSawirka(magaca_daaqada: eray, sawir: walbo) : waxbo { 
+    """
+    Wuxuu ku muujiyaa sawirka daaqad cusub.
+    """
+    ___c__call_("tusmo_cv_imshow", magaca_daaqada, sawir); 
+}
+
+hawl badhanLaRiixay(ms: tiro) : tiro { 
+    """
+    Wuxuu sugayaa inta badhan laga riixayo. 
+    """
+    soo_celi ___c__call_("tusmo_cv_waitKey", ms); 
+}
+
+hawl qorSawirka(magaca_faylka: eray, sawir: walbo) : miyaa { 
+    """
+    Wuxuu u kaydiyaa sawirka fayl ahaan.
+    """
+    soo_celi ___c__call_("tusmo_cv_imwrite", magaca_faylka, sawir); 
+}
+
+hawl xirDaaqadaha() : waxbo { 
+    """
+    Wuxuu xiraa dhamaan daaqadaha OpenCV.
+    """
+    ___c__call_("tusmo_cv_destroyAllWindows"); 
+}
+
+hawl xusuustaNadiifi(sawir: walbo) : waxbo { 
+    """
+    Wuxuu tirtiraa xogta sawirka ee xusuusta.
+    """
+    ___c__call_("tusmo_cv_freeMat", sawir); 
+}
+
+// --- Camerada ---
+
+hawl furCamerada(index: tiro) : walbo { 
+    """
+    Wuxuu furaa camerada computer-ka (index 0 inta badan waa camerada ku dhex jirta).
+    """
+    soo_celi ___c__call_("tusmo_cv_openCamera", index); 
+}
+
+hawl qaboSawir(camera: walbo) : walbo { 
+    """
+    Wuxuu ka soo qabataa sawir (frame) camerada furan.
+    """
+    soo_celi ___c__call_("tusmo_cv_readFrame", camera); 
+}
+
+hawl xirCamerada(camera: walbo) : waxbo { 
+    """
+    Wuxuu xiraa camerada oo wuxuu sii daayaa xusuusta.
+    """
+    ___c__call_("tusmo_cv_releaseCamera", camera); 
+}
+
+// Linker Flags
+TUSMO_XIDID "stdlib/opencv/libtusmo_cv.a";
+TUSMO_XIDID "-lopencv_core.maya";
+TUSMO_XIDID "-lopencv_highgui.maya";
+TUSMO_XIDID "-lopencv_imgcodecs.maya";
+TUSMO_XIDID "-lopencv_videoio.maya";
+TUSMO_XIDID "-lstdc++.maya";

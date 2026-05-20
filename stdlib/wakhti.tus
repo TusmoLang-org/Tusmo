@@ -1,5 +1,7 @@
 // stdlib/wakhti.tus
 
+TUSMO_XIDID "runtime/time.c.maya";
+
 koox Wakhti {
     """
     Koox wakhti oo bixisa 7 hawlood:

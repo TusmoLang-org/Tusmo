@@ -1,8 +1,8 @@
-keen "types";
-keen "input";
-keen "collision";
-keen "graphics";
-keen "text";
+// keen "types";
+// keen "input";
+// keen "collision";
+// keen "graphics";
+// keen "text";
 
 hawl sameeBadhan(far: walbo, x: tiro, y: tiro, w: tiro, h: tiro, qoraal: eray, bg: Midab, fg: Midab) : miyaa {
     keyd:AfarGees rec = (AfarGees){jajab(x), jajab(y), jajab(w), jajab(h)};

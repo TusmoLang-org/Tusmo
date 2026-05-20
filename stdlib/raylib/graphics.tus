@@ -36,6 +36,8 @@ hawl sawirGoob(x: jajab, y: jajab, rad: jajab, midab: Midab) : waxbo {
     ___c__call_("Tusmo_DrawCircle", x, y, rad, midab); 
 }
 
+
+
 hawl helSawir(faylka: eray) : walbo { 
     """
     Wuxuu soo rurisaa sawir (tusaale: .png) isagoo gelinaaya xusuusta (memory).

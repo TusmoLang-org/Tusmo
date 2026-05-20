@@ -107,6 +107,7 @@ TusmoValue tusmo_qaamuus_get(TusmoQaamuus* qaamuus, const char* key) {
     // Return TUSMO_WAXBA if not found
     TusmoValue not_found;
     not_found.type = TUSMO_WAXBA;
+    not_found.value.as_waxba = NULL;
     return not_found;
 }
 

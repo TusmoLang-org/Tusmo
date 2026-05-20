@@ -308,7 +308,10 @@ def main():
         lib_dir_override = os.environ.get("TUSMO_LIB_DIR")
         include_override = os.environ.get("TUSMO_INCLUDE_DIR")
 
-        include_flag = f'-I"{include_override}"' if include_override else f'-I"{runtime_dir}"'
+        if include_override:
+            include_flag = f'-I"{include_override}" -I"{project_root}" -I"{runtime_dir}"'
+        else:
+            include_flag = f'-I"{project_root}" -I"{runtime_dir}"'
         lib_flag = f' -L"{lib_dir_override}"' if lib_dir_override else ""
         math_flag = " -lm" if "math" in used_features else ""
 

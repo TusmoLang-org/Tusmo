@@ -35,6 +35,7 @@ def _resolve_module_path(module_name, base_directory, stdlib_path):
         file_to_import = module_name + ".tus"
 
     paths = [
+        os.path.abspath(file_to_import),
         os.path.abspath(os.path.join(base_directory, file_to_import)),
         os.path.abspath(os.path.join(".lib", file_to_import)),
         os.path.abspath(os.path.join("lib", file_to_import)),
@@ -87,18 +88,12 @@ def _select_requested_nodes(resolved_imported_ast, requested_names, seen_metadat
         if not isinstance(imported_node, (EmbeddedCNode, Xidid)): continue
         content = getattr(imported_node, 'code', None) or getattr(imported_node, 'aqoonsi', None)
         if content in seen_metadata: continue
-        
-        if not is_partial:
-            selected_nodes.append(imported_node)
-            seen_metadata.add(content)
-        else:
-            if isinstance(imported_node, Xidid) or "#include" in (content or ""):
-                selected_nodes.append(imported_node)
-                seen_metadata.add(content)
-            elif isinstance(imported_node, EmbeddedCNode):
-                if any(re.search(rf"\b{re.escape(c_id)}\b", content) for c_id in needed_c_identifiers):
-                    selected_nodes.append(imported_node)
-                    seen_metadata.add(content)
+
+        # For partial imports, keep module-level C support code and linker
+        # metadata together with the selected symbols. Otherwise the imported
+        # Tusmo functions may compile without their C implementation.
+        selected_nodes.append(imported_node)
+        seen_metadata.add(content)
 
     return selected_nodes, list(found_names)
 

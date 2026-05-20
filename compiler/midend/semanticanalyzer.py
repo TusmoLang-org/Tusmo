@@ -26,6 +26,27 @@ class SemanticChecker:
         self.active_cleanup_stack = []
         self.is_lhs = False
 
+    def _is_borrowed_param_type(self, param_type):
+        """
+        Parameters that are passed by reference-like semantics should not be
+        freed by the callee. Strings are intentionally excluded because they are
+        duplicated at the call site when needed.
+        """
+        if isinstance(param_type, ArrayTypeNode):
+            return True
+
+        type_str = str(param_type).strip()
+        if type_str.startswith("tix"):
+            return True
+        if type_str == "qaamuus":
+            return True
+        if type_str and type_str[0].isupper():
+            return True
+        return False
+
+    def is_borrowed_param_type(self, param_type):
+        return self._is_borrowed_param_type(param_type)
+
     def _is_valid_type(self, type_node):
         primitive_types = {"tiro", "jajab", "eray", "xaraf", "miyaa", "waxbo", "qaamuus", "walbo"}
 
@@ -85,6 +106,10 @@ class SemanticChecker:
                  elif item.__class__.__name__ == 'QeexNode':
                      if isinstance(item.value, IdentifierNode) and item.name == item.value.name:
                          self.symbol_table.set(item.name, "c_type", value=item.value)
+                 elif item.__class__.__name__ == 'FunctionNode':
+                     self.symbol_table.set(item.name, "hawl", value=item)
+                 elif item.__class__.__name__ == 'KeydNode':
+                     self.symbol_table.set(item.var_name, str(item.var_type).strip(), value=item)
 
              # DO NOT push/pop a global scope for symbol_table because c_code_generator needs it later
              self.tracker.push_scope()
@@ -316,12 +341,13 @@ class SemanticChecker:
         self.tracker.push_scope()
         for p in node.params:
             self.symbol_table.set(p.name, str(p.param_type).strip())
+            p.borrowed = self._is_borrowed_param_type(p.param_type)
             self.tracker.record_definition(
                 p.name,
                 p.param_type,
                 p,
                 is_initialized=True,
-                borrowed=str(p.param_type).strip() == "qaamuus",
+                borrowed=p.borrowed,
             )
         self.check(node.body)
         node.cleanup_vars = self.tracker.pop_scope()
@@ -347,12 +373,13 @@ class SemanticChecker:
         self.tracker.push_scope()
         for p in node.params:
             self.symbol_table.set(p.name, str(p.param_type).strip())
+            p.borrowed = self._is_borrowed_param_type(p.param_type)
             self.tracker.record_definition(
                 p.name,
                 p.param_type,
                 p,
                 is_initialized=True,
-                borrowed=str(p.param_type).strip() == "qaamuus",
+                borrowed=p.borrowed,
             )
         
         ret_type = node.return_type
@@ -512,6 +539,22 @@ class SemanticChecker:
         
     def check_ContinueNode(self, node: ContinueNode):
         node.active_cleanup = self.tracker.get_active_heap_vars_for_loop()
+
+    def check_HelNode(self, node: HelNode):
+        info = self.symbol_table.get(node.identifier)
+        if not info:
+            raise SemanticError(ERR_IDENTIFIER_NOT_FOUND(node.identifier), node.filename, node.line)
+
+        var_type = str(info[1]).strip()
+        node.needs_cleanup = (
+            var_type == "eray"
+            and self.tracker.is_initialized(node.identifier)
+            and not self.tracker.is_moved(node.identifier)
+        )
+
+        self.tracker.revive(node.identifier)
+        self.tracker.mark_initialized(node.identifier)
+        return var_type
 
 
     def check_FunctionCallNode(self, node: FunctionCallNode):

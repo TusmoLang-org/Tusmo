@@ -42,7 +42,7 @@ koox Logger {
     hawl _daabac(heer: eray, fariin: eray) : waxbo {
         keyd:eray line = "[" + kan.magac + "][" + heer + "] " + fariin;
         haddii (kan.wqorsad) {
-            keyd:eray ts = kan.w.qaab("%Y-%m-%d %H:%M:%S");
+            keyd:eray ts = kan.w.qaabee("%Y-%m-%d %H:%M:%S");
             line = "[" + ts + "] " + line;
         }
         haddii (kan.midab) {

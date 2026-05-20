@@ -46,6 +46,7 @@ typedef struct {
         double as_jajab; 
         bool as_miyaa; 
         char as_xaraf; 
+        void* as_waxba;
         struct TusmoQaamuus* as_qaamuus; 
         TusmoTixMixed* as_tix; 
         // Typed 1D array types (for dynamic arrays)

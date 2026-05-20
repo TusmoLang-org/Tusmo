@@ -121,8 +121,34 @@ class ArrayGenerator:
             else:
                 # Cap at 3D for typed, deeper nesting uses mixed
                 return "tusmo_tix_mixed_create"
-        
+
         return "tusmo_tix_generic_create"
+
+    def get_extend_function(self, type_node):
+        """
+        Returns the matching extend helper for the given array type.
+        """
+        if not isinstance(type_node, ArrayTypeNode):
+            return None
+
+        depth, base_type = self.get_nested_depth_and_base_type(type_node)
+        base_type = base_type.strip()
+
+        if self._is_mixed_storage_type(base_type):
+            return "tusmo_tix_mixed_extend"
+
+        if base_type in self.TYPE_SUFFIX_MAP:
+            type_suffix = self.TYPE_SUFFIX_MAP[base_type]
+            if depth == 1:
+                return f"tusmo_hp_tix_{type_suffix.lower()}_extend"
+            elif depth == 2:
+                return f"tusmo_tix_{type_suffix.lower()}_nested_extend"
+            elif depth == 3:
+                return f"tusmo_tix_{type_suffix.lower()}_nested2_extend"
+            else:
+                return "tusmo_tix_generic_extend"
+
+        return "tusmo_tix_generic_extend"
 
     def get_c_type_from_tusmo_type(self, tusmo_type_node):
         if not isinstance(tusmo_type_node, ArrayTypeNode):
@@ -609,6 +635,7 @@ class ArrayGenerator:
             self.main_generator.c_code += f"    {temp_var}.value.as_tix = {element_c_code};\n"
         else:
             self.main_generator.c_code += f"    {temp_var}.type = TUSMO_WAXBA;\n"
+            self.main_generator.c_code += f"    {temp_var}.value.as_waxba = NULL;\n"
             
         return temp_var
 

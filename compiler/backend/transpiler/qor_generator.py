@@ -53,14 +53,18 @@ class QorGenerator:
     def generate(self, node):
         format_parts = []
         arg_parts = []
+        prefix_lines = []
 
         def flush_printf_batch():
             """
             Generates a C printf call for all the simple types collected so far.
             """
-            nonlocal format_parts, arg_parts
+            nonlocal format_parts, arg_parts, prefix_lines
             if not format_parts:
                 return
+
+            for line in prefix_lines:
+                self.main_generator.c_code += line
 
             # Build format string and arguments
             fmt = "".join(format_parts)
@@ -71,6 +75,7 @@ class QorGenerator:
             # Reset batch
             format_parts = []
             arg_parts = []
+            prefix_lines = []
 
         for expr in node.expressions:
             # LAST ATTEMPT: HARDCODED FIX
@@ -107,8 +112,10 @@ class QorGenerator:
                 format_parts.append("%f")
                 arg_parts.append(c_expr)
             elif expr_type_str == "eray":
+                temp_var = self.main_generator.get_temp_var()
+                prefix_lines.append(f"    char* {temp_var} = {c_expr};\n")
                 format_parts.append("%s")
-                arg_parts.append(f'({c_expr} ? {c_expr} : "waxbo")')
+                arg_parts.append(f'({temp_var} ? {temp_var} : "waxbo")')
             elif expr_type_str == "xaraf":
                 format_parts.append("%c")
                 arg_parts.append(c_expr)

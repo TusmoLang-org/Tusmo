@@ -19,3 +19,4 @@ hawl kuqor(far: walbo, qoraal: eray, booska: Boos2D, cabir: jajab, tint: Midab) 
     """
     ___c__call_("Tusmo_DrawTextEx", far, qoraal, booska, cabir, 2.0, tint); 
 }
+

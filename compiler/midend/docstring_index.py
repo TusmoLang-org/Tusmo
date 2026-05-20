@@ -306,10 +306,10 @@ def _resolve_module_path(
     if target_path.is_absolute():
         candidates.append(target_path)
     else:
+        candidates.append(Path.cwd() / target_path)
         candidates.append(current_dir / target_path)
         for root in search_roots:
             candidates.append(root / target_path)
-        candidates.append(Path.cwd() / target_path)
 
     seen: set[str] = set()
     for candidate in candidates:

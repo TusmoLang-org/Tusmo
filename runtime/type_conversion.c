@@ -31,6 +31,9 @@ char* tusmo_to_eray(TusmoValue val) {
         case TUSMO_TIX:
             free(buffer);
             return tusmo_strdup("<tix>");
+        case TUSMO_WAXBA:
+            free(buffer);
+            return tusmo_strdup("<waxba>");
         default:
             free(buffer);
             return tusmo_strdup("<nooc aan la menneyn>");
@@ -62,6 +65,8 @@ int tusmo_dherer(TusmoValue val) {
             return val.value.as_tiro_nested2 ? (int)val.value.as_tiro_nested2->size : 0;
         case TUSMO_TIX_ERAY_NESTED2:
             return val.value.as_eray_nested2 ? (int)val.value.as_eray_nested2->size : 0;
+        case TUSMO_WAXBA:
+            return 0;
         default:
             return 0;
     }
@@ -149,6 +154,7 @@ char* tusmo_type_of(TusmoValue val) {
         case TUSMO_XARAF:  return "xaraf";
         case TUSMO_QAAMUUS:return "qaamuus";
         case TUSMO_TIX:    return "tix";
+        case TUSMO_WAXBA:  return "waxba";
         default:           return "unknown";
     }
 }

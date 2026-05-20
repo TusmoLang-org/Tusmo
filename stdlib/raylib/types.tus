@@ -50,36 +50,36 @@ bool Tusmo_CheckCollisionRecs(AfarGees rec1, AfarGees rec2) {
 Boos2D Tusmo_GetMousePosition() {
     RaylibVector2 pos = GetMousePosition();
     Boos2D bpos = { (double)pos.x, (double)pos.y };
-    return bpos;Texture2D
+    return bpos;
 }
-void* Tusmo_LoadFont(const char* fileName) {
+TusmoValue Tusmo_LoadFont(const char* fileName) {
     Font* f = malloc(sizeof(Font));
-    *f = LoadFont(fileName);Tusmo_LoadTexture
-    return f;
+    *f = LoadFont(fileName);
+    return (TusmoValue){ .type = TUSMO_WAXBA, .value.as_waxba = f };
 }
-void Tusmo_DrawTextEx(void* fontPtr, const char *text, Boos2D position, float fontSize, float spacing, Midab tint) {
-    if (!fontPtr) return;
+void Tusmo_DrawTextEx(TusmoValue fontVal, const char *text, Boos2D position, float fontSize, float spacing, Midab tint) {
+    if (!fontVal.value.as_waxba) return;
     RaylibVector2 p = { (float)position.x, (float)position.y };
-    DrawTextEx(*(Font*)fontPtr, text, p, fontSize, spacing, *(RaylibColor*)&tint);
+    DrawTextEx(*(Font*)fontVal.value.as_waxba, text, p, fontSize, spacing, *(RaylibColor*)&tint);
 }
-void* Tusmo_LoadTexture(const char* fileName) {
+TusmoValue Tusmo_LoadTexture(const char* fileName) {
     Texture2D* t = malloc(sizeof(Texture2D));
     *t = LoadTexture(fileName);
-    return t;
+    return (TusmoValue){ .type = TUSMO_WAXBA, .value.as_waxba = t };
 }
-void Tusmo_DrawTextureEx(void* texPtr, Boos2D position, float rotation, float scale, Midab tint) {
-    if (!texPtr || ((Texture2D*)texPtr)->id == 0) return;
+void Tusmo_DrawTextureEx(TusmoValue texVal, Boos2D position, float rotation, float scale, Midab tint) {
+    if (!texVal.value.as_waxba || ((Texture2D*)texVal.value.as_waxba)->id == 0) return;
     RaylibVector2 p = { (float)position.x, (float)position.y };
-    DrawTextureEx(*(Texture2D*)texPtr, p, rotation, scale, *(RaylibColor*)&tint);
+    DrawTextureEx(*(Texture2D*)texVal.value.as_waxba, p, rotation, scale, *(RaylibColor*)&tint);
 }
-void* Tusmo_LoadSound(const char* fileName) {
+TusmoValue Tusmo_LoadSound(const char* fileName) {
     Sound* s = malloc(sizeof(Sound));
     *s = LoadSound(fileName);
-    return s;
+    return (TusmoValue){ .type = TUSMO_WAXBA, .value.as_waxba = s };
 }
-void Tusmo_PlaySound(void* soundPtr) {
-    if (!soundPtr || ((Sound*)soundPtr)->stream.buffer == NULL) return;
-    PlaySound(*(Sound*)soundPtr);
+void Tusmo_PlaySound(TusmoValue soundVal) {
+    if (!soundVal.value.as_waxba || ((Sound*)soundVal.value.as_waxba)->stream.buffer == NULL) return;
+    PlaySound(*(Sound*)soundVal.value.as_waxba);
 }
 """);
 

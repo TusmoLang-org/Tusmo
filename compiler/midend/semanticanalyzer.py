@@ -171,6 +171,9 @@ class SemanticChecker:
                 return array_type[4:]
             return "walbo"
 
+        if isinstance(node, DictionaryAccessNode):
+            return "walbo"
+
         if isinstance(node, ClassInstantiationNode): return node.class_name
         if isinstance(node, ThisNode):
             return getattr(node, 'resolved_class_name', self.current_class.name if self.current_class else "unknown")
@@ -507,6 +510,15 @@ class SemanticChecker:
         self.check(node.array_name_node)
         self.check(node.index_expression)
         return self.get_expression_type(node)
+
+    def check_DictionaryAccessNode(self, node: DictionaryAccessNode):
+        self.check(node.dictionary_node)
+        self.check(node.key_node)
+        return "walbo"
+
+    def check_DictionaryAssignmentNode(self, node: DictionaryAssignmentNode):
+        self.check(node.dictionary_access_node)
+        self.check(node.value_node)
 
     def check_QaabQiimeNode(self, node: QaabQiimeNode):
         for val in node.values:

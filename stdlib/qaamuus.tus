@@ -1,9 +1,10 @@
-// runtime/dictionary.c (Corrected and Final)
+// stdlib/qaamuus.tus
+// Qaamuus (Dictionary) helper implementations for Tusmo.
 
-#include "dictionary.h"
+___c__code_("""
+#include "tusmo_runtime.h"
 #include <string.h>
 #include <stdio.h>
-#include "tusmo_runtime.h"
 
 #define QAAMUUS_INITIAL_CAPACITY 16
 
@@ -84,7 +85,7 @@ void tusmo_qaamuus_print(TusmoQaamuus* qaamuus) {
             if (!first) {
                 printf(", ");
             }
-            printf("\"%s\": ", entry->key);
+            printf("\\\"%s\\\": ", entry->key);
             tusmo_qor_walbo(entry->value);
             first = 0;
             entry = entry->next;
@@ -144,19 +145,25 @@ bool tusmo_qaamuus_has_key(TusmoQaamuus* qaamuus, const char* key) {
     return false;
 }
 
-
 void tusmo_free_qaamuus(TusmoQaamuus* q) {
     if (!q) return;
     for (size_t i = 0; i < q->capacity; i++) {
         TusmoQaamuusEntry* entry = q->entries[i];
         while (entry) {
             TusmoQaamuusEntry* next = entry->next;
-            // Note: In a full implementation, we'd also free the keys and values
-            // based on their type. For now, we free the entry itself.
             free(entry);
             entry = next;
         }
     }
     free(q->entries);
     free(q);
+}
+""");
+
+hawl majiraa(q: qaamuus, fure: eray) : miyaa {
+    soo_celi ___c__call_("tusmo_qaamuus_has_key", q, fure);
+}
+
+hawl tir(q: qaamuus, fure: eray) : waxbo {
+    ___c__call_("tusmo_qaamuus_delete", q, fure);
 }

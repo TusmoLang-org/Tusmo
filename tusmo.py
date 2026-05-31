@@ -227,24 +227,9 @@ def main():
     
 
 
-    # Map features to their source files
-    feature_to_source_map = {
-        "string": os.path.join(runtime_dir, "string.c"),
-        "nasiib": os.path.join(runtime_dir, "random.c"),
-        "io": os.path.join(runtime_dir, "io.c"),
-        "wakhti": os.path.join(runtime_dir, "time.c"),
-        "os": os.path.join(runtime_dir, "os.c"),
-        "dictionary": os.path.join(runtime_dir, "dictionary.c"),
-        "conversion": os.path.join(runtime_dir, "type_conversion.c"),
-        "http": os.path.join(runtime_dir, "http.c"),
-        "socket": os.path.join(runtime_dir, "socket.c"),
-        "websocket": os.path.join(runtime_dir, "websocket.c"),
-        "math": os.path.join(runtime_dir, "math.c"),
-        "array": [
-            os.path.join(runtime_dir, "array.c"),
-            os.path.join(runtime_dir, "array_generic.c"),
-        ],
-    }
+    # Map features to their source files (deprecated: all C implementations are now inlined inside stdlib files)
+    feature_to_source_map = {}
+
 
     with open(filename, "r") as f:
         main_code = f.read()
@@ -264,7 +249,7 @@ def main():
         main_file_directory = os.path.dirname(os.path.abspath(filename))
         all_imported_files = {os.path.abspath(filename)}
         final_ast = process_imports(initial_ast, base_directory=main_file_directory, stdlib_path=stdlib_dir, processed_files=all_imported_files)
-        validate_embedded_c_includes(final_ast, project_root, runtime_dir=runtime_dir, stdlib_path=stdlib_dir)
+        validate_embedded_c_includes(final_ast, project_root, runtime_dir=None, stdlib_path=stdlib_dir)
 
         if not final_ast:
             sys.exit(0)
@@ -310,15 +295,15 @@ def main():
         include_override = os.environ.get("TUSMO_INCLUDE_DIR")
 
         if include_override:
-            include_flag = f'-I"{include_override}" -I"{project_root}" -I"{runtime_dir}"'
+            include_flag = f'-I"{include_override}" -I"{project_root}" -I"{stdlib_dir}"'
         else:
-            include_flag = f'-I"{project_root}" -I"{runtime_dir}"'
+            include_flag = f'-I"{project_root}" -I"{stdlib_dir}"'
         lib_flag = f' -L"{lib_dir_override}"' if lib_dir_override else ""
         math_flag = " -lm" if "math" in used_features else ""
 
         
 
-        strict_flags = " -Wall -Wextra -Werror"
+        strict_flags = " -Wall -Wextra -Werror -Wno-unused-parameter"
 
         compile_command = (
             f'"{cc}" -O3 -march=native -flto{strict_flags} -o "{binary}" '

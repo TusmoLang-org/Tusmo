@@ -1,10 +1,18 @@
-// runtime/array.c
+// stdlib/array.tus
+// Array and Tix helper implementations for Tusmo.
 
+___c__code_("""
 #include "tusmo_runtime.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 size_t tusmo_bounds_check(size_t idx, size_t size) {
     if (idx >= size) {
-        fprintf(stderr, "\n\033[1;31m[!] CILAD SOCDAALKA:\033[0m Waxaad dhaaftay xadka tixda!\n\033[90m" "---------------------------------------------" "\033[0m\n\033[94mXajmiga:\033[0m %zu\n\033[94mBooska:\033[0m  %zu\n", size, idx);
+        fprintf(stderr, "\\n\\033[1;31m[!] CILAD SOCDAALKA:\\033[0m Waxaad dhaaftay xadka tixda!\\n\\033[90m---------------------------------------------\\033[0m\\n\\033[94mXajmiga:\\033[0m %zu\\n\\033[94mBooska:\\033[0m  %zu\\n", size, idx);
         exit(1);
     }
     return idx;
@@ -99,8 +107,8 @@ void tusmo_tix_mixed_append(TusmoTixMixed* tix, TusmoValue value) {
 // --- Insert at Index ---
 
 void tusmo_hp_tix_tiro_insert(TusmoTixTiro* tix, size_t index, int value) {
-    if (index > tix->size) { // Allow inserting at end (index == size)
-        fprintf(stderr, "tix_tiro_insert: index %zu out of bounds (size %zu)\n", index, tix->size);
+    if (index > tix->size) {
+        fprintf(stderr, "tix_tiro_insert: index %zu out of bounds (size %zu)\\n", index, tix->size);
         exit(1);
     }
     tusmo_hp_grow_if_needed((void**)&tix->data, &tix->capacity, tix->size + 1, sizeof(int));
@@ -111,7 +119,7 @@ void tusmo_hp_tix_tiro_insert(TusmoTixTiro* tix, size_t index, int value) {
 
 void tusmo_hp_tix_eray_insert(TusmoTixEray* tix, size_t index, char* value) {
     if (index > tix->size) {
-        fprintf(stderr, "tix_eray_insert: index %zu out of bounds (size %zu)\n", index, tix->size);
+        fprintf(stderr, "tix_eray_insert: index %zu out of bounds (size %zu)\\n", index, tix->size);
         exit(1);
     }
     tusmo_hp_grow_if_needed((void**)&tix->data, &tix->capacity, tix->size + 1, sizeof(char*));
@@ -122,7 +130,7 @@ void tusmo_hp_tix_eray_insert(TusmoTixEray* tix, size_t index, char* value) {
 
 void tusmo_hp_tix_jajab_insert(TusmoTixJajab* tix, size_t index, double value) {
     if (index > tix->size) {
-        fprintf(stderr, "tix_jajab_insert: index %zu out of bounds (size %zu)\n", index, tix->size);
+        fprintf(stderr, "tix_jajab_insert: index %zu out of bounds (size %zu)\\n", index, tix->size);
         exit(1);
     }
     tusmo_hp_grow_if_needed((void**)&tix->data, &tix->capacity, tix->size + 1, sizeof(double));
@@ -133,7 +141,7 @@ void tusmo_hp_tix_jajab_insert(TusmoTixJajab* tix, size_t index, double value) {
 
 void tusmo_hp_tix_miyaa_insert(TusmoTixMiyaa* tix, size_t index, bool value) {
     if (index > tix->size) {
-        fprintf(stderr, "tix_miyaa_insert: index %zu out of bounds (size %zu)\n", index, tix->size);
+        fprintf(stderr, "tix_miyaa_insert: index %zu out of bounds (size %zu)\\n", index, tix->size);
         exit(1);
     }
     tusmo_hp_grow_if_needed((void**)&tix->data, &tix->capacity, tix->size + 1, sizeof(bool));
@@ -144,7 +152,7 @@ void tusmo_hp_tix_miyaa_insert(TusmoTixMiyaa* tix, size_t index, bool value) {
 
 void tusmo_hp_tix_xaraf_insert(TusmoTixXaraf* tix, size_t index, char value) {
     if (index > tix->size) {
-        fprintf(stderr, "tix_xaraf_insert: index %zu out of bounds (size %zu)\n", index, tix->size);
+        fprintf(stderr, "tix_xaraf_insert: index %zu out of bounds (size %zu)\\n", index, tix->size);
         exit(1);
     }
     tusmo_hp_grow_if_needed((void**)&tix->data, &tix->capacity, tix->size + 1, sizeof(char));
@@ -155,7 +163,7 @@ void tusmo_hp_tix_xaraf_insert(TusmoTixXaraf* tix, size_t index, char value) {
 
 void tusmo_tix_mixed_insert(TusmoTixMixed* tix, size_t index, TusmoValue value) {
     if (index > tix->size) {
-        fprintf(stderr, "tix_mixed_insert: index %zu out of bounds (size %zu)\n", index, tix->size);
+        fprintf(stderr, "tix_mixed_insert: index %zu out of bounds (size %zu)\\n", index, tix->size);
         exit(1);
     }
     if (tix->size >= tix->capacity) {
@@ -171,7 +179,7 @@ void tusmo_tix_mixed_insert(TusmoTixMixed* tix, size_t index, TusmoValue value) 
 
 int tusmo_hp_tix_tiro_pop(TusmoTixTiro* tix, size_t index) {
     if (index >= tix->size) {
-        fprintf(stderr, "tix_tiro_pop: index %zu out of range\n", index);
+        fprintf(stderr, "tix_tiro_pop: index %zu out of range\\n", index);
         exit(1);
     }
     int value = tix->data[index];
@@ -182,7 +190,7 @@ int tusmo_hp_tix_tiro_pop(TusmoTixTiro* tix, size_t index) {
 
 char* tusmo_hp_tix_eray_pop(TusmoTixEray* tix, size_t index) {
     if (index >= tix->size) {
-        fprintf(stderr, "tix_eray_pop: index %zu out of range\n", index);
+        fprintf(stderr, "tix_eray_pop: index %zu out of range\\n", index);
         exit(1);
     }
     char* value = tix->data[index];
@@ -193,7 +201,7 @@ char* tusmo_hp_tix_eray_pop(TusmoTixEray* tix, size_t index) {
 
 double tusmo_hp_tix_jajab_pop(TusmoTixJajab* tix, size_t index) {
     if (index >= tix->size) {
-        fprintf(stderr, "tix_jajab_pop: index %zu out of range\n", index);
+        fprintf(stderr, "tix_jajab_pop: index %zu out of range\\n", index);
         exit(1);
     }
     double value = tix->data[index];
@@ -204,7 +212,7 @@ double tusmo_hp_tix_jajab_pop(TusmoTixJajab* tix, size_t index) {
 
 bool tusmo_hp_tix_miyaa_pop(TusmoTixMiyaa* tix, size_t index) {
     if (index >= tix->size) {
-        fprintf(stderr, "tix_miyaa_pop: index %zu out of range\n", index);
+        fprintf(stderr, "tix_miyaa_pop: index %zu out of range\\n", index);
         exit(1);
     }
     bool value = tix->data[index];
@@ -215,7 +223,7 @@ bool tusmo_hp_tix_miyaa_pop(TusmoTixMiyaa* tix, size_t index) {
 
 char tusmo_hp_tix_xaraf_pop(TusmoTixXaraf* tix, size_t index) {
     if (index >= tix->size) {
-        fprintf(stderr, "tix_xaraf_pop: index %zu out of range\n", index);
+        fprintf(stderr, "tix_xaraf_pop: index %zu out of range\\n", index);
         exit(1);
     }
     char value = tix->data[index];
@@ -226,7 +234,7 @@ char tusmo_hp_tix_xaraf_pop(TusmoTixXaraf* tix, size_t index) {
 
 TusmoValue tusmo_tix_mixed_pop(TusmoTixMixed* tix, size_t index) {
     if (index >= tix->size) {
-        fprintf(stderr, ": index %zu out of range\n", index);
+        fprintf(stderr, "tix_mixed_pop: index %zu out of range\\n", index);
         exit(1);
     }
     TusmoValue value = tix->data[index];
@@ -237,15 +245,12 @@ TusmoValue tusmo_tix_mixed_pop(TusmoTixMixed* tix, size_t index) {
 
 TusmoValue tusmo_tix_mixed_get(TusmoTixMixed* tix, size_t index) {
     if (index >= tix->size) {
-        fprintf(stderr, "Index %zu out of range\n", index);
+        fprintf(stderr, "Index %zu out of range\\n", index);
         exit(1);
     }
     return tix->data[index];
 }
 
-// --- Generic Nested Array Access ---
-// Handles type-switching for accessing elements of arrays stored in TusmoValue.
-// This is needed for dynamic arrays (tix) that contain typed nested arrays.
 TusmoValue tusmo_tix_mixed_get_nested(TusmoValue arr_val, size_t index) {
     switch (arr_val.type) {
         case TUSMO_TIX:
@@ -281,7 +286,7 @@ TusmoValue tusmo_tix_mixed_get_nested(TusmoValue arr_val, size_t index) {
         case TUSMO_TIX_XARAF_NESTED2:
             return (TusmoValue){.type = TUSMO_TIX_XARAF_NESTED, .value.as_xaraf_nested = arr_val.value.as_xaraf_nested2->data[index]};
         default:
-            fprintf(stderr, "Unsupported array type for nested access: %d\n", arr_val.type);
+            fprintf(stderr, "Unsupported array type for nested access: %d\\n", arr_val.type);
             exit(1);
     }
 }
@@ -339,7 +344,6 @@ bool tusmo_hp_tix_xaraf_remove(TusmoTixXaraf* tix, char value) {
     return false;
 }
 
-// Helper for mixed value equality
 static bool tusmo_values_equal(TusmoValue a, TusmoValue b) {
     if (a.type != b.type) return false;
     switch (a.type) {
@@ -349,7 +353,7 @@ static bool tusmo_values_equal(TusmoValue a, TusmoValue b) {
         case TUSMO_MIYAA: return a.value.as_miyaa == b.value.as_miyaa;
         case TUSMO_XARAF: return a.value.as_xaraf == b.value.as_xaraf;
         case TUSMO_WAXBA: return true;
-        default: return false; // Complex types (arrays/dicts) not supported for simple equality yet
+        default: return false;
     }
 }
 
@@ -363,13 +367,6 @@ bool tusmo_tix_mixed_remove(TusmoTixMixed* tix, TusmoValue value) {
     return false;
 }
 
-// ============================================================================
-// --- NESTED ARRAY IMPLEMENTATIONS (Option 4: Type-specific nested arrays) ---
-// These use GC-tracked pointers (TusmoTixTiro**, TusmoTixTiro***, etc.)
-// so that Boehm GC can trace and update pointers when objects move.
-// ============================================================================
-
-// --- Helper macro for growing nested arrays ---
 #define TUSMO_NESTED_GROW(tix, elem_type) \
     if (tix->size >= tix->capacity) { \
         size_t new_cap = tix->capacity == 0 ? 8 : tix->capacity * 2; \
@@ -377,12 +374,6 @@ bool tusmo_tix_mixed_remove(TusmoTixMixed* tix, TusmoValue value) {
         tix->capacity = new_cap; \
     }
 
-// ============================================================================
-// --- 2D NESTED ARRAYS (TusmoTixXXXNested) ---
-// Holds pointers to 1D typed arrays (e.g., TusmoTixTiro** = array of TusmoTixTiro*)
-// ============================================================================
-
-// TusmoTixTiroNested - 2D array of integers
 TusmoTixTiroNested* tusmo_tix_tiro_nested_create(size_t cap) {
     TusmoTixTiroNested* tix = malloc(sizeof(TusmoTixTiroNested));
     tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixTiro*)) : NULL;
@@ -396,7 +387,6 @@ void tusmo_tix_tiro_nested_append(TusmoTixTiroNested* tix, TusmoTixTiro* value) 
     tix->data[tix->size++] = value;
 }
 
-// TusmoTixErayNested - 2D array of strings
 TusmoTixErayNested* tusmo_tix_eray_nested_create(size_t cap) {
     TusmoTixErayNested* tix = malloc(sizeof(TusmoTixErayNested));
     tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixEray*)) : NULL;
@@ -410,7 +400,6 @@ void tusmo_tix_eray_nested_append(TusmoTixErayNested* tix, TusmoTixEray* value) 
     tix->data[tix->size++] = value;
 }
 
-// TusmoTixJajabNested - 2D array of floats
 TusmoTixJajabNested* tusmo_tix_jajab_nested_create(size_t cap) {
     TusmoTixJajabNested* tix = malloc(sizeof(TusmoTixJajabNested));
     tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixJajab*)) : NULL;
@@ -424,7 +413,6 @@ void tusmo_tix_jajab_nested_append(TusmoTixJajabNested* tix, TusmoTixJajab* valu
     tix->data[tix->size++] = value;
 }
 
-// TusmoTixMiyaaNested - 2D array of booleans
 TusmoTixMiyaaNested* tusmo_tix_miyaa_nested_create(size_t cap) {
     TusmoTixMiyaaNested* tix = malloc(sizeof(TusmoTixMiyaaNested));
     tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixMiyaa*)) : NULL;
@@ -438,7 +426,6 @@ void tusmo_tix_miyaa_nested_append(TusmoTixMiyaaNested* tix, TusmoTixMiyaa* valu
     tix->data[tix->size++] = value;
 }
 
-// TusmoTixXarafNested - 2D array of chars
 TusmoTixXarafNested* tusmo_tix_xaraf_nested_create(size_t cap) {
     TusmoTixXarafNested* tix = malloc(sizeof(TusmoTixXarafNested));
     tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixXaraf*)) : NULL;
@@ -452,12 +439,6 @@ void tusmo_tix_xaraf_nested_append(TusmoTixXarafNested* tix, TusmoTixXaraf* valu
     tix->data[tix->size++] = value;
 }
 
-// ============================================================================
-// --- 3D NESTED ARRAYS (TusmoTixXXXNested2) ---
-// Holds pointers to 2D nested arrays (e.g., TusmoTixTiroNested**)
-// ============================================================================
-
-// TusmoTixTiroNested2 - 3D array of integers
 TusmoTixTiroNested2* tusmo_tix_tiro_nested2_create(size_t cap) {
     TusmoTixTiroNested2* tix = malloc(sizeof(TusmoTixTiroNested2));
     tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixTiroNested*)) : NULL;
@@ -475,7 +456,6 @@ void tusmo_tix_tiro_nested2_append(TusmoTixTiroNested2* tix, TusmoTixTiroNested*
     tix->data[tix->size++] = value;
 }
 
-// TusmoTixErayNested2 - 3D array of strings
 TusmoTixErayNested2* tusmo_tix_eray_nested2_create(size_t cap) {
     TusmoTixErayNested2* tix = malloc(sizeof(TusmoTixErayNested2));
     tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixErayNested*)) : NULL;
@@ -493,7 +473,6 @@ void tusmo_tix_eray_nested2_append(TusmoTixErayNested2* tix, TusmoTixErayNested*
     tix->data[tix->size++] = value;
 }
 
-// TusmoTixJajabNested2 - 3D array of floats
 TusmoTixJajabNested2* tusmo_tix_jajab_nested2_create(size_t cap) {
     TusmoTixJajabNested2* tix = malloc(sizeof(TusmoTixJajabNested2));
     tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixJajabNested*)) : NULL;
@@ -511,7 +490,6 @@ void tusmo_tix_jajab_nested2_append(TusmoTixJajabNested2* tix, TusmoTixJajabNest
     tix->data[tix->size++] = value;
 }
 
-// TusmoTixMiyaaNested2 - 3D array of booleans
 TusmoTixMiyaaNested2* tusmo_tix_miyaa_nested2_create(size_t cap) {
     TusmoTixMiyaaNested2* tix = malloc(sizeof(TusmoTixMiyaaNested2));
     tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixMiyaaNested*)) : NULL;
@@ -529,7 +507,6 @@ void tusmo_tix_miyaa_nested2_append(TusmoTixMiyaaNested2* tix, TusmoTixMiyaaNest
     tix->data[tix->size++] = value;
 }
 
-// TusmoTixXarafNested2 - 3D array of chars
 TusmoTixXarafNested2* tusmo_tix_xaraf_nested2_create(size_t cap) {
     TusmoTixXarafNested2* tix = malloc(sizeof(TusmoTixXarafNested2));
     tix->data = cap > 0 ? malloc(cap * sizeof(TusmoTixXarafNested*)) : NULL;
@@ -547,7 +524,6 @@ void tusmo_tix_xaraf_nested2_append(TusmoTixXarafNested2* tix, TusmoTixXarafNest
     tix->data[tix->size++] = value;
 }
 
-// --- 2D Nested Array Extend ---
 void tusmo_tix_tiro_nested_extend(TusmoTixTiroNested* dest, TusmoTixTiroNested* src) {
     for (size_t i = 0; i < src->size; i++) {
         tusmo_tix_tiro_nested_append(dest, src->data[i]);
@@ -577,8 +553,6 @@ void tusmo_tix_xaraf_nested_extend(TusmoTixXarafNested* dest, TusmoTixXarafNeste
         tusmo_tix_xaraf_nested_append(dest, src->data[i]);
     }
 }
-
-// --- Extend: Add all elements from another array ---
 
 void tusmo_hp_tix_tiro_extend(TusmoTixTiro* dest, TusmoTixTiro* src) {
     for (size_t i = 0; i < src->size; i++) {
@@ -616,8 +590,7 @@ void tusmo_tix_mixed_extend(TusmoTixMixed* dest, TusmoTixMixed* src) {
     }
 }
 
-// --- Deep Free Implementations ---
-
+// Deep Free Routines
 void tusmo_free_tix_tiro(TusmoTixTiro* tix) {
     if (!tix) return;
     if (tix->data) free(tix->data);
@@ -656,14 +629,10 @@ void tusmo_free_tix_xaraf(TusmoTixXaraf* tix) {
 void tusmo_free_tix_mixed(TusmoTixMixed* tix) {
     if (!tix) return;
     if (tix->data) {
-        // Mixed arrays might need more complex logic to free nested TusmoValues
-        // For now, simple free. In a full implementation, we'd switch on type.
         free(tix->data);
     }
     free(tix);
 }
-
-// Nested Arrays (Deep Free)
 
 void tusmo_free_tix_tiro_nested(TusmoTixTiroNested* tix) {
     if (!tix) return;
@@ -686,3 +655,60 @@ void tusmo_free_tix_eray_nested(TusmoTixErayNested* tix) {
     }
     free(tix);
 }
+
+// Generic list routines from array_generic.c
+TusmoTixGeneric* tusmo_tix_generic_create(size_t cap) {
+    TusmoTixGeneric* tix = malloc(sizeof(TusmoTixGeneric));
+    tix->data = malloc(cap * sizeof(void*));
+    tix->size = 0;
+    tix->capacity = cap;
+    return tix;
+}
+
+void tusmo_tix_generic_append(TusmoTixGeneric* tix, void* value) {
+    tusmo_hp_grow_if_needed((void**)&tix->data, &tix->capacity, tix->size + 1, sizeof(void*));
+    tix->data[tix->size++] = value;
+}
+
+void tusmo_tix_generic_insert(TusmoTixGeneric* tix, size_t index, void* value) {
+    if (index > tix->size) {
+        fprintf(stderr, "Cilad: Tusmo, index-ka %zu wuu ka weyn yahay cabbirka %zu\\n", index, tix->size);
+        exit(1);
+    }
+    tusmo_hp_grow_if_needed((void**)&tix->data, &tix->capacity, tix->size + 1, sizeof(void*));
+    if (index < tix->size) {
+        memmove(&tix->data[index + 1], &tix->data[index], (tix->size - index) * sizeof(void*));
+    }
+    tix->data[index] = value;
+    tix->size++;
+}
+
+void* tusmo_tix_generic_pop(TusmoTixGeneric* tix, size_t index) {
+    if (index >= tix->size) {
+        fprintf(stderr, "Cilad: Tusmo, index-ka %zu wuu ka baxsan yahay xadka %zu\\n", index, tix->size);
+        exit(1);
+    }
+    void* val = tix->data[index];
+    if (index < tix->size - 1) {
+        memmove(&tix->data[index], &tix->data[index + 1], (tix->size - 1 - index) * sizeof(void*));
+    }
+    tix->size--;
+    return val;
+}
+
+bool tusmo_tix_generic_remove(TusmoTixGeneric* tix, void* value) {
+    for (size_t i = 0; i < tix->size; i++) {
+        if (tix->data[i] == value) {
+            tusmo_tix_generic_pop(tix, i);
+            return true;
+        }
+    }
+    return false;
+}
+
+void tusmo_tix_generic_extend(TusmoTixGeneric* dest, TusmoTixGeneric* src) {
+    for (size_t i = 0; i < src->size; i++) {
+        tusmo_tix_generic_append(dest, src->data[i]);
+    }
+}
+""");

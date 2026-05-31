@@ -12,6 +12,7 @@
 #include <assert.h>
 #include "tusmo_types.h"
 
+#ifndef TUSMO_CORE_TYPES_H
 // ==========================================================================
 // --- DATA STRUCTURES
 // ==========================================================================
@@ -41,6 +42,8 @@ typedef struct TusmoTixMiyaaNested2 { TusmoTixMiyaaNested** data; size_t size; s
 typedef struct TusmoTixXarafNested2 { TusmoTixXarafNested** data; size_t size; size_t capacity; } TusmoTixXarafNested2;
 
 #include "dictionary.h"
+#endif
+
 #include "type_conversion.h"
 // ==========================================================================
 // --- FUNCTION PROTOTYPES

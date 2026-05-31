@@ -1,184 +1,518 @@
 // stdlib/core.tus
 // Kani waa laf-dhabarta Tusmo. Si toos ah ayuu u xiriiraa compiler-ka.
 
-TUSMO_XIDID "runtime/type_conversion.c.maya";
-TUSMO_XIDID "runtime/string.c.maya";
-TUSMO_XIDID "runtime/array.c.maya";
-TUSMO_XIDID "runtime/array_generic.c.maya";
-TUSMO_XIDID "runtime/dictionary.c.maya";
-TUSMO_XIDID "runtime/io.c.maya";
+keen "array.tus";
+keen "eray.tus";
+keen "qaamuus.tus";
+
+___c__code_("""
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdarg.h>
+#include <ctype.h>
+
+// Forward declarations of printing functions
+void prints_tix_tiro(TusmoTixTiro* tix);
+void prints_tix_eray(TusmoTixEray* tix);
+void prints_tix_jajab(TusmoTixJajab* tix);
+void prints_tix_miyaa(TusmoTixMiyaa* tix);
+void prints_tix_xaraf(TusmoTixXaraf* tix);
+void prints_tix_mixed(TusmoTixMixed* tix);
+void prints_tix_generic(void* tix);
+void prints_tix_tiro_nested(TusmoTixTiroNested* tix);
+void prints_tix_eray_nested(TusmoTixErayNested* tix);
+void prints_tix_jajab_nested(TusmoTixJajabNested* tix);
+void prints_tix_miyaa_nested(TusmoTixMiyaaNested* tix);
+void prints_tix_xaraf_nested(TusmoTixXarafNested* tix);
+void prints_tix_tiro_nested2(TusmoTixTiroNested2* tix);
+void prints_tix_eray_nested2(TusmoTixErayNested2* tix);
+void prints_tix_jajab_nested2(TusmoTixJajabNested2* tix);
+void prints_tix_miyaa_nested2(TusmoTixMiyaaNested2* tix);
+void prints_tix_xaraf_nested2(TusmoTixXarafNested2* tix);
+void tusmo_qor_walbo(TusmoValue val);
+void tusmo_qaamuus_print(TusmoQaamuus* qaamuus);
+
+// Helper functions
+char* tusmo_strdup(const char* s) {
+    if (!s) return NULL;
+    char* copy = malloc(strlen(s) + 1);
+    if (copy) strcpy(copy, s);
+    return copy;
+}
+
+// Convert any TusmoValue to a string (eray)
+char* tusmo_to_eray(TusmoValue val) {
+    char* buffer = malloc(128); // Allocate a buffer
+    switch (val.type) {
+        case TUSMO_TIRO:
+            snprintf(buffer, 128, "%d", val.value.as_tiro);
+            break;
+        case TUSMO_JAJAB:
+            snprintf(buffer, 128, "%f", val.value.as_jajab);
+            break;
+        case TUSMO_ERAY:
+            free(buffer);
+            return tusmo_strdup(val.value.as_eray); 
+        case TUSMO_MIYAA:
+            free(buffer);
+            return tusmo_strdup(val.value.as_miyaa ? "run" : "been");
+        case TUSMO_XARAF:
+            snprintf(buffer, 128, "%c", val.value.as_xaraf);
+            break;
+        case TUSMO_QAAMUUS:
+            free(buffer);
+            return tusmo_strdup("<qaamuus>");
+        case TUSMO_TIX:
+            free(buffer);
+            return tusmo_strdup("<tix>");
+        case TUSMO_WAXBA:
+            free(buffer);
+            return tusmo_strdup("<waxba>");
+        default:
+            free(buffer);
+            return tusmo_strdup("<nooc aan la menneyn>");
+    }
+    return buffer;
+}
+
+int tusmo_dherer(TusmoValue val) {
+    switch (val.type) {
+        case TUSMO_ERAY:
+            return val.value.as_eray ? (int)strlen(val.value.as_eray) : 0;
+        case TUSMO_TIX:
+            return val.value.as_tix ? (int)val.value.as_tix->size : 0;
+        case TUSMO_TIX_TIRO:
+            return val.value.as_tiro_tix ? (int)val.value.as_tiro_tix->size : 0;
+        case TUSMO_TIX_ERAY:
+            return val.value.as_eray_tix ? (int)val.value.as_eray_tix->size : 0;
+        case TUSMO_TIX_JAJAB:
+            return val.value.as_jajab_tix ? (int)val.value.as_jajab_tix->size : 0;
+        case TUSMO_TIX_MIYAA:
+            return val.value.as_miyaa_tix ? (int)val.value.as_miyaa_tix->size : 0;
+        case TUSMO_TIX_XARAF:
+            return val.value.as_xaraf_tix ? (int)val.value.as_xaraf_tix->size : 0;
+        case TUSMO_TIX_TIRO_NESTED:
+            return val.value.as_tiro_nested ? (int)val.value.as_tiro_nested->size : 0;
+        case TUSMO_TIX_ERAY_NESTED:
+            return val.value.as_eray_nested ? (int)val.value.as_eray_nested->size : 0;
+        case TUSMO_TIX_TIRO_NESTED2:
+            return val.value.as_tiro_nested2 ? (int)val.value.as_tiro_nested2->size : 0;
+        case TUSMO_TIX_ERAY_NESTED2:
+            return val.value.as_eray_nested2 ? (int)val.value.as_eray_nested2->size : 0;
+        case TUSMO_WAXBA:
+            return 0;
+        default:
+            return 0;
+    }
+}
+
+// Convert any TusmoValue to an integer (tiro)
+int tusmo_to_tiro(TusmoValue val) {
+    switch (val.type) {
+        case TUSMO_TIRO:
+            return val.value.as_tiro;
+        case TUSMO_JAJAB:
+            return (int)val.value.as_jajab;
+        case TUSMO_ERAY:
+            return atoi(val.value.as_eray);
+        case TUSMO_MIYAA:
+            return val.value.as_miyaa ? 1 : 0;
+        case TUSMO_XARAF:
+            return (int)val.value.as_xaraf;
+        default:
+            return 0;
+    }
+}
+
+// Convert any TusmoValue to a double (jajab)
+double tusmo_to_jajab(TusmoValue val) {
+    switch (val.type) {
+        case TUSMO_TIRO:
+            return (double)val.value.as_tiro;
+        case TUSMO_JAJAB:
+            return val.value.as_jajab;
+        case TUSMO_ERAY:
+            return atof(val.value.as_eray);
+        case TUSMO_MIYAA:
+            return val.value.as_miyaa ? 1.0 : 0.0;
+        case TUSMO_XARAF:
+            return (double)val.value.as_xaraf;
+        default:
+            return 0.0;
+    }
+}
+
+// Convert any TusmoValue to a boolean (miyaa)
+bool tusmo_to_miyaa(TusmoValue val) {
+    switch (val.type) {
+        case TUSMO_TIRO:
+            return val.value.as_tiro != 0;
+        case TUSMO_JAJAB:
+            return val.value.as_jajab != 0.0;
+        case TUSMO_ERAY:
+            return val.value.as_eray != NULL && val.value.as_eray[0] != '\\0';
+        case TUSMO_MIYAA:
+            return val.value.as_miyaa;
+        case TUSMO_XARAF:
+            return val.value.as_xaraf != '\\0';
+        default:
+            return false;
+    }
+}
+
+// Convert any TusmoValue to a char (xaraf)
+char tusmo_to_xaraf(TusmoValue val) {
+    switch (val.type) {
+        case TUSMO_TIRO:
+            return (char)val.value.as_tiro;
+        case TUSMO_JAJAB:
+            return (char)val.value.as_jajab;
+        case TUSMO_ERAY:
+            return val.value.as_eray != NULL ? val.value.as_eray[0] : '\\0';
+        case TUSMO_MIYAA:
+            return val.value.as_miyaa ? '1' : '0';
+        case TUSMO_XARAF:
+            return val.value.as_xaraf;
+        default:
+            return '\\0';
+    }
+}
+
+char* tusmo_type_of(TusmoValue val) {
+    switch (val.type) {
+        case TUSMO_TIRO:   return "tiro";
+        case TUSMO_JAJAB:  return "jajab";
+        case TUSMO_ERAY:   return "eray";
+        case TUSMO_MIYAA:  return "miyaa";
+        case TUSMO_XARAF:  return "xaraf";
+        case TUSMO_QAAMUUS:return "qaamuus";
+        case TUSMO_TIX:    return "tix";
+        case TUSMO_WAXBA:  return "waxba";
+        default:           return "unknown";
+    }
+}
+
+// Printing Arrays
+void prints_tix_tiro(TusmoTixTiro* tix) {
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        printf("%d", tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_eray(TusmoTixEray* tix) {
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        printf("\\\"%s\\\"", tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_jajab(TusmoTixJajab* tix) {
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        printf("%f", tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_miyaa(TusmoTixMiyaa* tix) {
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        printf(tix->data[i] ? "true" : "false");
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_xaraf(TusmoTixXaraf* tix) {
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        printf("'%c'", tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_mixed(TusmoTixMixed* tix) {
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        tusmo_qor_walbo(tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_generic(void* tix_ptr) {
+    if (tix_ptr == NULL) {
+        printf("waxbo");
+        return;
+    }
+    TusmoTixMixed* as_mixed = (TusmoTixMixed*)tix_ptr;
+    if (as_mixed->data != NULL && as_mixed->size > 0 && as_mixed->size < 100000) {
+        TusmoValue* first_elem = &as_mixed->data[0];
+        if (first_elem->type >= 0 && first_elem->type <= 20) {
+            prints_tix_mixed(as_mixed);
+            return;
+        }
+    }
+    TusmoTixGeneric* tix = (TusmoTixGeneric*)tix_ptr;
+    if (tix->data == NULL || tix->size == 0) {
+        printf("[]");
+        return;
+    }
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        if (i > 0) printf(", ");
+        void* elem = tix->data[i];
+        if (elem == NULL) {
+            printf("waxbo");
+            continue;
+        }
+        TusmoTixTiroNested2* as_tiro_nested2 = (TusmoTixTiroNested2*)elem;
+        if (as_tiro_nested2->data != NULL && as_tiro_nested2->size > 0) {
+            prints_tix_tiro_nested2(as_tiro_nested2);
+            continue;
+        }
+        TusmoTixErayNested2* as_eray_nested2 = (TusmoTixErayNested2*)elem;
+        if (as_eray_nested2->data != NULL && as_eray_nested2->size > 0) {
+            prints_tix_eray_nested2(as_eray_nested2);
+            continue;
+        }
+        TusmoTixTiroNested* as_tiro_nested = (TusmoTixTiroNested*)elem;
+        if (as_tiro_nested->data != NULL && as_tiro_nested->size > 0) {
+            prints_tix_tiro_nested(as_tiro_nested);
+            continue;
+        }
+        TusmoTixErayNested* as_eray_nested = (TusmoTixErayNested*)elem;
+        if (as_eray_nested->data != NULL && as_eray_nested->size > 0) {
+            prints_tix_eray_nested(as_eray_nested);
+            continue;
+        }
+        TusmoTixTiro* as_tiro = (TusmoTixTiro*)elem;
+        if (as_tiro->data != NULL && as_tiro->size > 0) {
+            prints_tix_tiro(as_tiro);
+            continue;
+        }
+        TusmoTixEray* as_eray = (TusmoTixEray*)elem;
+        if (as_eray->data != NULL && as_eray->size > 0) {
+            prints_tix_eray(as_eray);
+            continue;
+        }
+        TusmoTixJajab* as_jajab = (TusmoTixJajab*)elem;
+        if (as_jajab->data != NULL && as_jajab->size > 0) {
+            prints_tix_jajab(as_jajab);
+            continue;
+        }
+        TusmoTixMiyaa* as_miyaa = (TusmoTixMiyaa*)elem;
+        if (as_miyaa->data != NULL && as_miyaa->size > 0) {
+            prints_tix_miyaa(as_miyaa);
+            continue;
+        }
+        TusmoTixXaraf* as_xaraf = (TusmoTixXaraf*)elem;
+        if (as_xaraf->data != NULL && as_xaraf->size > 0) {
+            prints_tix_xaraf(as_xaraf);
+            continue;
+        }
+        printf("<unknown>");
+    }
+    printf("]");
+}
+
+void prints_tix_tiro_nested(TusmoTixTiroNested* tix) {
+    if (tix == NULL || tix->data == NULL) { printf("[]"); return; }
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        prints_tix_tiro(tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_eray_nested(TusmoTixErayNested* tix) {
+    if (tix == NULL || tix->data == NULL) { printf("[]"); return; }
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        prints_tix_eray(tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_jajab_nested(TusmoTixJajabNested* tix) {
+    if (tix == NULL || tix->data == NULL) { printf("[]"); return; }
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        prints_tix_jajab(tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_miyaa_nested(TusmoTixMiyaaNested* tix) {
+    if (tix == NULL || tix->data == NULL) { printf("[]"); return; }
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        prints_tix_miyaa(tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_xaraf_nested(TusmoTixXarafNested* tix) {
+    if (tix == NULL || tix->data == NULL) { printf("[]"); return; }
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        prints_tix_xaraf(tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_tiro_nested2(TusmoTixTiroNested2* tix) {
+    if (tix == NULL || tix->data == NULL) { printf("[]"); return; }
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        prints_tix_tiro_nested(tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_eray_nested2(TusmoTixErayNested2* tix) {
+    if (tix == NULL || tix->data == NULL) { printf("[]"); return; }
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        prints_tix_eray_nested(tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_jajab_nested2(TusmoTixJajabNested2* tix) {
+    if (tix == NULL || tix->data == NULL) { printf("[]"); return; }
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        prints_tix_jajab_nested(tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_miyaa_nested2(TusmoTixMiyaaNested2* tix) {
+    if (tix == NULL || tix->data == NULL) { printf("[]"); return; }
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        prints_tix_miyaa_nested(tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void prints_tix_xaraf_nested2(TusmoTixXarafNested2* tix) {
+    if (tix == NULL || tix->data == NULL) { printf("[]"); return; }
+    printf("[");
+    for (size_t i = 0; i < tix->size; i++) {
+        prints_tix_xaraf_nested(tix->data[i]);
+        if (i + 1 < tix->size) printf(", ");
+    }
+    printf("]");
+}
+
+void tusmo_qor_walbo(TusmoValue val) {
+    switch (val.type) {
+        case TUSMO_TIRO:  printf("%d", val.value.as_tiro); break;
+        case TUSMO_ERAY:  printf("%s", val.value.as_eray ? val.value.as_eray : "waxbo"); break;
+        case TUSMO_JAJAB: printf("%f", val.value.as_jajab); break;
+        case TUSMO_MIYAA: printf(val.value.as_miyaa ? "run" : "been"); break;
+        case TUSMO_XARAF: printf("%c", val.value.as_xaraf); break;
+        case TUSMO_QAAMUUS: tusmo_qaamuus_print(val.value.as_qaamuus); break;
+        case TUSMO_TIX:  prints_tix_mixed(val.value.as_tix); break;
+        case TUSMO_WAXBA: printf("waxba"); break;
+        case TUSMO_TIX_TIRO: prints_tix_tiro(val.value.as_tiro_tix); break;
+        case TUSMO_TIX_ERAY: prints_tix_eray(val.value.as_eray_tix); break;
+        case TUSMO_TIX_JAJAB: prints_tix_jajab(val.value.as_jajab_tix); break;
+        case TUSMO_TIX_MIYAA: prints_tix_miyaa(val.value.as_miyaa_tix); break;
+        case TUSMO_TIX_XARAF: prints_tix_xaraf(val.value.as_xaraf_tix); break;
+        case TUSMO_TIX_TIRO_NESTED: prints_tix_tiro_nested(val.value.as_tiro_nested); break;
+        case TUSMO_TIX_ERAY_NESTED: prints_tix_eray_nested(val.value.as_eray_nested); break;
+        case TUSMO_TIX_JAJAB_NESTED: prints_tix_jajab_nested(val.value.as_jajab_nested); break;
+        case TUSMO_TIX_MIYAA_NESTED: prints_tix_miyaa_nested(val.value.as_miyaa_nested); break;
+        case TUSMO_TIX_XARAF_NESTED: prints_tix_xaraf_nested(val.value.as_xaraf_nested); break;
+        case TUSMO_TIX_TIRO_NESTED2: prints_tix_tiro_nested2(val.value.as_tiro_nested2); break;
+        case TUSMO_TIX_ERAY_NESTED2: prints_tix_eray_nested2(val.value.as_eray_nested2); break;
+        case TUSMO_TIX_JAJAB_NESTED2: prints_tix_jajab_nested2(val.value.as_jajab_nested2); break;
+        case TUSMO_TIX_MIYAA_NESTED2: prints_tix_miyaa_nested2(val.value.as_miyaa_nested2); break;
+        case TUSMO_TIX_XARAF_NESTED2: prints_tix_xaraf_nested2(val.value.as_xaraf_nested2); break;
+        default:          printf("<nooc aan la aqoon>"); break;
+    }
+}
+
+char* hel_str(void) {
+    size_t size = 100;
+    size_t len = 0;
+    char* buffer = malloc(size);
+    if (buffer == NULL) return NULL;
+    int c;
+    while ((c = getchar()) != '\\n' && c != EOF) {
+        buffer[len++] = c;
+        if (len == size) {
+            size *= 2;
+            char* new_buffer = realloc(buffer, size);
+            if (!new_buffer) {
+                free(buffer);
+                return NULL;
+            }
+            buffer = new_buffer;
+        }
+    }
+    buffer[len] = '\\0';
+    return buffer;
+}
+""");
 
 hawl nooc(x: walbo) : eray {
-    """
-    Soo celi nooca xogta ee variable-ka.
-    Tusaale: qor(nooc(10)); // Waxay soo celinaysaa "tiro"
-    """
     soo_celi ___c__call_("tusmo_type_of", x);
 }
 
 hawl dherer(x: walbo) : tiro {
-    """
-    Soo celi dhererka xogta (xarafka erayga ama tirada walxaha tixda).
-    Tusaale: qor(dherer("Tusmo")); // Waxay soo celinaysaa 5
-    """
     soo_celi ___c__call_("tusmo_dherer", x);
 }
 
-
 // type conversion functions
 hawl eray(x: walbo) : eray {
-    """
-    Waxay u beddeshaa xogta in ay noqoto 'eray' (String).
-    Tusaale: qor(eray(100)); // Waxay soo celinaysaa "100"
-    """
     soo_celi ___c__call_("tusmo_to_eray", x);
 }
 
 hawl tiro(x: walbo) : tiro {
-    """
-    Waxay u beddeshaa xogta in ay noqoto 'tiro' (Integer).
-    Tusaale: qor(tiro("50")); // Waxay soo celinaysaa 50
-    """
     soo_celi ___c__call_("tusmo_to_tiro", x);
 }
 
 hawl jajab(x: walbo) : jajab {
-    """
-    Waxay u beddeshaa xogta in ay noqoto 'jajab' (Float).
-    Tusaale: qor(jajab("3.14")); // Waxay soo celinaysaa 3.140000
-    """
     soo_celi ___c__call_("tusmo_to_jajab", x);
 }
 
 hawl miyaa(x: walbo) : miyaa {
-    """
-    Waxay u beddeshaa xogta in ay noqoto 'miyaa' (Boolean).
-    Tusaale: qor(miyaa(1)); // Waxay soo celinaysaa run
-    """
     soo_celi ___c__call_("tusmo_to_miyaa", x);
 }
 
-
-
 // ascii conversion functions
 hawl qor_tiro(x: xaraf) : tiro {
-    """
-    Waxay u beddeshaa xaraf in uu noqdo lambarkiisa ASCII (ASCII Int).
-    Tusaale: qor(qor_tiro('A')); // Waxay soo celinaysaa 65
-    """
     soo_celi ___c__call_("(int)", x);
 }
 
 hawl qor_xaraf(x: tiro) : xaraf {
-    """
-    Waxay u beddeshaa lambar ASCII ah in uu noqdo xarafkiisa.
-    Tusaale: qor(qor_xaraf(65)); // Waxay soo celinaysaa 'A'
-    """
     soo_celi ___c__call_("(char)", x);
 }
 
-// =========================================================
-// STRING METHODS (Hababka Erayada)
-// =========================================================
-
-hawl XarafWeyn(x: eray) : eray {
-    """
-    Waxay ka dhigtaa dhammaan xarfaha erayga kuwa waaweyn.
-    Tusaale: qor("tusmo".XarafWeyn()); // Waxay soo celinaysaa "TUSMO"
-    """
-    soo_celi ___c__call_("tusmo_str_upper", x);
-}
-
-hawl XarafYar(x: eray) : eray {
-    """
-    Waxay ka dhigtaa dhammaan xarfaha erayga kuwa yaryar.
-    Tusaale: qor("TUSMO".XarafYar()); // Waxay soo celinaysaa "tusmo"
-    """
-    soo_celi ___c__call_("tusmo_str_lower", x);
-}
-
-hawl kaReeb(x: eray) : eray {
-    """
-    Waxay ka jartaa banaanada (spaces) labada dhinac ee erayga.
-    Tusaale: qor("  tusmo  ".kaReeb()); // Waxay soo celinaysaa "tusmo"
-    """
-    soo_celi ___c__call_("tusmo_str_trim", x);
-}
-
-hawl Bkareeb(x: eray) : eray {
-    """
-    Waxay ka jartaa banaanada (spaces) dhinaca bidix (bilowga) ee erayga.
-    """
-    soo_celi ___c__call_("tusmo_str_ltrim", x);
-}
-
-hawl Mkareeb(x: eray) : eray {
-    """
-    Waxay ka jartaa banaanada (spaces) dhinaca midig (dhammaadka) ee erayga.
-    """
-    soo_celi ___c__call_("tusmo_str_rtrim", x);
-}
-
-hawl kuBadal(x: eray, qadim: eray, kan_cusub: eray) : eray {
-    """
-    Waxay ku beddeshaa qayb ka mid ah erayga qayb kale.
-    Tusaale: qor("axmed waa arday".kuBadal("axmed", "cali")); 
-    """
-    soo_celi ___c__call_("tusmo_str_replace", x, qadim, kan_cusub);
-}
-
-hawl sooRaadi(x: eray, baadiGoob: eray) : tiro {
-    """
-    Waxay soo celisaa booska (index) ay ka bilaabato qaybta la raadinayo. 
-    Haddii aan la helin, waxay soo celinaysaa -1.
-    """
-    soo_celi ___c__call_("tusmo_str_find", x, baadiGoob);
-}
-
-hawl lagaHelay(x: eray, baadiGoob: eray) : miyaa {
-    """
-    Waxay hubisaa in qaybta la raadinayo laga helay erayga dhexdiisa.
-    """
-    soo_celi ___c__call_("tusmo_str_contains", x, baadiGoob);
-}
-
-hawl qaybi(x: eray, kalaSooce: eray) : tix:eray {
-    """
-    Waxay u kala qaybisaa erayga tix (array) iyadoo la isticmaalayo kala-soocaha (delimiter).
-    Tusaale: qor("a,b,c".qaybi(",")); // Waxay soo celinaysaa ["a", "b", "c"]
-    """
-    soo_celi ___c__call_("tusmo_str_split", x, kalaSooce);
-}
-
-// =========================================================
-// DICTIONARY METHODS (Hababka Qaamuuska)
-// =========================================================
-
-hawl majiraa(x: qaamuus, fure: eray) : miyaa {
-    """
-    Waxay hubisaa in fure gaar ah uu ku jiro qaamuuska.
-    Tusaale: qor(student.majiraa("magac")); // run ama been
-    """
-    soo_celi ___c__call_("tusmo_qaamuus_has_key", x, fure);
-}
-
-hawl kasaar(x: qaamuus, fure: eray) : waxbo {
-    """
-    Waxay ka saartaa fure iyo qiimihiisa qaamuuska.
-    Tusaale: student.kasaar("magac");
-    """
-    ___c__call_("tusmo_qaamuus_delete", x, fure);
-}
-
-// =========================================================
-// HAWLAHA GUUD EE CUSUB (New Generic Core Built-ins)
-// =========================================================
-
 hawl uguYar(a: tiro, b: tiro) : tiro {
-    """
-    Soo celi tirada ugu yar labada tiro ee la siiyay.
-    Tusaale: qor(uguYar(10, 20)); // Waxay soo celinaysaa 10
-    """
     haddii (a < b) {
         soo_celi a;
     } haddii_kale {
@@ -187,10 +521,6 @@ hawl uguYar(a: tiro, b: tiro) : tiro {
 }
 
 hawl uguWeyn(a: tiro, b: tiro) : tiro {
-    """
-    Soo celi tirada ugu weyn labada tiro ee la siiyay.
-    Tusaale: qor(uguWeyn(10, 20)); // Waxay soo celinaysaa 20
-    """
     haddii (a > b) {
         soo_celi a;
     } haddii_kale {
@@ -199,10 +529,6 @@ hawl uguWeyn(a: tiro, b: tiro) : tiro {
 }
 
 hawl qaado(x: tiro) : tiro {
-    """
-    Soo celi qiimaha togan (Absolute Value) ee tiro kasta oo la siiyay.
-    Tusaale: qor(qaado(-5)); // Waxay soo celinaysaa 5
-    """
     haddii (x < 0) {
         soo_celi 0 - x;
     } haddii_kale {
@@ -211,9 +537,5 @@ hawl qaado(x: tiro) : tiro {
 }
 
 hawl jooji(code: tiro) : waxbo {
-    """
-    Ku jooji ama ku xir barnaamijka nambarka guusha (0) ama guul-darrada.
-    Tusaale: jooji(0);
-    """
     ___c__call_("exit", code);
 }

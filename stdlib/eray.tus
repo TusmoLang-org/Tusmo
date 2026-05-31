@@ -1,5 +1,7 @@
-// runtime/string.c
+// stdlib/eray.tus
+// Eray (String) helper implementations for Tusmo.
 
+___c__code_("""
 #include "tusmo_runtime.h"
 #include <ctype.h>
 
@@ -44,7 +46,7 @@ char* tusmo_str_upper(const char* str) {
     for (size_t i = 0; i < len; i++) {
         result[i] = toupper(str[i]);
     }
-    result[len] = '\0';
+    result[len] = '\\0';
     return result;
 }
 
@@ -56,35 +58,35 @@ char* tusmo_str_lower(const char* str) {
     for (size_t i = 0; i < len; i++) {
         result[i] = tolower(str[i]);
     }
-    result[len] = '\0';
+    result[len] = '\\0';
     return result;
 }
 
 // kaReeb() - trim whitespace from both ends
 char* tusmo_str_trim(const char* str) {
     if (!str) return "";
-    while (*str == ' ' || *str == '\t' || *str == '\n' || *str == '\r') {
+    while (*str == ' ' || *str == '\\t' || *str == '\\n' || *str == '\\r') {
         str++;
     }
-    if (*str == '\0') return "";
+    if (*str == '\\0') return "";
     const char* end = str + strlen(str) - 1;
-    while (end > str && (*end == ' ' || *end == '\t' || *end == '\n' || *end == '\r')) {
+    while (end > str && (*end == ' ' || *end == '\\t' || *end == '\\n' || *end == '\\r')) {
         end--;
     }
     size_t len = end - str + 1;
     char* result = malloc(len + 1);
     strncpy(result, str, len);
-    result[len] = '\0';
+    result[len] = '\\0';
     return result;
 }
 
 // Bkareeb() - left trim (trim start only)
 char* tusmo_str_ltrim(const char* str) {
     if (!str) return "";
-    while (*str == ' ' || *str == '\t' || *str == '\n' || *str == '\r') {
+    while (*str == ' ' || *str == '\\t' || *str == '\\n' || *str == '\\r') {
         str++;
     }
-    return strdup(str);
+    return tusmo_strdup(str);
 }
 
 // Mkareeb() - right trim (trim end only)
@@ -93,20 +95,20 @@ char* tusmo_str_rtrim(const char* str) {
     size_t len = strlen(str);
     if (len == 0) return "";
     const char* end = str + len - 1;
-    while (end >= str && (*end == ' ' || *end == '\t' || *end == '\n' || *end == '\r')) {
+    while (end >= str && (*end == ' ' || *end == '\\t' || *end == '\\n' || *end == '\\r')) {
         end--;
     }
     size_t result_len = end - str + 1;
     char* result = malloc(result_len + 1);
     strncpy(result, str, result_len);
-    result[result_len] = '\0';
+    result[result_len] = '\\0';
     return result;
 }
 
 // kuBadal(old, new) - replace all occurrences
 char* tusmo_str_replace(const char* str, const char* old_str, const char* new_str) {
     if (!str || !old_str || !new_str) return "";
-    if (strlen(old_str) == 0) return strdup(str);
+    if (strlen(old_str) == 0) return tusmo_strdup(str);
     
     size_t old_len = strlen(old_str);
     size_t new_len = strlen(new_str);
@@ -120,7 +122,7 @@ char* tusmo_str_replace(const char* str, const char* old_str, const char* new_st
         p += old_len;
     }
     
-    if (count == 0) return strdup(str);
+    if (count == 0) return tusmo_strdup(str);
     
     // Calculate new length
     size_t result_len = str_len + count * (new_len - old_len);
@@ -141,7 +143,7 @@ char* tusmo_str_replace(const char* str, const char* old_str, const char* new_st
         dest += new_len;
         p = found + old_len;
     }
-    result[result_len] = '\0';
+    result[result_len] = '\\0';
     return result;
 }
 
@@ -163,31 +165,24 @@ bool tusmo_str_contains(const char* str, const char* substr) {
 TusmoTixEray* tusmo_str_split(const char* str, const char* delimiter) {
     if (!str || !delimiter) {
         TusmoTixEray* result = tusmo_hp_tix_eray_create(1);
-        tusmo_hp_tix_eray_append(result, str ? strdup(str) : strdup(""));
+        tusmo_hp_tix_eray_append(result, str ? tusmo_strdup(str) : tusmo_strdup(""));
         return result;
     }
     if (strlen(delimiter) == 0) {
         TusmoTixEray* result = tusmo_hp_tix_eray_create(1);
-        tusmo_hp_tix_eray_append(result, strdup(str));
+        tusmo_hp_tix_eray_append(result, tusmo_strdup(str));
         return result;
     }
     
     TusmoTixEray* result = tusmo_hp_tix_eray_create(4);
-    char* str_copy = strdup(str);
+    char* str_copy = tusmo_strdup(str);
     char* token = strtok(str_copy, delimiter);
     while (token != NULL) {
-        tusmo_hp_tix_eray_append(result, strdup(token));
+        tusmo_hp_tix_eray_append(result, tusmo_strdup(token));
         token = strtok(NULL, delimiter);
     }
     free(str_copy);
     return result;
-}
-
-char* tusmo_strdup(const char* s) {
-    if (!s) return NULL;
-    char* copy = malloc(strlen(s) + 1);
-    if (copy) strcpy(copy, s);
-    return copy;
 }
 
 void tusmo_free_eray(char* str) {
@@ -195,3 +190,41 @@ void tusmo_free_eray(char* str) {
         free(str);
     }
 }
+""");
+
+hawl XarafWeyn(s: eray) : eray {
+    soo_celi ___c__call_("tusmo_str_upper", s);
+}
+
+hawl XarafYar(s: eray) : eray {
+    soo_celi ___c__call_("tusmo_str_lower", s);
+}
+
+hawl kaReeb(s: eray) : eray {
+    soo_celi ___c__call_("tusmo_str_trim", s);
+}
+
+hawl Bkareeb(s: eray) : eray {
+    soo_celi ___c__call_("tusmo_str_ltrim", s);
+}
+
+hawl Mkareeb(s: eray) : eray {
+    soo_celi ___c__call_("tusmo_str_rtrim", s);
+}
+
+hawl kuBadal(s: eray, d: eray, c: eray) : eray {
+    soo_celi ___c__call_("tusmo_str_replace", s, d, c);
+}
+
+hawl sooRaadi(s: eray, d: eray) : tiro {
+    soo_celi ___c__call_("tusmo_str_find", s, d);
+}
+
+hawl lagaHelay(s: eray, d: eray) : miyaa {
+    soo_celi ___c__call_("tusmo_str_contains", s, d);
+}
+
+hawl qaybi(s: eray, d: eray) : tix:eray {
+    soo_celi ___c__call_("tusmo_str_split", s, d);
+}
+

@@ -1,5 +1,34 @@
 // stdlib/nasiib.tus
 
+___c__code_("""
+#include <time.h>
+#include <stdlib.h>
+
+void tusmo_init_random() {
+    srand((unsigned int)time(NULL));
+}
+
+int tusmo_random_int(int min, int max) {
+    if (min > max) {
+        int temp = min;
+        min = max;
+        max = temp;
+    }
+    unsigned int range = (unsigned int)max - (unsigned int)min + 1;
+    return min + rand() % range;
+}
+
+double tusmo_random_double(double min, double max) {
+    if (min > max) {
+        double temp = min;
+        min = max;
+        max = temp;
+    }
+    double scale = rand() / (double)RAND_MAX;
+    return min + scale * (max - min);
+}
+""");
+
 hawl bilaab_nasiib() => waxbo {
     """Diyaari nasiibka ka hor inta la isticmaalin hawlaha kale."""
     ___c__call_("tusmo_init_random");
@@ -14,5 +43,3 @@ hawl nasiib_jajab(ugu_yaraan: jajab, ugu_badnaan: jajab) => jajab {
     """Soo saar jajab u dhaxaysa ugu_**yaraan** iyo **ugu_badnaan**."""
     soo_celi ___c__call_("tusmo_random_double", ugu_yaraan, ugu_badnaan);
 }
-
-TUSMO_XIDID "runtime/random.c.maya";

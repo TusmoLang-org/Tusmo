@@ -207,7 +207,7 @@
         },
         {
           "name": "keyword.control.loop.tusmo",
-          "match": "\\b(inta|samay|soco|joog|kasoco|kasta|laga|bilaabo|ay|helo)\\b"
+          "match": "\\b(inta|samay|soco|joog|kasoco|kasta|laga|bilaabo|ay|helo|ee)\\b"
         },
         {
           "name": "keyword.control.flow.tusmo",
@@ -219,7 +219,7 @@
         },
         {
           "name": "keyword.declaration.tusmo",
-          "match": "\\b(keyd|hawl|shaqo|koox|qaab|qeex|dhis|burbur|cusub)\\b"
+          "match": "\\b(keyd|hawl|shaqo|koox|qaab|qeex|dhis|burbur|cusub|dhaxlaya|waalid)\\b"
         },
         {
           "name": "variable.language.self.tusmo",
@@ -251,7 +251,7 @@
       "patterns": [
         {
           "name": "support.function.builtin.tusmo",
-          "match": "\\b(hel|qor|show|gali|nooc|dherer|tix_cayiman)\\b"
+          "match": "\\b(hel|qor|show|gali|nooc|dherer|tix_cayiman|majiraa|tir|XarafWeyn|XarafYar|kaReeb|Bkareeb|Mkareeb|kuBadal|sooRaadi|lagaHelay|qaybi|nasiib_tiro|nasiib_jajab|bilaab_nasiib|iguYar|uguWeyn|qaado|jooji|saacadda|sug)\\b"
         },
         {
           "name": "support.function.ffi.tusmo",

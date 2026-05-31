@@ -156,6 +156,7 @@ def list_libraries(command=None):
 
 def get_static_lib():
     flags = []
+    seen = set()
     for lib in Xidid.dhamaan_xogta:
         file_name = lib
         os_type = platform.system()
@@ -176,6 +177,11 @@ def get_static_lib():
             
 
         
+        # De-duplicate clean/normalized flags
+        if file_name in seen:
+            continue
+        seen.add(file_name)
+
         # Hubi in faylku dhab ahaan u jiro ka hor intaanan ku darin flags
         if os.path.exists(file_name):
             flags.append(f'"{file_name}"')
@@ -237,6 +243,8 @@ def main():
     shared_symbol_table = SymbolTable()
 
     try:
+        from compiler.frontend.parser.ast_nodes import Xidid
+        Xidid.dhamaan_xogta = []
         initial_ast = parse_code_to_ast(main_code, filename)
 
         if not initial_ast:
@@ -313,7 +321,6 @@ def main():
             f'{get_static_lib()} ' 
             f'{lib_flag}  {math_flag}'
         )
-        print(f"This is compiler command {compile_command}")
         compile_result = os.system(compile_command)
 
         if compile_result != 0:

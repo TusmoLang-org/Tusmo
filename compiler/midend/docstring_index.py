@@ -20,6 +20,8 @@ from compiler.midend.docstring_utils import attach_docstrings, preprocess_docstr
 
 LOGGER = logging.getLogger(__name__)
 
+IMPORT_CACHE = {}
+
 
 @dataclass(frozen=True)
 class DocEntry:
@@ -29,6 +31,9 @@ class DocEntry:
     kind: str
     signature: str | None
     docstring: str
+    filename: str | None = None
+    line: int | None = None
+    column: int | None = None
 
 
 class DocstringIndex:
@@ -36,6 +41,7 @@ class DocstringIndex:
 
     def __init__(self) -> None:
         self._entries: dict[str, list[DocEntry]] = defaultdict(list)
+        self.error_message: str | None = None
 
     def add(self, key: str, entry: DocEntry) -> None:
         bucket = self._entries[key]
@@ -63,7 +69,8 @@ def build_doc_index(source: str, filename: str) -> DocstringIndex:
 
     index = DocstringIndex()
 
-    ast_nodes = _safe_parse_ast(source, filename)
+    ast_nodes, error_message = _safe_parse_ast(source, filename)
+    index.error_message = error_message
     if not ast_nodes:
         return index
 
@@ -124,7 +131,10 @@ def _parse_source(source: str, filename: str) -> list[ASTNode]:
     return ast if isinstance(ast, list) else [ast]
 
 
-def _safe_parse_ast(source: str, filename: str) -> list[ASTNode]:
+def _safe_parse_ast(source: str, filename: str) -> tuple[list[ASTNode], str | None]:
+    from compiler.frontend.parser.ast_nodes import Xidid
+    Xidid.dhamaan_xogta = []
+
     stdout_buffer = io.StringIO()
     stderr_buffer = io.StringIO()
 
@@ -135,12 +145,15 @@ def _safe_parse_ast(source: str, filename: str) -> list[ASTNode]:
             ast_nodes = _parse_source(source, filename)
     except SystemExit as exc:
         _log_parse_issue(filename, stdout_buffer, stderr_buffer, exc)
-        return []
+        err = stdout_buffer.getvalue().strip() + "\n" + stderr_buffer.getvalue().strip()
+        return [], err.strip() or None
     except Exception:  # pragma: no cover - defensive
         _log_parse_issue(filename, stdout_buffer, stderr_buffer)
-        return []
+        err = stdout_buffer.getvalue().strip() + "\n" + stderr_buffer.getvalue().strip()
+        return [], err.strip() or None
 
-    return ast_nodes
+    err = stdout_buffer.getvalue().strip() + "\n" + stderr_buffer.getvalue().strip()
+    return ast_nodes, err.strip() or None
 
 
 def _collect_from_node(node: ASTNode, index: DocstringIndex, class_name: str | None = None) -> None:
@@ -159,6 +172,8 @@ def _collect_from_node(node: ASTNode, index: DocstringIndex, class_name: str | N
                 kind="qaab",
                 signature=f"qaab {node.name}",
                 docstring=node.docstring.strip(),
+                filename=getattr(node, 'filename', None),
+                line=getattr(node, 'line', None)
             )
             index.add(node.name, entry)
             
@@ -184,6 +199,8 @@ def _collect_from_node(node: ASTNode, index: DocstringIndex, class_name: str | N
                 kind=kind,
                 signature=f"qeex {name}" if is_qeex else f"keyd:{var_type} {name}",
                 docstring=node.docstring.strip(),
+                filename=getattr(node, 'filename', None),
+                line=getattr(node, 'line', None)
             )
             index.add(name, entry)
             if class_name:
@@ -200,6 +217,8 @@ def _record_class(node: ClassNode, index: DocstringIndex) -> None:
         kind="class",
         signature=f"koox {node.name}",
         docstring=node.docstring.strip(),
+        filename=getattr(node, 'filename', None),
+        line=getattr(node, 'line', None)
     )
     index.add(node.name, entry)
 
@@ -216,6 +235,8 @@ def _record_function(node: FunctionNode, index: DocstringIndex, class_name: str 
         kind=kind,
         signature=signature,
         docstring=node.docstring.strip(),
+        filename=getattr(node, 'filename', None),
+        line=getattr(node, 'line', None)
     )
 
     index.add(node.name, entry)
@@ -250,7 +271,8 @@ def _build_index_recursive(
 
     filename = str(file_path) if file_path else "<memory>"
     index = DocstringIndex()
-    ast_nodes = _safe_parse_ast(source, filename)
+    ast_nodes, error_message = _safe_parse_ast(source, filename)
+    index.error_message = error_message
     if not ast_nodes:
         return index
 
@@ -272,14 +294,28 @@ def _build_index_recursive(
         if resolved in visited:
             continue
         visited.add(resolved)
+
+        # Check IMPORT_CACHE using mtime
+        resolved_str = str(resolved)
         try:
-            child_source = module_path.read_text(encoding="utf-8")
+            mtime = resolved.stat().st_mtime
         except OSError:
-            LOGGER.debug("Docstring import skipped (unreadable): %s", module_path)
-            continue
-        child_index = _build_index_recursive(
-            child_source, module_path, search_roots, visited
-        )
+            mtime = 0.0
+
+        cached_entry = IMPORT_CACHE.get(resolved_str)
+        if cached_entry and cached_entry[0] == mtime:
+            child_index = cached_entry[1]
+        else:
+            try:
+                child_source = module_path.read_text(encoding="utf-8")
+            except OSError:
+                LOGGER.debug("Docstring import skipped (unreadable): %s", module_path)
+                continue
+            child_index = _build_index_recursive(
+                child_source, module_path, search_roots, visited
+            )
+            IMPORT_CACHE[resolved_str] = (mtime, child_index)
+
         index.merge(child_index)
 
     return index

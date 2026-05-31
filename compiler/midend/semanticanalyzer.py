@@ -107,7 +107,6 @@ class SemanticChecker:
                      if isinstance(item.value, IdentifierNode) and item.name == item.value.name:
                          self.symbol_table.set(item.name, "c_type", value=item.value)
                  elif item.__class__.__name__ == 'FunctionNode':
-                     print(f"DEBUG semantic pre-pass FunctionNode: {item.name}")
                      self.symbol_table.set(item.name, "hawl", value=item)
                  elif item.__class__.__name__ == 'KeydNode':
                      self.symbol_table.set(item.var_name, str(item.var_type).strip(), value=item)
@@ -284,27 +283,23 @@ class SemanticChecker:
         return "unknown"
     
     def check_IdentifierNode(self, node: IdentifierNode):
-        print("dif u fiiri hadaa aragto soo tuur error ")
         if not self.symbol_table.get(node.name):
             raise SemanticError(ERR_IDENTIFIER_NOT_FOUND(node.name), node.filename, node.line)
         if self.tracker.is_moved(node.name):
             move_node = self.tracker.get_move_node(node.name)
             move_line = move_node.line if move_node else "aan la aqoon"
-            print("Kani horey ayaa loo wareejiyay ", node.name)
             raise SemanticError(ERR_USE_AFTER_MOVE(node.name, move_line), node.filename, node.line)
         if not self.tracker.is_initialized(node.name):
             raise SemanticError(ERR_UNINITIALIZED_VARIABLE(node.name), node.filename, node.line)
         return self.get_expression_type(node)
 
     def check_KeydNode(self, node: KeydNode):
-        print("Waxaan hubinayaa variable-ka ")
         self._ensure_valid_type(node.var_type, node)
         # Store the string representation of the type in SymbolTable
         self.symbol_table.set(node.var_name, str(node.var_type).strip())
         self.tracker.record_definition(node.var_name, node.var_type, node, is_initialized=(node.value is not None))
         
         if node.value:
-            print(self.tracker.is_heap_type(node.var_type))
             value_type = self.check(node.value)
             
             # Super intelligent: Record Move!
@@ -320,7 +315,6 @@ class SemanticChecker:
 
 
     def check_AssignmentNode(self, node: AssignmentNode):
-        print("waxaan hubinayaa qiimaha la siinayao")
         needs_cleanup = False
         if isinstance(node.identifier, IdentifierNode):
             target_type = self.get_expression_type(node.identifier)

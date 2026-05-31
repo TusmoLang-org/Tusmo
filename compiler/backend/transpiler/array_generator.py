@@ -68,7 +68,10 @@ class ArrayGenerator:
 
     def _is_mixed_storage_type(self, element_type):
         element_type_str = str(element_type)
-        return element_type is None or element_type_str == 'None' or element_type_str == 'qaamuus'
+        if element_type is None or element_type_str == 'None' or element_type_str == 'qaamuus' or element_type_str == 'walbo':
+            return True
+        primitives = {'tiro', 'jajab', 'eray', 'miyaa', 'xaraf', 'waxbo'}
+        return element_type_str not in primitives
 
     def get_tix_struct_name(self, element_type_str):
         # If the element type string is None or 'None', it's a dynamic array.
@@ -76,7 +79,10 @@ class ArrayGenerator:
             return "TusmoTixMixed"
             
         type_map = {'tiro': 'Tiro', 'jajab': 'Jajab', 'eray': 'Eray', 'miyaa': 'Miyaa', 'qaamuus': 'Mixed', 'xaraf': 'Xaraf'}
-        return f"TusmoTix{type_map.get(element_type_str)}"
+        suffix = type_map.get(element_type_str)
+        if suffix is None:
+            return "TusmoTixMixed"
+        return f"TusmoTix{suffix}"
 
     def get_nested_depth_and_base_type(self, tusmo_type_node, depth=0):
         """
@@ -173,11 +179,11 @@ class ArrayGenerator:
                 # 3D array - use nested2 type
                 return f"TusmoTix{type_suffix}Nested2*"
             else:
-                # depth >= 4: use generic for unlimited dimensions
-                return "TusmoTixGeneric*"
+                # depth >= 4: use mixed for unlimited dimensions
+                return "TusmoTixMixed*"
         
-        # Fallback for unknown types - use generic
-        return "TusmoTixGeneric*"
+        # Fallback for unknown types - use mixed
+        return "TusmoTixMixed*"
 
     def _generate_recursive_initializer(self, type_node, element_nodes):
         """
@@ -298,11 +304,23 @@ class ArrayGenerator:
                 
         return temp_var
 
+    def _get_union_member_for_array(self, type_node):
+        depth, base_type = self.get_nested_depth_and_base_type(type_node)
+        if base_type in self.TYPE_SUFFIX_MAP:
+            type_suffix = self.TYPE_SUFFIX_MAP[base_type].lower()
+            if depth == 1:
+                return f"as_{type_suffix}_tix"
+            elif depth == 2:
+                return f"as_{type_suffix}_nested"
+            elif depth == 3:
+                return f"as_{type_suffix}_nested2"
+        return "as_tix"
+
     def generate_access(self, node: ArrayAccessNode):
 
         base_expr_c = self.expr_generator.generate_expression(node.array_name_node)
         index_c = self.expr_generator.generate_expression(node.index_expression)
-        base_tusmo_type = self.expr_generator.get_expression_type(node.array_name_node)
+        base_tusmo_type = self._coerce_array_type_node(self.expr_generator.get_expression_type(node.array_name_node))
 
         base_type_str = str(base_tusmo_type)
 
@@ -346,7 +364,12 @@ class ArrayGenerator:
             element_tusmo_type = base_tusmo_type.element_type
             element_c_type = self.get_c_type_from_tusmo_type(element_tusmo_type)
             safe_base = f"TUSMO_SAFE_ACCESS({base_expr_c}, \"{node.filename}\", {node.line})"
-            return f"(({element_c_type})({safe_base}->data[{checked_index}]))"
+            base_c_type = self.get_c_type_from_tusmo_type(base_tusmo_type)
+            if base_c_type == "TusmoTixMixed*":
+                union_member = self._get_union_member_for_array(element_tusmo_type)
+                return f"({safe_base}->data[{checked_index}].value.{union_member})"
+            else:
+                return f"(({element_c_type})({safe_base}->data[{checked_index}]))"
         
         # For typed 1D arrays
         safe_base = f"TUSMO_SAFE_ACCESS({base_expr_c}, \"{node.filename}\", {node.line})"

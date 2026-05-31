@@ -42,6 +42,7 @@ class CCodeGenerator:
         self.global_declarations = ""
         self.function_definitions = ""
         self.class_definitions = ""
+        self.forward_declarations = ""
         self.current_class = None
         self.inside_function = False
         self.used_features = used_features
@@ -147,9 +148,11 @@ class CCodeGenerator:
 
     def generate(self, ast):
         self.c_code = ""
-        self.global_declarations = ""
+        self.global_declarations = "TusmoTixEray* amrd = NULL;\n"
+        self.struct_definitions = ""
         self.function_definitions = ""
         self.class_definitions = ""
+        self.forward_declarations = ""
         self.embedded_c_chunks = []
         for node in ast:
             self._generate_node(node)
@@ -161,10 +164,7 @@ class CCodeGenerator:
                 comment = ""
                 if meta.filename:
                     comment = f"/* Embedded C from {meta.filename}:{meta.line} */\n"
-                body = code
-                if not body.endswith("\n"):
-                    body += "\n"
-                embedded_bodies.append(f"{comment}{body}")
+                embedded_bodies.append(comment + code + "\n")
             embedded_section = "".join(embedded_bodies) + "\n"
         cleanup_code = ""
         global_cleanup = getattr(self.semantic_checker, 'global_cleanup', [])
@@ -172,14 +172,21 @@ class CCodeGenerator:
             name = var['name']
             free_fn = var.get('free_fn', 'free')
             cleanup_code += f"    if ({name}) {free_fn}({name});\n"
+        cleanup_code += "    if (amrd) tusmo_free_tix_eray(amrd);\n"
             
         final_c_code = (
             f"{header_include}"
+            f"{self.struct_definitions}"
             f"{self.class_definitions}"
+            f"{self.forward_declarations}"
             f"{self.global_declarations}"
             f"{embedded_section}"
             f"{self.function_definitions}"
-            f"int main(void) {{\n"
+            f"int main(int argc, char* argv[]) {{\n"
+            f"    amrd = tusmo_hp_tix_eray_create(argc);\n"
+            f"    for (int i = 0; i < argc; i++) {{\n"
+            f"        tusmo_hp_tix_eray_append(amrd, tusmo_strdup(argv[i]));\n"
+            f"    }}\n"
             f"{self.c_code}"
             f"{cleanup_code}"
             f"    return 0;\n"
@@ -205,7 +212,7 @@ class CCodeGenerator:
                 c_type = self._map_type(member.var_type)
                 struct_code += f"    {c_type} {member.var_name};\n"
             struct_code += f"}} {node.name};\n\n"
-            self.global_declarations += struct_code
+            self.struct_definitions += struct_code
         else:
             method_name = f"_generate_{type(node).__name__.lower()}"
             method = getattr(self, method_name, self._unhandled_node)
@@ -292,6 +299,9 @@ class CCodeGenerator:
         self.c_code += cleanup_code
         self.c_code += "    continue;\n"
     def _generate_embeddedcnode(self, node: EmbeddedCNode):
+        for code, meta in self.embedded_c_chunks:
+            if code == node.code:
+                return
         self.embedded_c_chunks.append((node.code, node))
     def _generate_whilenode(self, node: WhileNode): self.loop_generator.generate_while(node)
     def _generate_dowhilenode(self, node: DoWhileNode): self.loop_generator.generate_do_while(node)

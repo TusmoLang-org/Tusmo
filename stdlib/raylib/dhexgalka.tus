@@ -1,0 +1,68 @@
+// stdlib/raylib/dhexgalka.tus
+
+isticmaal { Midab, Boos2D, AfarGees } ee kujira "noocyo";
+isticmaal { helBooskaFalaarta, laRiixayFalaartaBidix, FURE_BACKSPACE } ee kujira "gashiga";
+isticmaal { istaabasho } ee kujira "iskudhac";
+isticmaal { sawirAfarGeesXariiqan } ee kujira "muuqaal";
+isticmaal { qoraalKuQor } ee kujira "qoraal";
+
+___c__code_("""
+#define Color RaylibColor
+#define Vector2 RaylibVector2
+#define Rectangle RaylibRectangle
+#include "stdlib/raylib/raylib.h"
+#undef Color
+#undef Vector2
+#undef Rectangle
+
+void Tusmo_DrawRectangleRec(AfarGees rec, Midab color) {
+    RaylibRectangle r = { (float)rec.x, (float)rec.y, (float)rec.width, (float)rec.height };
+    DrawRectangleRec(r, *(RaylibColor*)&color);
+}
+""");
+
+hawl sameeBadhan(x: tiro, y: tiro, w: tiro, h: tiro, qoraal: eray, bg: Midab, fg: Midab) : miyaa {
+    keyd:AfarGees rec = (AfarGees){jajab(x), jajab(y), jajab(w), jajab(h)};
+    keyd:miyaa hover = istaabasho(helBooskaFalaarta(), rec);
+
+    haddii (hover) {
+        ___c__call_("Tusmo_DrawRectangleRec", rec, bg);
+    } haddii_kale {
+        ___c__call_("Tusmo_DrawRectangleRec", rec, bg);
+    }
+
+    qoraalKuQor(qoraal, x + 12, y + 10, 20, fg);
+    soo_celi hover iyo laRiixayFalaartaBidix();
+}
+
+hawl qoraalJajab(qoraal: eray, bilow_idx: tiro, dhererka: tiro) : eray {
+    soo_celi ___c__call_("tusmo_strdup", ___c__call_("TextSubtext", qoraal, bilow_idx, dhererka));
+}
+
+hawl xarafIlaaEray(code: tiro) : eray {
+    soo_celi ___c__call_("tusmo_strdup", ___c__call_("TextFormat", "%c", code));
+}
+
+hawl helFureXaraf() : tiro {
+    soo_celi ___c__call_("GetCharPressed");
+}
+
+hawl cusboonaysiiQoraalGalis(qoraal: eray, max_length: tiro) : eray {
+    keyd:tiro furaha = helFureXaraf();
+    inta ay (furaha > 0) {
+        haddii (furaha >= 32 iyo furaha <= 125 iyo dherer(qoraal) < max_length) {
+            qoraal = qoraal + xarafIlaaEray(furaha);
+        }
+        furaha = helFureXaraf();
+    }
+    haddii (___c__call_("IsKeyPressed", FURE_BACKSPACE) iyo dherer(qoraal) > 0) {
+        qoraal = qoraalJajab(qoraal, 0, dherer(qoraal) - 1);
+    }
+    soo_celi qoraal;
+}
+
+hawl sawirQoraalGalis(x: tiro, y: tiro, w: tiro, h: tiro, qoraal: eray, bg: Midab, border: Midab, text_color: Midab) : waxbo {
+    ___c__call_("Tusmo_DrawRectangleRec", (AfarGees){jajab(x), jajab(y), jajab(w), jajab(h)}, bg);
+    sawirAfarGeesXariiqan(jajab(x), jajab(y), jajab(w), jajab(h), border);
+    qoraalKuQor(qoraal, x + 10, y + 10, 20, text_color);
+}

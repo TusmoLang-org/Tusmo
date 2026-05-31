@@ -1,0 +1,50 @@
+// stdlib/raylib/cod.tus
+
+___c__code_("""
+#define Color RaylibColor
+#define Vector2 RaylibVector2
+#define Rectangle RaylibRectangle
+#include "stdlib/raylib/raylib.h"
+#undef Color
+#undef Vector2
+#undef Rectangle
+
+TusmoValue Tusmo_LoadSound(const char* fileName) {
+    Sound* s = malloc(sizeof(Sound));
+    *s = LoadSound(fileName);
+    return (TusmoValue){ .type = TUSMO_WAXBA, .value.as_waxba = s };
+}
+void Tusmo_PlaySound(TusmoValue soundVal) {
+    if (!soundVal.value.as_waxba || ((Sound*)soundVal.value.as_waxba)->stream.buffer == NULL) return;
+    PlaySound(*(Sound*)soundVal.value.as_waxba);
+}
+""");
+
+hawl bilowMaqal() : waxbo { 
+    """
+    Wuxuu furaa ama dhaqaajiyaa qalabka codka (Audio Device). 
+    Waa in lagu wacaa ka hor inta aan codadka lasoo rurin.
+    """
+    ___c__call_("InitAudioDevice"); 
+}
+
+hawl xirMaqal() : waxbo { 
+    """
+    Wuxuu xiraa qalabka codka, isagoo sii deynaya xusuusta.
+    """
+    ___c__call_("CloseAudioDevice"); 
+}
+
+hawl helMaqal(faylka: eray) : walbo { 
+    """
+    Wuxuu soo rurisaa cod gaaban (tusaale: .wav, .mp3).
+    """
+    soo_celi ___c__call_("Tusmo_LoadSound", faylka); 
+}
+
+hawl daarMaqal(maqal: walbo) : waxbo { 
+    """
+    Wuxuu ciyaaraa (play) codkii lasoo ruriyay mar keliya.
+    """
+    ___c__call_("Tusmo_PlaySound", maqal); 
+}

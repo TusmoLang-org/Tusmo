@@ -26,7 +26,7 @@ from compiler.backend.transpiler import Transpiler
 from compiler.midend.symbol_table import SymbolTable
 from compiler.midend.semanticanalyzer import SemanticChecker, SemanticError
 from compiler.frontend.parser.ast_nodes import Xidid
-from compiler.processer import process_imports
+from compiler.processer import process_imports, validate_embedded_c_includes
 from compiler.midend.fstring_resolver import resolve_fstrings
 from compiler.midend.docstring_utils import (
     preprocess_docstrings,
@@ -259,11 +259,12 @@ def main():
 
         # Injekti 'core' standard library si toos ah (Automatic Linking)
         from compiler.frontend.parser.ast_nodes import KeenNode
-        initial_ast.insert(0, KeenNode(0, '"core"', filename))
+        initial_ast.insert(0, KeenNode(0, f'"{os.path.join(stdlib_dir, "core.tus")}"', filename))
 
         main_file_directory = os.path.dirname(os.path.abspath(filename))
         all_imported_files = {os.path.abspath(filename)}
         final_ast = process_imports(initial_ast, base_directory=main_file_directory, stdlib_path=stdlib_dir, processed_files=all_imported_files)
+        validate_embedded_c_includes(final_ast, project_root, runtime_dir=runtime_dir, stdlib_path=stdlib_dir)
 
         if not final_ast:
             sys.exit(0)
@@ -317,8 +318,10 @@ def main():
 
         
 
+        strict_flags = " -Wall -Wextra -Werror"
+
         compile_command = (
-            f'"{cc}" -O3 -march=native -flto -o "{binary}" '
+            f'"{cc}" -O3 -march=native -flto{strict_flags} -o "{binary}" '
             f'{all_sources_str} '
             f'{include_flag} '
             # Halkan hoose ayaa isbeddelka lagu sameeyay:
@@ -328,13 +331,12 @@ def main():
         print(f"This is compiler command {compile_command}")
         compile_result = os.system(compile_command)
 
-        if compile_result == 1:
+        if compile_result != 0:
             print(
                 f"\nCilad ayaa ka dhacday isku-darka C code-ka. Faylka C wuxuu ku yaal: {out_file}"
             )
-           
 
-        if remove_c_code:
+        if remove_c_code and compile_result == 0:
             if os.path.exists(out_file):
                 os.remove(out_file)
             

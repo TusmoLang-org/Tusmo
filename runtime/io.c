@@ -59,15 +59,6 @@ void prints_tix_mixed(TusmoTixMixed* tix) {
     printf("]");
 }
 
-static int is_valid_ptr(void* ptr) {
-    if (ptr == NULL) return 0;
-    uintptr_t addr = (uintptr_t)ptr;
-    if (addr < 4096) return 0;
-    return 1;
-}
-
-
-
 void prints_tix_generic(void* tix_ptr) {
     if (tix_ptr == NULL) {
         printf("waxbo");

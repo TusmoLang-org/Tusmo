@@ -35,8 +35,6 @@ reserved = {
     'ahayn': 'AHAYN', 
     'iyo': 'IYO', 
     'lamid': 'LAMID', 
-    'weyn': 'WEYN', 
-    'yar': 'YAR',
     'koox': 'KOOX', 
     'cusub': 'CUSUB', 
     'kan': 'KAN', 
@@ -105,15 +103,17 @@ tokens = [
     'ARROW',
     'AMPERSANDAMPERSAND',
     'BARBAR',
-    'NOT'
+    'NOT',
+    'WEYN',
+    'YAR'
 ] + list(reserved.values())
 
 # Regular expression rules for simple tokens
 t_LAMID_MAAHA = r'!='
 t_QUESTION = r'\?'
 t_WEYN_LAMID = r'>='
-t_YAR_LAMID = r'<='
-t_LAMID = r'=='
+t_YAR_LAMID = r'<=|=<'
+t_LAMID = r'===|=='
 t_EQUALS = r'='
 t_WEYN = r'>'
 t_ARROW = r'=>'
@@ -214,7 +214,7 @@ def _parse_fstring_content(content):
     return parts
 
 def t_FSTRING(t):
-    r'\$"""(.|\n)*?"""|\$"([^"\\]|\\.)*"'
+    r'\$"""(.|\n)*?"""|\$"(?:[^"\\{]|\\.|{[^{}"]*(?:"(?:[^"\\]|\\.)*"[^{}"]*)*})*"'
     raw = t.value
     if raw.startswith('$"""'):
         content = raw[4:-3]

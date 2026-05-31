@@ -1,9 +1,1 @@
-// Meta-module to load the entire library easily
-// keen "types";
-keen "window";
-keen "graphics";
-keen "text";
-keen "audio";
-keen "input";
-keen "collision";
-keen "ui";
+keen "sal";

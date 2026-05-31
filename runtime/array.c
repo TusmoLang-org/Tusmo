@@ -10,14 +10,6 @@ size_t tusmo_bounds_check(size_t idx, size_t size) {
     return idx;
 }
 
-static void tusmo_tix_data_finalizer(void* obj, void* client_data) {
-    void** data_ptr = (void**)obj;
-    if (*data_ptr) {
-        free(*data_ptr);
-        *data_ptr = NULL;
-    }
-}
-
 static inline void tusmo_hp_grow_if_needed(void** data, size_t* capacity, size_t new_size, size_t elem_size) {
     if (__builtin_expect(new_size > *capacity, 0)) {
         size_t new_capacity = (*capacity == 0) ? 8 : *capacity * 2;

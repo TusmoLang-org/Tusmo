@@ -58,6 +58,7 @@ class LoopGenerator:
         item_var = node.iterator_var_name
         array_c = self.expr_generator.generate_expression(node.array_expr)
         array_type = self.expr_generator.get_expression_type(node.array_expr)
+        array_type = self.main_generator.array_generator._coerce_array_type_node(array_type)
 
         self.symbol_table.push_scope()
 

@@ -221,12 +221,18 @@ def ERR_CANNOT_PRINT_TYPE(type_name):
         \033[1;31m qor(shay_kooxeed) \033[1;35m // Sidani waa khalad! Kooxaha (classes) si toos ah looma qoro.
         \033[1;32m qor(shay.magac) \033[1;35m // Sidani waa sax. Qor xubnaha ka kooban kooxda (sida tiro ama eray)."""
 
-def ERR_USE_AFTER_MOVE(var_name, move_node_info):
+def ERR_USE_AFTER_MOVE(var_name, move_line):
     return f"""Variable-ka '{var_name}' milkiyaddiisa waa la wareejiyay!
 
         \033[1;31m {var_name} ... \033[1;35m // Khalad! Variable-ku hadda ma haayo wax milkiyad ah.
-        \033[1;32m // Mulkiyadiisa waxa uu ku wariijiyay heshiiskii ka dhacay: {move_node_info}
-        \033[1;34m Talo: Haddii aad rabto inaad mar kale isticmaasho, samee nuqul (copy) ama ha wareejin."""
+        \033[1;32m // Mulkiyadiisa waxa uu ku wariijiyay heshiiskii ka dhacay saddarka {move_line}aad.
+        \033[1;34m Talo: Haddii aad rabto inaad mar kale isticmaasho, samee nuqul (copy) ama ha wareejin.
+
+        \033[1;36m // Tusaale ahaan (Code Example):
+        // keyd:eray x = "salaan";
+        // keyd:eray y = x;       // Halkan milkiyaddii 'x' waa la wareejiyay (Saddarka {move_line}aad)
+        // // Halkii aad 'x' isticmaali lahayd, isticmaal 'y' oo hadda nool:
+        // qor(y);                // Sidani waa sax!"""
 
 def ERR_UNINITIALIZED_VARIABLE(name):
     return f"""Keydiyaha '{name}' ma laha wax qiime ah (Uninitialized)! 

@@ -1,4 +1,289 @@
-TUSMO_XIDID "runtime/socket.c.maya";
+___c__code_("""
+#include <arpa/inet.h>
+#include <errno.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    int fd;
+    int port;
+    bool is_server;
+} TusmoSocket;
+
+typedef struct TusmoSocketHandleEntry {
+    char* handle;
+    TusmoSocket* socket;
+    struct TusmoSocketHandleEntry* next;
+} TusmoSocketHandleEntry;
+
+static TusmoSocketHandleEntry* tusmo_socket_handle_registry = NULL;
+static unsigned long tusmo_socket_next_handle_id = 1;
+
+static void tusmo_set_char(char* str, int idx, int val) {
+    if (str && idx >= 0) {
+        str[idx] = (char)val;
+    }
+}
+
+static char* tusmo_str_offset(char* str, int offset) {
+    if (!str) return "";
+    return str + offset;
+}
+static void tusmo_awr_append_route(void* awr_ptr, void* route_ptr) {
+    if (!awr_ptr || !route_ptr) return;
+    struct Awr_struct {
+        void* server;
+        void* jidadka;
+    };
+    struct AwrJid_struct {
+        char* Habka;
+        char* Jidka;
+        void (*Maareeye)(void*);
+        void* ku_xiga;
+    };
+    struct Awr_struct* kan = (struct Awr_struct*)awr_ptr;
+    struct AwrJid_struct* new_route = (struct AwrJid_struct*)route_ptr;
+    if (!kan->jidadka) {
+        kan->jidadka = new_route;
+    } else {
+        struct AwrJid_struct* curr = (struct AwrJid_struct*)kan->jidadka;
+        while (curr->ku_xiga) {
+            curr = (struct AwrJid_struct*)curr->ku_xiga;
+        }
+        curr->ku_xiga = new_route;
+    }
+}
+
+static void* tusmo_awr_find_maareeye(void* awr_ptr, void* req_ptr) {
+    if (!awr_ptr || !req_ptr) return NULL;
+    struct Awr_struct {
+        void* server;
+        void* jidadka;
+    };
+    struct AwrJid_struct {
+        char* Habka;
+        char* Jidka;
+        void (*Maareeye)(void*);
+        void* ku_xiga;
+    };
+    struct CodsiHttp_struct {
+        char* Habka;
+        char* Method;
+        char* Jidka;
+        void* Madax;
+        char* Jidhka;
+        bool WaaAnsax;
+    };
+    struct Awr_struct* kan = (struct Awr_struct*)awr_ptr;
+    struct CodsiHttp_struct* req = (struct CodsiHttp_struct*)req_ptr;
+    struct AwrJid_struct* curr = (struct AwrJid_struct*)kan->jidadka;
+    while (curr) {
+        bool method_matches = false;
+        if (strcmp(curr->Habka, "DOON") == 0 || strcmp(curr->Habka, "GET") == 0) {
+            if (strcmp(req->Method, "GET") == 0) method_matches = true;
+        } else if (strcmp(curr->Habka, "DIR") == 0 || strcmp(curr->Habka, "POST") == 0) {
+            if (strcmp(req->Method, "POST") == 0) method_matches = true;
+        } else if (strcmp(curr->Habka, "BEDDEL") == 0 || strcmp(curr->Habka, "PUT") == 0) {
+            if (strcmp(req->Method, "PUT") == 0) method_matches = true;
+        } else if (strcmp(curr->Habka, "TIR") == 0 || strcmp(curr->Habka, "DELETE") == 0) {
+            if (strcmp(req->Method, "DELETE") == 0) method_matches = true;
+        } else {
+            if (strcmp(req->Method, curr->Habka) == 0) method_matches = true;
+        }
+
+        if (method_matches) {
+            if (req->Jidka && curr->Jidka && strcmp(req->Jidka, curr->Jidka) == 0) {
+                return (void*)curr->Maareeye;
+            }
+        }
+        curr = (struct AwrJid_struct*)curr->ku_xiga;
+    }
+    return NULL;
+}
+
+static void* tusmo_null() {
+    return NULL;
+}
+
+static bool tusmo_is_null(void* ptr) {
+    return ptr == NULL;
+}
+
+static char* tusmo_socket_empty_string() {
+    char* s = (char*)malloc(1);
+    s[0] = 0;
+    return s;
+}
+
+static char* tusmo_socket_register_handle(TusmoSocket* socket) {
+    if (!socket) return tusmo_socket_empty_string();
+    TusmoSocketHandleEntry* entry = (TusmoSocketHandleEntry*)malloc(sizeof(TusmoSocketHandleEntry));
+    entry->socket = socket;
+    entry->next = tusmo_socket_handle_registry;
+    char buffer[64];
+    unsigned long id = tusmo_socket_next_handle_id++;
+    snprintf(buffer, sizeof(buffer), "SOCK:%lu", id);
+    size_t len = strlen(buffer);
+    entry->handle = (char*)malloc(len + 1);
+    strcpy(entry->handle, buffer);
+    tusmo_socket_handle_registry = entry;
+    return entry->handle;
+}
+
+static TusmoSocketHandleEntry* tusmo_socket_find_handle(const char* handle) {
+    TusmoSocketHandleEntry* entry = tusmo_socket_handle_registry;
+    while (entry) {
+        if (entry->handle && strcmp(entry->handle, handle) == 0) return entry;
+        entry = entry->next;
+    }
+    return NULL;
+}
+
+static TusmoSocket* tusmo_socket_get(const char* handle) {
+    if (!handle) return NULL;
+    TusmoSocketHandleEntry* entry = tusmo_socket_find_handle(handle);
+    return entry ? entry->socket : NULL;
+}
+
+static void tusmo_socket_unregister_handle(const char* handle) {
+    if (!handle) return;
+    TusmoSocketHandleEntry** current = &tusmo_socket_handle_registry;
+    while (*current) {
+        TusmoSocketHandleEntry* entry = *current;
+        if (entry->handle && strcmp(entry->handle, handle) == 0) {
+            *current = entry->next;
+            if (entry->socket) {
+                free(entry->socket);
+            }
+            if (entry->handle) {
+                free(entry->handle);
+            }
+            free(entry);
+            return;
+          }
+          current = &entry->next;
+      }
+  }
+
+  char* tusmo_socket_create_server(const char* port_str) {
+      if (!port_str) return tusmo_socket_empty_string();
+      int port = atoi(port_str);
+      if (port <= 0 || port > 65535) return tusmo_socket_empty_string();
+      int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+      if (server_fd < 0) return tusmo_socket_empty_string();
+      int opt = 1;
+      setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+      struct sockaddr_in addr;
+      memset(&addr, 0, sizeof(addr));
+      addr.sin_family = AF_INET;
+      addr.sin_addr.s_addr = htonl(INADDR_ANY);
+      addr.sin_port = htons((uint16_t)port);
+      if (bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+          close(server_fd);
+          return tusmo_socket_empty_string();
+      }
+      TusmoSocket* s = (TusmoSocket*)malloc(sizeof(TusmoSocket));
+      s->fd = server_fd;
+      s->port = port;
+      s->is_server = true;
+      return tusmo_socket_register_handle(s);
+  }
+
+  int tusmo_socket_listen(const char* handle, int backlog) {
+      TusmoSocket* s = tusmo_socket_get(handle);
+      if (!s || !s->is_server) return -1;
+      if (backlog <= 0) backlog = 10;
+      if (listen(s->fd, backlog) < 0) return -1;
+      return 0;
+  }
+
+  char* tusmo_socket_accept(const char* server_handle) {
+      TusmoSocket* server = tusmo_socket_get(server_handle);
+      if (!server || !server->is_server) return tusmo_socket_empty_string();
+      struct sockaddr_in client_addr;
+      socklen_t addr_len = sizeof(client_addr);
+      int client_fd = accept(server->fd, (struct sockaddr*)&client_addr, &addr_len);
+      if (client_fd < 0) return tusmo_socket_empty_string();
+      TusmoSocket* client_socket = (TusmoSocket*)malloc(sizeof(TusmoSocket));
+      client_socket->fd = client_fd;
+      client_socket->port = ntohs(client_addr.sin_port);
+      client_socket->is_server = false;
+      return tusmo_socket_register_handle(client_socket);
+  }
+
+  char* tusmo_socket_connect(const char* host, const char* port_str) {
+      if (!host || !port_str) return tusmo_socket_empty_string();
+      int port = atoi(port_str);
+      if (port <= 0 || port > 65535) return tusmo_socket_empty_string();
+      int client_fd = socket(AF_INET, SOCK_STREAM, 0);
+      if (client_fd < 0) return tusmo_socket_empty_string();
+      struct sockaddr_in server_addr;
+      memset(&server_addr, 0, sizeof(server_addr));
+      server_addr.sin_family = AF_INET;
+      server_addr.sin_port = htons((uint16_t)port);
+      if (inet_pton(AF_INET, host, &server_addr.sin_addr) <= 0) {
+          struct hostent* he = gethostbyname(host);
+          if (!he) {
+              close(client_fd);
+              return tusmo_socket_empty_string();
+          }
+          memcpy(&server_addr.sin_addr, he->h_addr_list[0], (size_t)he->h_length);
+      }
+      if (connect(client_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+          close(client_fd);
+          return tusmo_socket_empty_string();
+      }
+      TusmoSocket* s = (TusmoSocket*)malloc(sizeof(TusmoSocket));
+      s->fd = client_fd;
+      s->port = port;
+      s->is_server = false;
+      return tusmo_socket_register_handle(s);
+  }
+
+  int tusmo_socket_send(const char* handle, const char* data) {
+      TusmoSocket* s = tusmo_socket_get(handle);
+      if (!s || !data) return -1;
+      size_t len = strlen(data);
+      ssize_t sent = send(s->fd, data, len, 0);
+      return (int)sent;
+  }
+
+  char* tusmo_socket_receive(const char* handle, int max_size) {
+      TusmoSocket* s = tusmo_socket_get(handle);
+      if (!s) return tusmo_socket_empty_string();
+      if (max_size <= 0) max_size = 4096;
+      char* buffer = (char*)malloc((size_t)max_size + 1);
+      ssize_t received = recv(s->fd, buffer, (size_t)max_size, 0);
+      if (received < 0) {
+          free(buffer);
+          return tusmo_socket_empty_string();
+      }
+      buffer[received] = 0;
+      return buffer;
+  }
+
+  void tusmo_socket_close(const char* handle) {
+      TusmoSocket* s = tusmo_socket_get(handle);
+      if (!s) return;
+      if (s->fd >= 0) {
+          close(s->fd);
+          s->fd = -1;
+      }
+      tusmo_socket_unregister_handle(handle);
+  }
+
+  bool tusmo_socket_is_valid(const char* handle) {
+      TusmoSocket* s = tusmo_socket_get(handle);
+      return s && s->fd >= 0;
+  }
+  """);
 
 koox Xiriiriye {
     """
@@ -10,7 +295,7 @@ koox Xiriiriye {
         Hawlaha:
            - samee_server(port:eray) => eray
            - dhageyso(saf_sugid_ugu_badan:tiro) => tiro
-           - aqbal() => eray
+           - aqbal() => Xiriiriye
            - kuxirmo(host:eray, port:eray) => eray
            - dir(xogta:eray) => tiro
            - soo_hel(size:tiro) => eray
@@ -27,93 +312,39 @@ koox Xiriiriye {
     shaqo samee_server(port:eray): eray {
         """
         Samee server kaa oo dhageysanaya port-ga
-    
-        Parameters:
-            port (eray): Port numberka server-ku uu dhageysanayo 
-            Tusaale: ("8080")
-        
-        Soo celisaa:
-            eray: 
-                Aqoonsi -> haddii guulaysato, 
-                ama "" haddii qalad uu dhaco
-        
-        Tusaale:
-            keyd:Xiriiriye server = Xiriiriye() cusub;
-            keyd:eray Aqoonsi = server.samee_server("9999");
         """
-        soo_celi ___c__call_("tusmo_socket_create_server", port);
+        kan.Aqoonsi = ___c__call_("tusmo_socket_create_server", port);
+        soo_celi kan.Aqoonsi;
     }
     
     shaqo dhageyso(saf_sugid_ugu_badan:tiro): tiro {
         """
         Dhegeyso Cidka ku soo xirmi doonta
-        
-        Parameters:
-            saf_sugid_ugu_badan (tiro): Tirada ugu badan ee client, 
-            ee ku jira safka sugidda (badanaa waxay u dhaxeyaan 5-10)
-        
-        Soo celisaa:
-            tiro: 
-                0 haddii guulaysato, 
-                Ama -1 haddii qalad uu dhaco
-        
-        Tusaale:
-            server.dhegeyso(5);
         """
         soo_celi ___c__call_("tusmo_socket_listen", kan.Aqoonsi, saf_sugid_ugu_badan);
     }
     
-    shaqo aqbal(): eray {
+    shaqo aqbal(): Xiriiriye {
         """
         Aqbal Ku soo xirmaha (macmiilka/client)
-        
-        Soo celisa:
-            eray: 
-                Xiriirka Aqoonsiga ku sooxirmaha (macmiilka/client), 
-                ama "" haddii qalad uu dhaco
-        
-        Tusaale:
-            keyd:eray AqoonsigaClient = server.aqbal();
         """
-        soo_celi ___c__call_("tusmo_socket_accept", kan.Aqoonsi);
+        keyd:eray h = ___c__call_("tusmo_socket_accept", kan.Aqoonsi);
+        keyd:Xiriiriye client = Xiriiriye() cusub;
+        client.Aqoonsi = h;
+        soo_celi client;
     }
     
     shaqo kuxirmo(host:eray, port:eray): eray {
         """
         kuxirmo server-ka, Waxaad ku xirmi server adigoo ah ku xirme client/macmil
-        
-        Parameters:
-            host (eray): Server hostname ama IP address 
-            Tusaale. ("google.com" or "127.0.0.1")
-            port (eray): Server-ka port-ti number-kiisa 
-            Tusaale. ("80")
-        
-        Soo celisaa:
-            eray: 
-                Xiriirka Aqoonsi haddii guulaysto, 
-                ama "" haddii qalad dhaco
-        
-        Tusaale:
-            keyd:Xiriiriye client = Xiriiriye() cusub;
-            keyd:eray Aqoonsi = client.kuxirmo("example.com", "80");
         """
-        soo_celi ___c__call_("tusmo_socket_connect", host, port);
+        kan.Aqoonsi = ___c__call_("tusmo_socket_connect", host, port);
+        soo_celi kan.Aqoonsi;
     }
     
     shaqo dir(xogta:eray): tiro {
         """
         Ku dhex dir xog xiriiriyaha
-        
-        Parameters:
-            xogta (eray): Xogta la dirayo
-        
-        Soo celisaa:
-            tiro: 
-                Tirada bytes ee la diray, 
-                Ama -1 haddii qalad dhacdo
-        
-        Tusaale:
-            client.dir("GET / HTTP/1.1\\r\\nHost: example.com\\r\\n\\r\\n");
         """
         soo_celi ___c__call_("tusmo_socket_send", kan.Aqoonsi, xogta);
     }
@@ -121,17 +352,6 @@ koox Xiriiriye {
     shaqo soo_hel(size:tiro): eray {
         """
         Ka soo hel xog xiriiriyaha
-        
-        Parameters:
-            size (tiro): Cabbirka ugu badan ee xogta la soo heli karo (bytes-ahaan)
-        
-        Soo celisaa:
-            eray: 
-                Xogta la soo helay iyadoo eray ah
-        
-        Tusaale:
-            keyd:eray jawaab = client.soo_hel(1024);
-            qor(jawaab);
         """
         soo_celi ___c__call_("tusmo_socket_receive", kan.Aqoonsi, size);
     }
@@ -139,9 +359,6 @@ koox Xiriiriye {
     shaqo xir(): waxbo {
         """
         Xir xiriiriyaha
-        
-        Tusaale:
-            client.xir(); //waxaa sidaa ku xirmay xiriiriyhii
         """
         ___c__call_("tusmo_socket_close", kan.Aqoonsi);
     }
@@ -149,16 +366,6 @@ koox Xiriiriye {
     shaqo waa_ansax(): miyaa {
         """
         Hubi haddii xiriiriyaha uu yahahy mid ansax ah
-        
-        Soo celisaa:
-            miyaa: 
-                run haddii xiriiriyaha uu noqdo mid ansax ah, 
-                been haddii kale
-        
-        Tusaale:
-            haddii (socket.waa_ansax()) {
-                qor("Socket waa shaqeynayaa!");
-            }
         """
         soo_celi ___c__call_("tusmo_socket_is_valid", kan.Aqoonsi);
     }

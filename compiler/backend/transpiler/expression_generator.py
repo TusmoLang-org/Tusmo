@@ -130,8 +130,9 @@ class ExpressionGenerator:
                 while current_class:
                     if any(m.var_name == node.member_name for m in current_class.members):
                         break
-                    if getattr(current_class, 'parent_class', None):
-                        current_class = current_class.parent_class
+                    if getattr(current_class, 'parent_name', None):
+                        parent_info = self.symbol_table.get(current_class.parent_name)
+                        current_class = parent_info[0] if parent_info else None
                         depth += 1
                     else:
                         break
@@ -168,7 +169,24 @@ class ExpressionGenerator:
     def _generate_class_instantiation(self, node: ClassInstantiationNode):
         creator_func = f"_create_{node.class_name}"
         args = self._unwrap_args(getattr(node, "ordered_args", None), node.constructor_args)
-        arg_exprs = [self.generate_expression(arg) for arg in args]
+        
+        # Look up constructor parameter types to apply the cloning strategy for string parameters
+        constructor = None
+        class_info = self.symbol_table.get(node.class_name)
+        if class_info and class_info[1] == 'class_definition':
+            class_node = class_info[0]
+            constructor = next((m for m in class_node.methods if m.name == 'dhis'), None)
+
+        arg_exprs = []
+        for i, arg in enumerate(args):
+            arg_c = self.generate_expression(arg)
+            if constructor and i < len(constructor.params):
+                param_type = str(constructor.params[i].param_type)
+                if param_type == "eray":
+                    if not arg_c.startswith("tusmo_strdup") and not arg_c.startswith("tusmo_concat_cstr") and not arg_c.startswith("tusmo_to_eray"):
+                        arg_c = f"tusmo_strdup({arg_c})"
+            arg_exprs.append(arg_c)
+
         return f"{creator_func}({', '.join(arg_exprs)})"
 
     def _generate_method_call(self, node: MethodCallNode):
@@ -249,8 +267,12 @@ class ExpressionGenerator:
                 current = child_info[0]
                 depth = 0
                 while current and current.name != source_class.name:
-                    current = getattr(current, 'parent_class', None)
-                    depth += 1
+                    if getattr(current, 'parent_name', None):
+                        parent_info = self.symbol_table.get(current.parent_name)
+                        current = parent_info[0] if parent_info else None
+                        depth += 1
+                    else:
+                        break
                 
                 if depth > 0:
                     parents = ".parent" * depth
@@ -297,8 +319,10 @@ class ExpressionGenerator:
             else:
                 return f"({cmp} != 0)"
         op_map = {'+': '+', '-': '-', '*': '*', '/': '/', '%': '%',
-                  'iyo': '&&', 'ama': '||', '==': '==', '!=': '!=',
-                  '>': '>', '<': '<', '>=': '>=', '<=': '<=', '+=': '+=', '-=': '-=', '*=': '*=', '/=': '/=',
+                  'iyo': '&&', 'ama': '||', '&&': '&&', '||': '||', '==': '==', '!=': '!=',
+                  '>': '>', '<': '<', '>=': '>=', '<=': '<=', 
+                  '=<': '<=', '===': '==',
+                  '+=': '+=', '-=': '-=', '*=': '*=', '/=': '/=',
                   'ahayn': '!', '!': '!'}  # Logical NOT
         
         # Handle Type Comparison (e.g., n == tiro)

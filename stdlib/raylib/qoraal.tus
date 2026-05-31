@@ -1,0 +1,58 @@
+// stdlib/raylib/qoraal.tus
+
+isticmaal { Boos2D, Midab } ee kujira "noocyo";
+
+___c__code_("""
+#define Color RaylibColor
+#define Vector2 RaylibVector2
+#define Rectangle RaylibRectangle
+#include "stdlib/raylib/raylib.h"
+#undef Color
+#undef Vector2
+#undef Rectangle
+
+TusmoValue Tusmo_LoadFont(const char* fileName) {
+    Font* f = malloc(sizeof(Font));
+    *f = LoadFont(fileName);
+    return (TusmoValue){ .type = TUSMO_WAXBA, .value.as_waxba = f };
+}
+void Tusmo_DrawTextEx(TusmoValue fontVal, const char *text, Boos2D position, float fontSize, float spacing, Midab tint) {
+    if (!fontVal.value.as_waxba) return;
+    RaylibVector2 p = { (float)position.x, (float)position.y };
+    DrawTextEx(*(Font*)fontVal.value.as_waxba, text, p, fontSize, spacing, *(RaylibColor*)&tint);
+}
+void Tusmo_DrawText(const char *text, int posX, int posY, int fontSize, Midab color) {
+    DrawText(text, posX, posY, fontSize, *(RaylibColor*)&color);
+}
+""");
+
+hawl helFar(faylka: eray) : walbo { 
+    """
+    Wuxuu soo rurisaa nooc far ah (tusaale: .ttf) si loo isticmaalo.
+    - faylka: Magaca farta la rabo
+    """
+    soo_celi ___c__call_("Tusmo_LoadFont", faylka); 
+}
+
+hawl kuqor(far: walbo, qoraal: eray, booska: Boos2D, cabir: jajab, tint: Midab) : waxbo { 
+    """
+    Wuxuu qoraal ku sawiraa shaashada isagoo isticmaalaya nooc far ah.
+    - far: Farta horey loo soo ruriyay
+    - qoraal: Erayada la rabo in la qoro
+    - booska: Halka laga qorayo
+    - cabir: Cabbirka farta
+    - tint: Midabka qoraalka
+    """
+    ___c__call_("Tusmo_DrawTextEx", far, qoraal, booska, cabir, 2.0, tint); 
+}
+
+hawl qoraalKuQor(qoraal: eray, x: tiro, y: tiro, cabir: tiro, midab: Midab) : waxbo {
+    """
+    Wuxuu shaashada ku qoraa qoraal isagoo isticmaalaya farta asalka ah ee Raylib.
+    - qoraal: Erayada la rabo in la qoro
+    - x, y: Booska
+    - cabir: Cabbirka farta
+    - midab: Midabka qoraalka
+    """
+    ___c__call_("Tusmo_DrawText", qoraal, x, y, cabir, midab);
+}

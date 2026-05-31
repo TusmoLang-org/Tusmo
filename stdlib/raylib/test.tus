@@ -1,4 +1,10 @@
-keen "core";
+// stdlib/raylib/test.tus
+
+isticmaal { CAD, MADOW, CAS, BULUUG, JAALLE, CAGAAR, Midab, Boos2D, AfarGees } ee kujira "noocyo";
+isticmaal { bilowDaaqada, daaqadaMaXirantahay, bilowSawirka, dhameeySawirka, xirDaaqada } ee kujira "daaqad";
+isticmaal { nadiifiShaashada } ee kujira "muuqaal";
+isticmaal { qoraalKuQor } ee kujira "qoraal";
+isticmaal { sawirQoraalGalis, cusboonaysiiQoraalGalis, sameeBadhan } ee kujira "dhexgalka";
 
 keyd:eray user_input = "";
 keyd:miyaa was_clicked = been;

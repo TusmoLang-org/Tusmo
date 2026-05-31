@@ -53,29 +53,119 @@ def _get_top_level_name(node):
     if isinstance(node, QeexNode): return node.name
     return None
 
-def _find_c_calls_in_node(node):
+def _find_c_calls_in_node(node, visited=None):
+    if visited is None:
+        visited = set()
+    if id(node) in visited:
+        return set()
+    visited.add(id(node))
+
     c_ids = set()
-    node_str = str(node)
-    matches = re.findall(r'___c__call_\s*\(\s*["\']([^"\']+)["\']', node_str)
-    c_ids.update(matches)
-    if isinstance(node, FunctionNode):
-        for stmt in node.body:
-            matches = re.findall(r'___c__call_\s*\(\s*["\']([^"\']+)["\']', str(stmt))
-            c_ids.update(matches)
+    if isinstance(node, (list, tuple)):
+        for item in node:
+            c_ids.update(_find_c_calls_in_node(item, visited))
+        return c_ids
+    elif isinstance(node, dict):
+        for val in node.values():
+            c_ids.update(_find_c_calls_in_node(val, visited))
+        return c_ids
+
+    cls_name = node.__class__.__name__
+    if cls_name == "CCallNode":
+        if hasattr(node, "c_function_name") and isinstance(node.c_function_name, str):
+            c_ids.add(node.c_function_name.strip("\"'"))
+
+    for attr in dir(node):
+        if attr.startswith("__") or attr in ("line", "filename", "lineno"):
+            continue
+        try:
+            val = getattr(node, attr, None)
+        except Exception:
+            continue
+        if val is None:
+            continue
+        if isinstance(val, (list, tuple)):
+            for v in val:
+                if v is not None and not isinstance(v, (str, int, float, bool)):
+                    c_ids.update(_find_c_calls_in_node(v, visited))
+        elif not isinstance(val, (str, int, float, bool)):
+            c_ids.update(_find_c_calls_in_node(val, visited))
     return c_ids
+
+def _find_function_calls(node, visited=None):
+    if visited is None:
+        visited = set()
+    if id(node) in visited:
+        return set()
+    visited.add(id(node))
+
+    calls = set()
+    if isinstance(node, (list, tuple)):
+        for item in node:
+            calls.update(_find_function_calls(item, visited))
+        return calls
+    elif isinstance(node, dict):
+        for val in node.values():
+            calls.update(_find_function_calls(val, visited))
+        return calls
+
+    cls_name = node.__class__.__name__
+    if cls_name == "FunctionCallNode":
+        if hasattr(node, "name"):
+            calls.add(node.name)
+    elif cls_name == "IdentifierNode":
+        if hasattr(node, "name"):
+            calls.add(node.name)
+
+    for attr in dir(node):
+        if attr.startswith("__") or attr in ("line", "filename", "lineno"):
+            continue
+        try:
+            val = getattr(node, attr, None)
+        except Exception:
+            continue
+        if val is None:
+            continue
+        if isinstance(val, (list, tuple)):
+            for v in val:
+                if v is not None and not isinstance(v, (str, int, float, bool)):
+                    calls.update(_find_function_calls(v, visited))
+        elif not isinstance(val, (str, int, float, bool)):
+            calls.update(_find_function_calls(val, visited))
+    return calls
 
 def _select_requested_nodes(resolved_imported_ast, requested_names, seen_metadata, is_partial=False):
     selected_nodes = []
     found_names = set()
     requested_name_set = set(requested_names)
 
-    # 1. Select named nodes
+    # Map from top-level name in the module to its AST node(s)
+    name_to_nodes = {}
     for imported_node in resolved_imported_ast:
         if isinstance(imported_node, (EmbeddedCNode, Xidid)): continue
         name = _get_top_level_name(imported_node)
-        if name and name in requested_name_set:
-            selected_nodes.append(imported_node)
-            found_names.add(name)
+        if name:
+            name_to_nodes.setdefault(name, []).append(imported_node)
+
+    # Transitive closure of dependencies
+    queue = list(requested_name_set)
+    processed = set()
+
+    while queue:
+        name = queue.pop(0)
+        if name in processed: continue
+        processed.add(name)
+
+        if name in name_to_nodes:
+            for node in name_to_nodes[name]:
+                if node not in selected_nodes:
+                    selected_nodes.append(node)
+                    found_names.add(name)
+                    # Scan for internal references
+                    refs = _find_function_calls(node)
+                    for ref in refs:
+                        if ref in name_to_nodes and ref not in processed:
+                            queue.append(ref)
 
     # 2. Identify C-call dependencies
     needed_c_identifiers = set()
@@ -87,19 +177,29 @@ def _select_requested_nodes(resolved_imported_ast, requested_names, seen_metadat
     for imported_node in resolved_imported_ast:
         if not isinstance(imported_node, (EmbeddedCNode, Xidid)): continue
         content = getattr(imported_node, 'code', None) or getattr(imported_node, 'aqoonsi', None)
-        if content in seen_metadata: continue
 
         # For partial imports, keep module-level C support code and linker
-        # metadata together with the selected symbols. Otherwise the imported
-        # Tusmo functions may compile without their C implementation.
+        # metadata together with the selected symbols.
+        if isinstance(imported_node, EmbeddedCNode):
+            if is_partial:
+                has_needed_c = False
+                for c_id in needed_c_identifiers:
+                    if re.search(rf"\b{re.escape(c_id)}\b", content or ""):
+                        has_needed_c = True
+                        break
+                if not has_needed_c: continue
+        else:
+            # Xidid (library linking) should still use global seen_metadata to prevent duplicates.
+            if content in seen_metadata: continue
+            seen_metadata.add(content)
+
         selected_nodes.append(imported_node)
-        seen_metadata.add(content)
 
     return selected_nodes, list(found_names)
 
 def _find_missing_partial_import_dependencies(resolved_imported_ast, selected_nodes, requested_names, already_available_names):
     module_top_level_names = {name for name in (_get_top_level_name(n) for n in resolved_imported_ast) if name}
-    available_set = set(already_available_names) | set(requested_names)
+    available_set = set(already_available_names) | {name for name in (_get_top_level_name(n) for n in selected_nodes) if name}
     missing_reasons = {}
 
     def add_reason(dep, reason):
@@ -119,6 +219,13 @@ def _find_missing_partial_import_dependencies(resolved_imported_ast, selected_no
             if isinstance(vtype, str) and vtype in module_top_level_names and vtype not in available_set:
                 add_reason(vtype, f"nooca doorsoomaha '{node.var_name}'")
 
+        # Deep FFI / nested code dependency analysis
+        referenced_names = _find_function_calls(node)
+        for ref_name in referenced_names:
+            if ref_name in module_top_level_names and ref_name not in available_set:
+                node_name = getattr(node, "name", None) or getattr(node, "var_name", None) or "koodhka"
+                add_reason(ref_name, f"waxaa looga baahanyahay gudaha '{node_name}'")
+
     for n in selected_nodes:
         if isinstance(n, EmbeddedCNode):
             code = getattr(n, "code", "")
@@ -136,8 +243,46 @@ def _append_unique_nodes(target_ast, nodes_to_add, seen_top_level_names):
         name = _get_top_level_name(node)
         if name:
             if name in seen_top_level_names: continue
-            seen_top_level_names.add(name)
+        seen_top_level_names.add(name)
         target_ast.append(node)
+
+def validate_embedded_c_includes(ast_nodes, project_root, runtime_dir=None, stdlib_path=None):
+    include_pattern = re.compile(r'#include\s+"([^"]+)"')
+
+    def iter_nodes(nodes):
+        for node in nodes:
+            if isinstance(node, list):
+                yield from iter_nodes(node)
+            else:
+                yield node
+
+    def resolve_include(include_path, source_dir):
+        candidates = [
+            os.path.abspath(os.path.join(source_dir, include_path)),
+            os.path.abspath(os.path.join(project_root, include_path)),
+            os.path.abspath(include_path),
+        ]
+        if runtime_dir:
+            candidates.append(os.path.abspath(os.path.join(runtime_dir, include_path)))
+        if stdlib_path:
+            candidates.append(os.path.abspath(os.path.join(stdlib_path, include_path)))
+        return any(os.path.exists(path) for path in candidates)
+
+    for node in iter_nodes(ast_nodes):
+        if not isinstance(node, EmbeddedCNode):
+            continue
+
+        code = getattr(node, "code", "") or ""
+        source_dir = os.path.dirname(os.path.abspath(getattr(node, "filename", "") or project_root))
+        for include_path in include_pattern.findall(code):
+            if resolve_include(include_path, source_dir):
+                continue
+
+            print(
+                f"\n\033[1;31m[!] KHALAD:\033[0m "
+                f"Embedded C include '{include_path}' lagama helin '{getattr(node, 'filename', '<unknown>')}'."
+            )
+            sys.exit(1)
 
 def process_imports(initial_ast_nodes, base_directory, stdlib_path="stdlib", processed_files=None, active_files=None, seen_metadata=None, seen_top_level_names=None):
     if processed_files is None: processed_files = set()
@@ -167,8 +312,8 @@ def process_imports(initial_ast_nodes, base_directory, stdlib_path="stdlib", pro
                 imported_ast = parse_code_to_ast(find_and_read_file(found_path), found_path)
                 
                 # We need a LOCAL 'seen' set for the recursive call to get all nodes,
-                # but we'll merge them into the global set afterwards.
-                local_seen_names = set()
+                # initialized as a copy of parent seen names to prevent nested redefinition.
+                local_seen_names = set(seen_top_level_names)
                 resolved_imported_ast = process_imports(
                     imported_ast, os.path.dirname(found_path), stdlib_path,
                     processed_files, active_files, seen_metadata, local_seen_names

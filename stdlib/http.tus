@@ -1,0 +1,120 @@
+keen "xiriiriye";
+
+koox CodsiHttp {
+    keyd:eray Habka;          // "DOON", "DIR", "BEDDEL", "TIR"
+    keyd:eray Method;         // "GET", "POST", "PUT", "DELETE"
+    keyd:eray Jidka;          // e.g. "/adeeg"
+    keyd:qaamuus Madax;       // Headers dictionary
+    keyd:eray Jidhka;         // Request body
+    keyd:miyaa WaaAnsax;      // Is the request valid?
+
+    dhis(): waxbo {
+        kan.Habka = "";
+        kan.Method = "";
+        kan.Jidka = "";
+        kan.Madax = {};
+        kan.Jidhka = "";
+        kan.WaaAnsax = been;
+    }
+
+    shaqo waa(m: eray): miyaa {
+        haddii (m == "DOON" ama m == "GET") {
+            haddii (kan.Method == "GET") { soo_celi run; }
+        } ama_haddii (m == "DIR" ama m == "POST") {
+            haddii (kan.Method == "POST") { soo_celi run; }
+        } ama_haddii (m == "BEDDEL" ama m == "PUT") {
+            haddii (kan.Method == "PUT") { soo_celi run; }
+        } ama_haddii (m == "TIR" ama m == "DELETE") {
+            haddii (kan.Method == "DELETE") { soo_celi run; }
+        }
+        soo_celi been;
+    }
+}
+
+koox AdeegeHttp {
+    keyd:Xiriiriye server_socket;
+    keyd:Xiriiriye client_socket;
+
+    dhis(): waxbo {
+        kan.server_socket = Xiriiriye() cusub;
+        kan.client_socket = Xiriiriye() cusub;
+    }
+
+    shaqo kici(port: eray): waxbo {
+        kan.server_socket.samee_server(port);
+        kan.server_socket.dhageyso(15);
+    }
+
+    shaqo aqbal_codsi(): CodsiHttp {
+        keyd:CodsiHttp req = CodsiHttp() cusub;
+        kan.client_socket = kan.server_socket.aqbal();
+        
+        haddii (kan.client_socket.waa_ansax()) {
+            keyd:eray codsi = kan.client_socket.soo_hel(4096);
+            haddii (dherer(codsi) > 0) {
+                req.WaaAnsax = run;
+                
+                keyd:tiro separator_idx = sooRaadi(codsi, "\r\n\r\n");
+                keyd:eray headers_part = "";
+                haddii (separator_idx != -1) {
+                    headers_part = ___c__call_("tusmo_strdup", codsi);
+                    ___c__call_("tusmo_set_char", headers_part, separator_idx, 0);
+                    req.Jidhka = ___c__call_("tusmo_strdup", ___c__call_("tusmo_str_offset", codsi, separator_idx + 4));
+                } haddii_kale {
+                    headers_part = eray(codsi);
+                    req.Jidhka = "";
+                }
+                
+                keyd:tix:eray sadarada = qaybi(headers_part, "\r\n");
+                haddii (dherer(sadarada) > 0) {
+                    keyd:eray sadarka_koobaad = sadarada[0];
+                    keyd:tix:eray ereyada = qaybi(sadarka_koobaad, " ");
+                    
+                    haddii (dherer(ereyada) >= 2) {
+                        keyd:eray raw_method = ereyada[0];
+                        req.Jidka = ereyada[1];
+                        req.Method = eray(raw_method);
+                        
+                        haddii (raw_method == "GET") {
+                            req.Habka = "DOON";
+                        } ama_haddii (raw_method == "POST") {
+                            req.Habka = "DIR";
+                        } ama_haddii (raw_method == "PUT") {
+                            req.Habka = "BEDDEL";
+                        } ama_haddii (raw_method == "DELETE") {
+                            req.Habka = "TIR";
+                        } haddii_kale {
+                            req.Habka = raw_method;
+                        }
+                    }
+                }
+                
+                keyd:tiro i = 1;
+                inta ay (i < dherer(sadarada)) {
+                    keyd:eray sadar = sadarada[i];
+                    keyd:tix:eray parts = qaybi(eray(sadar), ": ");
+                    haddii (dherer(parts) >= 2) {
+                        keyd:eray key = parts[0];
+                        keyd:eray val = parts[1];
+                        req.Madax[key] = val;
+                    }
+                    i = i + 1;
+                }
+            }
+        }
+        soo_celi req;
+    }
+
+    shaqo dir_jawaab(status: eray, content_type: eray, body: eray): waxbo {
+        haddii (kan.client_socket.waa_ansax()) {
+            keyd:eray len_str = eray(dherer(body));
+            keyd:eray response = "HTTP/1.1 " + status + "\r\n" +
+                                 "Content-Type: " + content_type + "\r\n" +
+                                 "Content-Length: " + len_str + "\r\n" +
+                                 "Connection: close\r\n\r\n" +
+                                 body;
+            kan.client_socket.dir(response);
+            kan.client_socket.xir();
+        }
+    }
+}

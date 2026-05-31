@@ -1,0 +1,91 @@
+// stdlib/raylib/muuqaal.tus
+
+isticmaal { Midab, Boos2D } ee kujira "noocyo";
+
+___c__code_("""
+#define Color RaylibColor
+#define Vector2 RaylibVector2
+#define Rectangle RaylibRectangle
+#include "stdlib/raylib/raylib.h"
+#undef Color
+#undef Vector2
+#undef Rectangle
+
+void Tusmo_ClearBackground(Midab color) {
+    ClearBackground(*(RaylibColor*)&color);
+}
+void Tusmo_DrawRectangle(double x, double y, double w, double h, Midab color) {
+    DrawRectangle((int)x, (int)y, (int)w, (int)h, *(RaylibColor*)&color);
+}
+void Tusmo_DrawRectangleLines(double x, double y, double w, double h, Midab color) {
+    DrawRectangleLines((int)x, (int)y, (int)w, (int)h, *(RaylibColor*)&color);
+}
+void Tusmo_DrawCircle(double x, double y, double rad, Midab color) {
+    DrawCircle((int)x, (int)y, (float)rad, *(RaylibColor*)&color);
+}
+TusmoValue Tusmo_LoadTexture(const char* fileName) {
+    Texture2D* t = malloc(sizeof(Texture2D));
+    *t = LoadTexture(fileName);
+    return (TusmoValue){ .type = TUSMO_WAXBA, .value.as_waxba = t };
+}
+void Tusmo_DrawTextureEx(TusmoValue texVal, Boos2D position, float rotation, float scale, Midab tint) {
+    if (!texVal.value.as_waxba || ((Texture2D*)texVal.value.as_waxba)->id == 0) return;
+    RaylibVector2 p = { (float)position.x, (float)position.y };
+    DrawTextureEx(*(Texture2D*)texVal.value.as_waxba, p, rotation, scale, *(RaylibColor*)&tint);
+}
+""");
+
+hawl nadiifiShaashada(midab: Midab) : waxbo { 
+    """
+    Wuxuu tirtiraa dhammaan wixii ku sawiran shaashada, asalkana wuxuu ka dhigaa midab.
+    - midab: Midabka asalka shaashada
+    """
+    ___c__call_("Tusmo_ClearBackground", midab); 
+}
+
+hawl sawirAfarGees(x: jajab, y: jajab, w: jajab, h: jajab, midab: Midab) : waxbo { 
+    """
+    Wuxuu sawiraa AfarGees buuxa oo midabaysan.
+    - x, y: Booska 
+    - w, h: Ballaca iyo Dhererka
+    - midab: Midabka buuxinaya
+    """
+    ___c__call_("Tusmo_DrawRectangle", x, y, w, h, midab); 
+}
+
+hawl sawirAfarGeesXariiqan(x: jajab, y: jajab, w: jajab, h: jajab, midab: Midab) : waxbo { 
+    """
+    Wuxuu sawiraa xariiqa(border) u eg AfarGees iyada oo aan dhexda midab ku oolin.
+    """
+    ___c__call_("Tusmo_DrawRectangleLines", x, y, w, h, midab); 
+}
+
+hawl sawirGoob(x: jajab, y: jajab, rad: jajab, midab: Midab) : waxbo { 
+    """
+    Wuxuu sawiraa Goobo(circle) buuxa oo midabaysan.
+    - x, y: Xarunta (Center) goobada
+    - rad: Gacanta (Radius) goobada
+    - midab: Midabka buuxinaya
+    """
+    ___c__call_("Tusmo_DrawCircle", x, y, rad, midab); 
+}
+
+hawl helSawir(faylka: eray) : walbo { 
+    """
+    Wuxuu soo rurisaa sawir (tusaale: .png) isagoo gelinaaya xusuusta (memory).
+    - faylka: Magaca iyo goobta sawirku ku jiro.
+    """
+    soo_celi ___c__call_("Tusmo_LoadTexture", faylka); 
+}
+
+hawl muujiSawirLahelay(sawir: walbo, booska: Boos2D, rotation: jajab, scale: jajab, tint: Midab) : waxbo { 
+    """
+    Wuxuu shaashada ku muujiyaa sawir horey loo soo ruriyay.
+    - sawir: Sawirka lasoo ruriyay
+    - booska: Halka laga sawirayo (Boos2D)
+    - rotation: Wareegga sawirka (0.0 waa caadi)
+    - scale: Cabirka sawirka (1.0 waa caadi)
+    - tint: Midab dusha laga marinayo (isticmaal CAD haddii aadan rabin midab kale)
+    """
+    ___c__call_("Tusmo_DrawTextureEx", sawir, booska, rotation, scale, tint); 
+}

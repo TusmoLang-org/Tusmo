@@ -51,6 +51,9 @@ class FunctionGenerator:
         c_params = ", ".join(params_list)
         function_signature = f"{c_return_type} {c_func_name}({c_params})"
 
+        # Add forward declaration to the main generator's forward declarations buffer
+        self.main_generator.forward_declarations += f"{function_signature};\n"
+
         # --- Generate the function body ---
         # We temporarily hijack the main generator's C code buffer to generate
         # the body for this function, then restore it.

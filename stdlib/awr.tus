@@ -1,0 +1,81 @@
+keen "http";
+
+hawl eber(): AwrJid {
+    keyd:AwrJid empty = ___c__call_("tusmo_null");
+    soo_celi empty;
+}
+
+hawl waa_eber(ptr: AwrJid): miyaa {
+    soo_celi ___c__call_("tusmo_is_null", ptr);
+}
+
+koox AwrJid {
+    keyd:eray Habka;
+    keyd:eray Jidka;
+    keyd:hawl(CodsiHttp):waxbo Maareeye;
+    keyd:AwrJid ku_xiga; // Next route in the linked list
+    
+    dhis(h: eray, j: eray, m: hawl(CodsiHttp):waxbo): waxbo {
+        kan.Habka = h;
+        kan.Jidka = j;
+        kan.Maareeye = m;
+        kan.ku_xiga = eber();
+     }
+}
+
+koox Awr {
+    keyd:AdeegeHttp server;
+    keyd:AwrJid jidadka; // Head of the routes list
+    
+    dhis(): waxbo {
+        kan.server = AdeegeHttp() cusub;
+        kan.jidadka = eber();
+    }
+    
+    shaqo ku_dar_jid(habka: eray, jidka: eray, maareeye: hawl(CodsiHttp):waxbo): waxbo {
+        haddii (waa_eber(kan.jidadka)) {
+            kan.jidadka = AwrJid(habka, jidka, maareeye) cusub;
+        } haddii_kale {
+            ___c__call_("tusmo_awr_append_route", kan, AwrJid(habka, jidka, maareeye) cusub);
+        }
+    }
+    
+    // Somali Route registration helpers
+    shaqo doon(jidka: eray, maareeye: hawl(CodsiHttp):waxbo): waxbo {
+        kan.ku_dar_jid("GET", jidka, maareeye);
+    }
+    
+    shaqo dir(jidka: eray, maareeye: hawl(CodsiHttp):waxbo): waxbo {
+        kan.ku_dar_jid("POST", jidka, maareeye);
+    }
+    
+    // English Route registration helpers
+    shaqo get(jidka: eray, maareeye: hawl(CodsiHttp):waxbo): waxbo {
+        kan.ku_dar_jid("GET", jidka, maareeye);
+    }
+    
+    shaqo post(jidka: eray, maareeye: hawl(CodsiHttp):waxbo): waxbo {
+        kan.ku_dar_jid("POST", jidka, maareeye);
+    }
+    
+    shaqo jawaab(status: eray, content_type: eray, body: eray): waxbo {
+        kan.server.dir_jawaab(status, content_type, body);
+    }
+    
+    shaqo kici(port: eray): waxbo {
+        kan.server.kici(port);
+        qor("Awr Framework wuxuu ku bilowday port " + port + "...");
+        
+        inta ay (run) {
+            keyd:CodsiHttp req = kan.server.aqbal_codsi();
+            haddii (req.WaaAnsax) {
+                keyd:hawl(CodsiHttp):waxbo cb = ___c__call_("tusmo_awr_find_maareeye", kan, req);
+                haddii (___c__call_("tusmo_is_null", cb) == been) {
+                    cb(req);
+                } haddii_kale {
+                    kan.server.dir_jawaab("404 Not Found", "text/html; charset=utf-8", "<h1>Bogga lama helin sxb! (404)</h1>");
+                }
+            }
+        }
+    }
+}

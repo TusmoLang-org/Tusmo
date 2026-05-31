@@ -1,0 +1,35 @@
+// stdlib/raylib/noocyo.tus
+
+// 1. Headers first
+___c__code_("""
+#define Color RaylibColor
+#define Vector2 RaylibVector2
+#define Rectangle RaylibRectangle
+#include "stdlib/raylib/raylib.h"
+#undef Color
+#undef Vector2
+#undef Rectangle
+""");
+
+// 2. Data Structures
+qaab Midab { keyd:xaraf r; keyd:xaraf g; keyd:xaraf b; keyd:xaraf a; };
+qaab Boos2D { keyd:jajab x; keyd:jajab y; };
+qaab AfarGees { keyd:jajab x; keyd:jajab y; keyd:jajab width; keyd:jajab height; };
+
+// Constants
+qeex CAD    = (Midab){255, 255, 255, 255};
+qeex MADOW  = (Midab){0, 0, 0, 255};
+qeex CAS    = (Midab){230, 41, 55, 255};
+qeex BULUUG = (Midab){0, 121, 241, 255};
+qeex CAGAAR = (Midab){0, 228, 48, 255};
+qeex JAALLE = (Midab){253, 249, 0, 255};
+qeex CIRKA   = (Midab){135, 206, 235, 255};
+
+// Linker Flags
+TUSMO_XIDID "stdlib/raylib/libraylib.a";
+TUSMO_XIDID "-lm.maya";
+TUSMO_XIDID "-lGL.maya";
+TUSMO_XIDID "-lX11.maya";
+TUSMO_XIDID "-lpthread.maya";
+TUSMO_XIDID "-ldl.maya";
+TUSMO_XIDID "-lrt.maya";

@@ -123,6 +123,7 @@ precedence = (
     ('left', 'WEYN', 'YAR', 'WEYN_LAMID', 'YAR_LAMID'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
+    ('right', 'UMINUS', 'UPLUS'),
     ('right', 'CUSUB'),
     ('left', 'DOT'),
     ('right', 'AHAYN', 'NOT'),
@@ -157,6 +158,14 @@ def p_expression_unary_not(p):
     'expression : NOT expression'
     # Create a binary op with dummy left operand
     p[0] = BinaryOpNode(BooleanNode(False), '!', p[2], line=p.lineno(1), filename=p.lexer.filename)
+
+def p_expression_unary_minus(p):
+    'expression : MINUS expression %prec UMINUS'
+    p[0] = BinaryOpNode(NumberNode(0), '-', p[2], line=p.lineno(1), filename=p.lexer.filename)
+
+def p_expression_unary_plus(p):
+    'expression : PLUS expression %prec UPLUS'
+    p[0] = p[2]
 
 def p_expression_group(p):
     'expression : LPAREN expression RPAREN'

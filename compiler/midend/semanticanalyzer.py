@@ -107,6 +107,7 @@ class SemanticChecker:
                      if isinstance(item.value, IdentifierNode) and item.name == item.value.name:
                          self.symbol_table.set(item.name, "c_type", value=item.value)
                  elif item.__class__.__name__ == 'FunctionNode':
+                     print(f"DEBUG semantic pre-pass FunctionNode: {item.name}")
                      self.symbol_table.set(item.name, "hawl", value=item)
                  elif item.__class__.__name__ == 'KeydNode':
                      self.symbol_table.set(item.var_name, str(item.var_type).strip(), value=item)
@@ -274,18 +275,33 @@ class SemanticChecker:
                     return "jajab"
                 return "tiro"
             
-            if node.op in ('==', '!=', '>', '<', '>=', '<=', 'iyo', 'ama'):
+            if node.op in ('==', '!=', '>', '<', '>=', '<=', '=<', '===', 'iyo', 'ama', '&&', '||', '!', 'ahayn'):
                 return "miyaa"
 
         return "unknown"
+    
+    def check_IdentifierNode(self, node: IdentifierNode):
+        print("dif u fiiri hadaa aragto soo tuur error ")
+        if not self.symbol_table.get(node.name):
+            raise SemanticError(ERR_IDENTIFIER_NOT_FOUND(node.name), node.filename, node.line)
+        if self.tracker.is_moved(node.name):
+            move_node = self.tracker.get_move_node(node.name)
+            move_line = move_node.line if move_node else "aan la aqoon"
+            print("Kani horey ayaa loo wareejiyay ", node.name)
+            raise SemanticError(ERR_USE_AFTER_MOVE(node.name, move_line), node.filename, node.line)
+        if not self.tracker.is_initialized(node.name):
+            raise SemanticError(ERR_UNINITIALIZED_VARIABLE(node.name), node.filename, node.line)
+        return self.get_expression_type(node)
 
     def check_KeydNode(self, node: KeydNode):
+        print("Waxaan hubinayaa variable-ka ")
         self._ensure_valid_type(node.var_type, node)
         # Store the string representation of the type in SymbolTable
         self.symbol_table.set(node.var_name, str(node.var_type).strip())
         self.tracker.record_definition(node.var_name, node.var_type, node, is_initialized=(node.value is not None))
         
         if node.value:
+            print(self.tracker.is_heap_type(node.var_type))
             value_type = self.check(node.value)
             
             # Super intelligent: Record Move!
@@ -298,12 +314,15 @@ class SemanticChecker:
                     node.filename,
                     node.line
                 )
-        
-        self.generic_check(node)
+
 
     def check_AssignmentNode(self, node: AssignmentNode):
+        print("waxaan hubinayaa qiimaha la siinayao")
         needs_cleanup = False
-        target_type = self.get_expression_type(node.identifier)
+        if isinstance(node.identifier, IdentifierNode):
+            target_type = self.get_expression_type(node.identifier)
+        else:
+            target_type = self.check(node.identifier)
         if isinstance(node.identifier, IdentifierNode) and self.tracker.is_heap_type(target_type):
             if not self.tracker.is_moved(node.identifier.name):
                 needs_cleanup = True
@@ -325,8 +344,7 @@ class SemanticChecker:
                 node.filename,
                 node.line
             )
-        
-        self.generic_check(node)
+
 
     def check_FunctionNode(self, node: FunctionNode):
         self._ensure_valid_type(node.return_type, node)
@@ -340,7 +358,7 @@ class SemanticChecker:
         self.symbol_table.push_scope()
         self.tracker.push_scope()
         for p in node.params:
-            self.symbol_table.set(p.name, str(p.param_type).strip())
+            self.symbol_table.set(p.name, p.param_type)
             p.borrowed = self._is_borrowed_param_type(p.param_type)
             self.tracker.record_definition(
                 p.name,
@@ -372,7 +390,7 @@ class SemanticChecker:
         self.symbol_table.push_scope()
         self.tracker.push_scope()
         for p in node.params:
-            self.symbol_table.set(p.name, str(p.param_type).strip())
+            self.symbol_table.set(p.name, p.param_type)
             p.borrowed = self._is_borrowed_param_type(p.param_type)
             self.tracker.record_definition(
                 p.name,
@@ -494,14 +512,26 @@ class SemanticChecker:
         for val in node.values:
             self.check(val)
         return node.struct_name
-    def check_IdentifierNode(self, node: IdentifierNode):
-        if not self.symbol_table.get(node.name):
-            raise SemanticError(ERR_IDENTIFIER_NOT_FOUND(node.name), node.filename, node.line)
-        if self.tracker.is_moved(node.name):
-            raise SemanticError(ERR_USE_AFTER_MOVE(node.name, "Moved"), node.filename, node.line)
-        if not self.tracker.is_initialized(node.name):
-            raise SemanticError(ERR_UNINITIALIZED_VARIABLE(node.name), node.filename, node.line)
-        return self.get_expression_type(node)
+    
+
+    #
+    """
+        this code i commented becuase it ordering matter here is the issue i am getting:
+
+            keyd:tiro n = 1; i declare n
+            then i move n to n1
+            keyd:tiro n1 = n; //so the issue is happening because in i got message ERR_USE_AFTER_MOVE in this block i commeted so why i am getting this bexuase of in check_keydnode was recorded that variable in the moved_variables variable through record_move function and this block of code was latter excuted and it sees that the variable was already in moved_variables dictionary list
+    """
+    
+    # def check_IdentifierNode(self, node: IdentifierNode):
+    #     if not self.symbol_table.get(node.name):
+    #         raise SemanticError(ERR_IDENTIFIER_NOT_FOUND(node.name), node.filename, node.line)
+    #     if self.tracker.is_moved(node.name):
+    #         print("Kani horey ayaa loo wareejiyay ", node.name)
+    #         raise SemanticError(ERR_USE_AFTER_MOVE(node.name, "Moved"), node.filename, node.line)
+    #     if not self.tracker.is_initialized(node.name):
+    #         raise SemanticError(ERR_UNINITIALIZED_VARIABLE(node.name), node.filename, node.line)
+    #     return self.get_expression_type(node)
 
     def check_FStringNode(self, node: FStringNode):
         for part_type, part_value in node.parts:
@@ -568,7 +598,22 @@ class SemanticChecker:
              raise SemanticError(ERR_FUNCTION_NOT_FOUND(node.name), node.filename, node.line)
         
         if isinstance(info[1], FunctionTypeNode):
-             return info[1].return_type
+             func_type = info[1]
+             if len(node.params) != len(func_type.param_types):
+                 raise SemanticError(
+                     ERR_ARG_COUNT_MISMATCH(node.name, len(func_type.param_types), len(node.params)), 
+                     node.filename, node.line
+                 )
+             for i, arg in enumerate(node.params):
+                 arg_type = self.check(arg)
+                 expected_type = func_type.param_types[i]
+                 if not self._are_types_compatible(expected_type, arg_type):
+                     raise SemanticError(
+                         ERR_ARG_TYPE_MISMATCH_SIMPLE(i+1, node.name, str(expected_type), str(arg_type)),
+                         node.filename,
+                         node.line
+                     )
+             return func_type.return_type
              
         if info[1] == "hawl":
             func_node = info[0]
@@ -691,12 +736,22 @@ class SemanticChecker:
                 )
             return "jajab" if 'jajab' in (str(left_type), str(right_type)) else "tiro"
         
-        if node.op in ('==', '!=', '>', '<', '>=', '<='):
+        if node.op in ('==', '!=', '>', '<', '>=', '<=', '=<', '==='):
             return "miyaa"
             
         # Logical operations
-        if node.op in ('iyo', 'ama'):
+        if node.op in ('iyo', 'ama', '&&', '||'):
             if not self._are_types_compatible('miyaa', left_type) or not self._are_types_compatible('miyaa', right_type):
+                 raise SemanticError(
+                    ERR_BINARY_OP_TYPE_MISMATCH(str(left_type), str(right_type), node.op),
+                    node.filename,
+                    node.line
+                )
+            return "miyaa"
+
+        # Unary logical negation parsed as binary
+        if node.op in ('!', 'ahayn'):
+            if not self._are_types_compatible('miyaa', right_type):
                  raise SemanticError(
                     ERR_BINARY_OP_TYPE_MISMATCH(str(left_type), str(right_type), node.op),
                     node.filename,

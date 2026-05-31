@@ -169,3 +169,51 @@ hawl kasaar(x: qaamuus, fure: eray) : waxbo {
     """
     ___c__call_("tusmo_qaamuus_delete", x, fure);
 }
+
+// =========================================================
+// HAWLAHA GUUD EE CUSUB (New Generic Core Built-ins)
+// =========================================================
+
+hawl uguYar(a: tiro, b: tiro) : tiro {
+    """
+    Soo celi tirada ugu yar labada tiro ee la siiyay.
+    Tusaale: qor(uguYar(10, 20)); // Waxay soo celinaysaa 10
+    """
+    haddii (a < b) {
+        soo_celi a;
+    } haddii_kale {
+        soo_celi b;
+    }
+}
+
+hawl uguWeyn(a: tiro, b: tiro) : tiro {
+    """
+    Soo celi tirada ugu weyn labada tiro ee la siiyay.
+    Tusaale: qor(uguWeyn(10, 20)); // Waxay soo celinaysaa 20
+    """
+    haddii (a > b) {
+        soo_celi a;
+    } haddii_kale {
+        soo_celi b;
+    }
+}
+
+hawl qaado(x: tiro) : tiro {
+    """
+    Soo celi qiimaha togan (Absolute Value) ee tiro kasta oo la siiyay.
+    Tusaale: qor(qaado(-5)); // Waxay soo celinaysaa 5
+    """
+    haddii (x < 0) {
+        soo_celi 0 - x;
+    } haddii_kale {
+        soo_celi x;
+    }
+}
+
+hawl jooji(code: tiro) : waxbo {
+    """
+    Ku jooji ama ku xir barnaamijka nambarka guusha (0) ama guul-darrada.
+    Tusaale: jooji(0);
+    """
+    ___c__call_("exit", code);
+}

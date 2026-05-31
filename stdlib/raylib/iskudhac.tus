@@ -1,0 +1,40 @@
+// stdlib/raylib/iskudhac.tus
+
+isticmaal { Boos2D, AfarGees } ee kujira "noocyo";
+
+___c__code_("""
+#define Color RaylibColor
+#define Vector2 RaylibVector2
+#define Rectangle RaylibRectangle
+#include "stdlib/raylib/raylib.h"
+#undef Color
+#undef Vector2
+#undef Rectangle
+
+bool Tusmo_CheckCollisionPointRec(Boos2D point, AfarGees rec) {
+    RaylibVector2 p = { (float)point.x, (float)point.y };
+    RaylibRectangle r = { (float)rec.x, (float)rec.y, (float)rec.width, (float)rec.height };
+    return CheckCollisionPointRec(p, r);
+}
+bool Tusmo_CheckCollisionRecs(AfarGees rec1, AfarGees rec2) {
+    RaylibRectangle r1 = { (float)rec1.x, (float)rec1.y, (float)rec1.width, (float)rec1.height };
+    RaylibRectangle r2 = { (float)rec2.x, (float)rec2.y, (float)rec2.width, (float)rec2.height };
+    return CheckCollisionRecs(r1, r2);
+}
+""");
+
+hawl istaabasho(meesha: Boos2D, rec: AfarGees) : miyaa { 
+    """
+    Wuxuu hubiyaa in boos(Boos2D) uu gudaha u galay leydi (AfarGees). 
+    Wuxuu u fiican yahay is-taabashada Mouse-ka.
+    """
+    soo_celi ___c__call_("Tusmo_CheckCollisionPointRec", meesha, rec); 
+}
+
+hawl hubiIskuDhacAfarGees(rec1: AfarGees, rec2: AfarGees) : miyaa { 
+    """
+    Wuxuu hubiyaa in laba AfarGees isku dheceen ama is_dhaafeen.
+    Wuxuu soo celiyaa 'haa' haddii uu jiro isku_dhac.
+    """
+    soo_celi ___c__call_("Tusmo_CheckCollisionRecs", rec1, rec2); 
+}

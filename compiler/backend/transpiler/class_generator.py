@@ -1,6 +1,6 @@
 # compiler/backend/transpiler/class_generator.py
 
-from compiler.frontend.parser.ast_nodes import ClassNode
+from compiler.frontend.parser.ast_nodes import ClassNode, FunctionTypeNode
 
 class ClassGenerator:
     """
@@ -22,12 +22,17 @@ class ClassGenerator:
         # 2. Set the context to the current class. This is crucial for the
         # function generator to know it's generating a method, not a regular function.
         self.main_generator.current_class = node
+        if hasattr(self.main_generator, 'semantic_checker') and self.main_generator.semantic_checker:
+            self.main_generator.semantic_checker.current_class = node
+
         for method in node.methods:
             # 3. Generate each method (e.g., Qof_hadal(Qof* kan)).
             # This reuses the existing function generator.
             self.function_generator.generate(method)
         # 4. Unset the context after all methods are generated.
         self.main_generator.current_class = None
+        if hasattr(self.main_generator, 'semantic_checker') and self.main_generator.semantic_checker:
+            self.main_generator.semantic_checker.current_class = None
 
         # 5. Generate the hidden creator function (e.g., Qof* _create_Qof(...)).
         # This function is what gets called when you use `cusub`.
@@ -48,8 +53,12 @@ class ClassGenerator:
 
         for member in node.members:
             # Get the corresponding C type for the member variable
-            member_c_type = self.main_generator.get_c_type(member.var_type)
-            struct_def += f"    {member_c_type} {member.var_name};\n"
+            if isinstance(member.var_type, FunctionTypeNode):
+                member_c_type = self.main_generator.get_c_type(member.var_type, name=member.var_name)
+                struct_def += f"    {member_c_type};\n"
+            else:
+                member_c_type = self.main_generator.get_c_type(member.var_type)
+                struct_def += f"    {member_c_type} {member.var_name};\n"
 
         struct_def += f"}};\n\n"
 
@@ -67,18 +76,21 @@ class ClassGenerator:
         # Find the constructor ('dhis') method, if it exists
         constructor = next((m for m in node.methods if m.name == 'dhis'), None)
 
-        # Build the parameter list for the creator function from the constructor's parameters
         params_list = []
         if constructor:
             for param in constructor.params:
-                c_param_type = self.main_generator.get_c_type(param.param_type)
-                params_list.append(f"{c_param_type} {param.name}")
+                if isinstance(param.param_type, FunctionTypeNode):
+                    c_param = self.main_generator.get_c_type(param.param_type, name=param.name)
+                    params_list.append(c_param)
+                else:
+                    c_param_type = self.main_generator.get_c_type(param.param_type)
+                    params_list.append(f"{c_param_type} {param.name}")
         c_params = ", ".join(params_list)
 
         # --- Generate the body of the creator function ---
         creator_body = ""
         # 1. Allocate memory for the object using standard malloc
-        creator_body += f"    {class_name}* kan = ({class_name}*)malloc(sizeof({class_name}));\n"
+        creator_body += f"    {class_name}* kan = ({class_name}*)calloc(1, sizeof({class_name}));\n"
 
         # 2. If a constructor exists, call it
         if constructor:
@@ -91,6 +103,9 @@ class ClassGenerator:
 
         # 3. Return the newly created object pointer
         creator_body += "    return kan;\n"
+
+        # Add the creator function signature to forward declarations
+        self.main_generator.forward_declarations += f"{class_name}* {creator_func_name}({c_params});\n"
 
         # Assemble the full creator function
         creator_function = (

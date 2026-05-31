@@ -13,7 +13,9 @@ class SymbolTable:
 
     def __init__(self) -> None:
         # Stack of scopes, first is global
-        self.scopes: list[dict[str, Tuple[Any, str, Optional[str]]]] = [{}]
+        self.scopes: list[dict[str, Tuple[Any, str, Optional[str]]]] = [{
+            "amrd": (None, "tix:eray", None)
+        }]
 
     # ---------------- Scope Management ----------------
     def push_scope(self) -> None:

@@ -40,16 +40,16 @@ tusmo -v
 
 ## 📖 Deep Documentation Menu (doc/)
 
-Haddii aad rabto inaad si qoto dheer u barato luuqada Tusmo oo aad dhisato softweer ama ciyaaro, fadlan booqo dukumiintiyada rasmiga ah ee ku dhex jira folder-ka [doc/](file:///home/mubaarak/Desktop/Tusmo/doc/):
+Haddii aad rabto inaad si qoto dheer u barato luuqada Tusmo oo aad dhisato softweer ama ciyaaro, fadlan booqo dukumiintiyada rasmiga ah ee ku dhex jira folder-ka [doc/](doc/):
 
-*   **📘 [Qaybta 1: Aasaaska Luuqadda](file:///home/mubaarak/Desktop/Tusmo/doc/aasaaska.md)** - Primitives, Variables (`keyd`), Constants (`qeex`), iyo Operations.
-*   **🚦 [Qaybta 2: Xakamaynta Socodka](file:///home/mubaarak/Desktop/Tusmo/doc/xakamaynta.md)** - Shuruudaha (`haddii/haddii_kale/kale`) iyo Loops (`inta ay`, `soco...laga bilaabo`).
-*   **📦 [Qaybta 3: Habaynta Xogta](file:///home/mubaarak/Desktop/Tusmo/doc/xogta.md)** - Tixaha (`Arrays` - `keyd:tiro[]`) iyo Qaamuusyada (`Dictionaries`).
-*   **⚙️ [Qaybta 4: Hawlaha & Lambdas](file:///home/mubaarak/Desktop/Tusmo/doc/hawlaha.md)** - Hawlaha, Function pointers, iyo Anonymous Lambdas.
-*   **🏗️ [Qaybta 5: Object-Oriented Programming (OOP)](file:///home/mubaarak/Desktop/Tusmo/doc/oop.md)** - Structs (`qaab`) iyo Classes (`koox`) oo leh Dhaxalka (`dhaxlaya`).
-*   **🛡️ [Qaybta 6: Badbaadada Xusuusta (Memory Safety)](file:///home/mubaarak/Desktop/Tusmo/doc/memory.md)** - Ownership model, Move Semantics, iyo Lifetime tracking.
-*   **🔌 [Qaybta 7: Module System](file:///home/mubaarak/Desktop/Tusmo/doc/modules.md)** - Isticmaalka ereyada `keen` iyo `isticmaal...kujira`.
-*   **🎮 [Qaybta 8: Maktabadaha Dhex-dhisan (Standard Library)](file:///home/mubaarak/Desktop/Tusmo/doc/stdlib.md)** - Raylib (Gaming), OS, HTTP, iyo WebSockets Deep APIs.
+*   **📘 [Qaybta 1: Aasaaska Luuqadda](doc/aasaaska.md)** - Primitives, Variables (`keyd`), Constants (`qeex`), iyo Operations.
+*   **🚦 [Qaybta 2: Xakamaynta Socodka](doc/xakamaynta.md)** - Shuruudaha (`haddii/haddii_kale/kale`) iyo Loops (`inta ay`, `soco...laga bilaabo`).
+*   **📦 [Qaybta 3: Habaynta Xogta](doc/xogta.md)** - Tixaha (`Arrays` - `keyd:tiro[]`) iyo Qaamuusyada (`Dictionaries`).
+*   **⚙️ [Qaybta 4: Hawlaha & Lambdas](doc/hawlaha.md)** - Hawlaha, Function pointers, iyo Anonymous Lambdas.
+*   **🏗️ [Qaybta 5: Object-Oriented Programming (OOP)](doc/oop.md)** - Structs (`qaab`) iyo Classes (`koox`) oo leh Dhaxalka (`dhaxlaya`).
+*   **🛡️ [Qaybta 6: Badbaadada Xusuusta (Memory Safety)](doc/memory.md)** - Ownership model, Move Semantics, iyo Lifetime tracking.
+*   **🔌 [Qaybta 7: Module System](doc/modules.md)** - Isticmaalka ereyada `keen` iyo `isticmaal...kujira`.
+*   **🎮 [Qaybta 8: Maktabadaha Dhex-dhisan (Standard Library)](doc/stdlib.md)** - Raylib (Gaming), OS, HTTP, iyo WebSockets Deep APIs.
 
 ---
 

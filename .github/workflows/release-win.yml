@@ -38,7 +38,7 @@ jobs:
         shell: pwsh
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pyinstaller ply requests pygls lsprotocol
+          python -m pip install pyinstaller ply requests pygls lsprotocol windows-curses
 
       - name: Build tusmo CLI (onedir)
         shell: pwsh

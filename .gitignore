@@ -11,6 +11,8 @@
 !/stdlib/
 !/tusmo.py
 !/.gitignore
+!/docs/
+!/mkdocs.yml
 
 # ------------------------------------------------------------------
 # IGNORE SPECIFIC JUNK FILES INSIDE ALLOWED FOLDERS

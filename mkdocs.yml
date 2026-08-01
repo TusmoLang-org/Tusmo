@@ -1,0 +1,21 @@
+site_name: Tusmo
+site_description: Luuqadda Rasmiga ah ee Tusmo - A General Purpose Somali Programming Language.
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: indigo
+    accent: indigo
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - code.copy
+
+nav:
+  - Bogga Hordhaca: index.md
+  - Bilaabista Degdegga ah: bilaabista.md
+  - Aasaaska Luuqada: aasaaska.md
+  - Heerka Sare: heerka_sare.md
+  - Maktabadda Caadiga ah: maktabada.md
+  - Agabka & Deegaanka: agabka.md
+  - Ka Qaybqaadashada: bulshada.md

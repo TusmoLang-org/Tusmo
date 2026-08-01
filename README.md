@@ -1,177 +1,84 @@
-# Tusmo Programming Language
+# 🌌 Tusmo Programming Language
 
-Tusmo waa luuqad (programming language) casri ah oo ku qoran Af-Soomaali. Waxay isku darsatay xawaaraha C/C++ iyo badbaadada memory-ga (memory safety) ee luuqadaha casriga ah sida Rust, iyadoo aan xitaa la isticmaalin Garbage Collector (GC) kaas oo keeni kara culeys.
+**Tusmo** waa luuqad heer-nidaam ah (system programming language) oo 100% ku qoran **Af-Soomaali**. Waxay si gaar ah isugu darsatay **xawaaraha hufan ee C/C++** iyo **nabadgelyada memory-ga (memory safety) ee Rust**, iyadoo aan gabi ahaanba isticmaalin Garbage Collector (GC).
 
-Waxaa loo dhisay in ay noqoto luuqad keywords-geeda 100% ah native somaali, xawaare sare leh, ayna ufuddaato in developers-ka kale ee somaliyeed ay si ufud ugu dhisaan web development, software-ro waaweyn, 2D/3D video games, iyo barnaamijyada u baahan xawaare sare iyadoo isticmalaya luuqada afsomaaliga ah iyo developer-ka ku cusub saaxad programing-ka.
-
-sidoo kale luuqadan waxay u diyaarsanatahay in ay yeelato frameworks/libraries madaam artitechturekeeda ee ku aadan helida 
-
-## Astaamaha Ugu Waaweyn (Key Features)
-
-**Xawaare Sare (High Performance):** Tusmo waxay si toos ah isugu beddeshaa C code (`Transpiler`), waxaana la dhisay iyadoo la isticmaalayo `gcc -O3 ama zig` si ay u hesho xawaaraha ugu sarreeya ee kumbuyuutarkaagu awoodo.
-
-**Badbaadada Memory-ga (Memory Safety):** Waxay leedahay nidaam memory-ilaalineed oo aad u casri ah. Koodkaagu waligiis ma yeelanayo "Memory Leaks" ama shilal (Crashes) aan la garanayn.
-
-**Qaabdhismeed Casri ah (OOP & Structs):** 
-- `qaab` (Structs): Qaabdhismeedyo xawaare sare leh oo si toos ah xusuusta (stack) u fadhiisanaya sidii C.
-- `koox` (Classes): Barnaamijyo casri ah oo wata dhaxal (Inheritance) iyo faham buuxa oo Object-Oriented ah.
-
-🎮 **Ciyaaraha & Garaafikada (Game Engine Ready):** Waxaa si buuxda ugu dhex jirta maktabadda garaafikada ee **Raylib**, taas oo boqolkiiba boqol loo tarjumay Af-Soomaali.
-
-🧩 **Ku-darka VS Code (Extension):** Tusmo waxay leedahay extension u gooni ah oo leh *Syntax Highlighting*, *Auto-complete*, iyo *Hover documentation* oo ku tusiya macluumaadka shaqo kasta inta aadan qorin!
-
-## Habka Loogu Yeero (Module System)
-Tusmo waxay leedahay nidaam soo-dejineed oo aad u awood badan:
-- `keen "module";` – Waxay soo wadataa module-ka oo dhan.
-- `isticmaal {hawl1, koox2} kujira "module";` – Waxay soo qaadataa oo keliya waxaad u baahan tahay, iyadoo tirtiraysa wixii "Dead Code" ah si barnaamijkaagu u noqdo mid fudud.
+Luuqadan waxaa loo dhisay si ay u noqoto mid ay fududahay in lagu barto lagu dhiso softweerro waaweyn, mareegaha shabakada (web development), codsiyada shabakadaha (networking), iyo ciyaaraha 2D/3D iyadoo la adeegsanayo naxwaha Af-Soomaaliga.
 
 ---
 
-## 📥 Sida Loo Rakibo (Installation Guide)
+## 🚀 Astaamaha Ugu Waaweyn (Key Features)
 
-### Windows
-Fur **PowerShell** (Run as Administrator) oo ku qor:
-```powershell
-iwr -useb https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.ps1 | iex
-```
+*   **Xawaare Sare (High Performance):** Tusmo waxay koodhka u turjumtaa (transpile) C code aad u nadiif ah, waxaana lagu dhisay compiler-ka `gcc -O3` ama `zig` si ay u hesho xawaaraha ugu sarreeya ee hardware-kaagu awoodo.
+*   **Lifetime Tracker (No GC):** Waxay leedahay nidaam compile-time ah oo la socda badbaadada xusuusta (Rust-like Lifetime Tracker). Waxay si toos ah u dhalisaa code-ka xusuusta nadiifinaya (`tusmo_free`) marka uu scope-ku dhammaado.
+*   **Object-Oriented Programming (OOP):** Waxay taageertaa habdhismeedka Class-yada (`koox`) oo leh dhaxal (`dhaxlaya`) iyo Struct-yada (`qaab`).
+*   **Anonymous Functions & Lambdas:** Waxay si buuxda u taageertaa concise arrow lambdas iyo block anonymous functions.
+*   **🎮 Ciyaaraha & Garaafikada (Raylib Native):** Waxaa si toos ah ugu dhex jira maktabadda ciyaaraha caanka ah ee Raylib oo 100% loo Soomaaliyeeyay!
+*   **🧩 VS Code Tooling (LSP Server):** Horumarin dhammaystiran oo ay ku jiraan Autocomplete, Hover docs, Go to Definition (Ctrl+Click), Document Symbols (Outline), iyo Real-time Diagnostics.
 
-### Linux / macOS
-Fur **Terminal** oo ku qor:
+---
+
+## 📥 Habka Rakibaadda (Installation Guide)
+
+### 🐧 Linux / macOS
+Fur **Terminal-kaaga** oo ku qor amarkan si aad si toos ah ugu rakibto:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash
 ```
 
-Kadib markaad rakibto, fur terminal cusub oo tijaabi adigoo qoraya:
+### 🪟 Windows
+Fur **PowerShell** (ku orodsii adigoo ah Administrator) oo ku qor:
+```powershell
+iwr -useb https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.ps1 | iex
+```
+
+Marka uu rakibaaddu dhammaado, xaqiiji adigoo ku qoraya terminal cusub:
 ```bash
 tusmo -v
 ```
 
 ---
 
-## 📖 Sida Loo Qoro Tusmo (Quick Documentation)
+## 📖 Deep Documentation Menu (doc/)
 
-Tusmo waxay leedahay naxwe (syntax) aad u fudud oo la fahmi karo. Halkan waxaa ah aasaaska luuqadda:
+Haddii aad rabto inaad si qoto dheer u barato luuqada Tusmo oo aad dhisato softweer ama ciyaaro, fadlan booqo dukumiintiyada rasmiga ah ee ku dhex jira folder-ka [doc/](file:///home/mubaarak/Desktop/Tusmo/doc/):
 
-### 1. Keydiyaha & Noocyada Xogta (Variables & Data Types)
-Si aad xog u keydiso, isticmaal erayga `keyd` iyo nooca xogta (`tiro`, `jajab`, `eray`, `xaraf`, `miyaa`, ama `walbo`).
+*   **📘 [Qaybta 1: Aasaaska Luuqadda](file:///home/mubaarak/Desktop/Tusmo/doc/aasaaska.md)** - Primitives, Variables (`keyd`), Constants (`qeex`), iyo Operations.
+*   **🚦 [Qaybta 2: Xakamaynta Socodka](file:///home/mubaarak/Desktop/Tusmo/doc/xakamaynta.md)** - Shuruudaha (`haddii/haddii_kale/kale`) iyo Loops (`inta ay`, `soco...laga bilaabo`).
+*   **📦 [Qaybta 3: Habaynta Xogta](file:///home/mubaarak/Desktop/Tusmo/doc/xogta.md)** - Tixaha (`Arrays` - `keyd:tiro[]`) iyo Qaamuusyada (`Dictionaries`).
+*   **⚙️ [Qaybta 4: Hawlaha & Lambdas](file:///home/mubaarak/Desktop/Tusmo/doc/hawlaha.md)** - Hawlaha, Function pointers, iyo Anonymous Lambdas.
+*   **🏗️ [Qaybta 5: Object-Oriented Programming (OOP)](file:///home/mubaarak/Desktop/Tusmo/doc/oop.md)** - Structs (`qaab`) iyo Classes (`koox`) oo leh Dhaxalka (`dhaxlaya`).
+*   **🛡️ [Qaybta 6: Badbaadada Xusuusta (Memory Safety)](file:///home/mubaarak/Desktop/Tusmo/doc/memory.md)** - Ownership model, Move Semantics, iyo Lifetime tracking.
+*   **🔌 [Qaybta 7: Module System](file:///home/mubaarak/Desktop/Tusmo/doc/modules.md)** - Isticmaalka ereyada `keen` iyo `isticmaal...kujira`.
+*   **🎮 [Qaybta 8: Maktabadaha Dhex-dhisan (Standard Library)](file:///home/mubaarak/Desktop/Tusmo/doc/stdlib.md)** - Raylib (Gaming), OS, HTTP, iyo WebSockets Deep APIs.
 
-```tus
-// Keydinta tirooyinka (Integers & Floats)
-keyd:tiro daDaada = 20;
-keyd:jajab miisaanka = 65.5;
+---
 
-// Keydinta qoraalka (Strings & Chars)
-keyd:eray magaca = "Axmed";
-keyd:xaraf xarafkaHore = 'A';
+## 🛠️ Wax-ku-biirinta & Tijaabooyinka (Contribution & Testing)
 
-// Keydinta Haa/Been (Booleans)
-keyd:miyaa waaArday = run;  // run (true) ama been (false)
+Orodso amarkan si aad u tijaabiso LSP server-ka iyo compiler-ka ka hor inta aanad push-gareyn koodhka:
+```bash
+python3 Extension/server/test_server.py -v
 ```
 
-### 2. Qeexidda Ma-beddelayaasha (Constants)
-Haddii aad rabto xog aan waligeed is-beddelayn (Constants/Macros), isticmaal `qeex`. Tani xawaaraha ayay badisaa maxaa yeelay toos ayaa loogu beddelaa C.
+Dhammaan tijaabooyinka waa inay soo saaraan natiijadan si guul leh:
+```text
+test_doc_entry_coordinates ... ok
+test_import_caching ... ok
+test_lsp_completion ... ok
+test_lsp_definition ... ok
+test_lsp_diagnostics ... ok
+test_lsp_document_symbols ... ok
 
-```tus
-qeex PI = 3.14159;
-qeex MAGACA_BARTA = "Tusmo Hub";
+----------------------------------------------------------------------
+Ran 6 tests in 0.007s
 
-hawl main(): waxbo {
-    keyd:jajab goobo = PI * 10.0;
-    qor(MAGACA_BARTA);
-}
-```
-
-### 3. Wareegyada (Loops)
-Tusmo waxay leedahay qaabab kala duwan oo wareeg (Loops) loo sameeyo.
-
-**Wareegga Tirooyinka (For Range):**
-```tus
-// Waxay qoraysaa tirooyinka 1 ilaa 5
-soco i laga bilaabo 1..5 {
-    qor("Tirada waa: ", i);
-}
-```
-
-**Wareegga Shuruudda (While Loop):**
-```tus
-keyd:tiro x = 0;
-inta ay (x < 3) {
-    qor("Wali wuu socdaa...");
-    x = x + 1;
-}
-```
-
-### 4. Qaabdhismeedka (Structs)
-`qaab` waa hab lagu ururiyo xogo kala duwan oo hal meel ku wada jira. Waa (Value Type) oo xawaare aad u sarreeya ku orda!
-
-```tus
-// 1. Dhisida Qaabka (Defining the Struct)
-qaab Qof {
-    keyd:eray magac;
-    keyd:tiro da;
-}
-
-hawl main(): waxbo {
-    // 2. Abuurida (Instantiation)
-    keyd:Qof qof1 = (Qof){"Cali", 25};
-    
-    // 3. Isticmaalka (Usage)
-    qor("Magacu waa: ", qof1.magac);
-    qor("Da'diisu waa: ", qof1.da);
-}
-
-main();
+OK
 ```
 
 ---
 
-## 🎮 Tusaale Ciyaar (Game Example with Raylib)
-Tusmo waxay diyaar u tahay dhisidda ciyaaraha! Halkan waa tusaale fudud oo muujinaya daaqad:
+## 📄 Ruqsadda (License)
 
-```tus
-// Soo daji qaybaha Raylib adigoo isticmaalaya "isticmaal" si aadan memory-ga u buuxin
-isticmaal {bilowDaaqada, xaddidFps, daaqadaMaXirantahay, bilowSawirka, dhameeySawirka, xirDaaqada} kujira "stdlib/raylib/window";
-isticmaal {nadiifiShaashada, sawirGoob} kujira "stdlib/raylib/graphics";
-isticmaal {kuqor, helFar} kujira "stdlib/raylib/text";
-isticmaal {Midab, Boos2D, AfarGees} kujira "stdlib/raylib/types";
+Mashruucan waxaa lagu daabacay ruqsadda rasmiga ah ee **MIT License**.
 
-qeex MADOW = (Midab){0, 0, 0, 255};
-qeex CAGAAR = (Midab){0, 228, 48, 255};
-qeex CAD = (Midab){255, 255, 255, 255};
-
-hawl main(): waxbo {
-    bilowDaaqada(800, 600, "Ciyaartayda Koowaad!");
-    xaddidFps(60);
-
-    // Soo ruriso farta (Load Font)
-    // Tusaale ahaan: qeex MAGACA_FARTA = "font_kasta.ttf";
-    keyd:walbo far = helFar("stdlib/raylib/fonts/Tinos-Bold.ttf");
-
-    inta ay (daaqadaMaXirantahay() == been) {
-        bilowSawirka();
-        nadiifiShaashada(MADOW);
-        
-        sawirGoob(400.0, 300.0, 50.0, CAGAAR);
-        
-        keyd:Boos2D booska = (Boos2D){250.0, 400.0};
-        kuqor(far, "Tusmo waa cajiib!", booska, 30.0, CAD);
-        
-        dhameeySawirka();
-    }
-    xirDaaqada();
-}
-
-main();
-```
-
-## Sida Loo Isticmaalo (Usage)
-Kadib markaad rakibto, fur Terminal-ka oo ku qor:
-```bash
-tusmo magaca_faylkaaga.tus
-```
-
-## Faylasha Halkan Ku Jira (Repository Structure)
-- `/compiler` – Maskaxda luuqadda: Qaybta turjumeysa (Transpiler) iyo falanqeeyaha naxwaha (Semantic Analyzer & Lifetime Tracker).
-- `/runtime` – Koodka C ee asalka u ah Tusmo, xakameynaya xusuusta, tixaha (arrays), qaamuusyada (dictionaries), iyo I/O.
-- `/stdlib` – Maktabadaha caadiga ah ee Tusmo (Sida Raylib, OS, HTTP, WebSockets).
-- `/Extension` – Ku-darka VS Code ee rasmiga ah oo ay ku jirto *Tusmo Language Server Protocol (LSP)*.
+*Waxaa dhisay oo curiyay Bulshada Soomaaliyeed ee Horumarinta Softweerka (Somali Software Developers Community).* 🇸🇴

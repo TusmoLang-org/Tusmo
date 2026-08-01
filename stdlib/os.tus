@@ -302,3 +302,4 @@ koox Os {
         soo_celi ___c__call_("tusmo_os_name");
     }
 }
+keyd:Os os = Os() cusub;

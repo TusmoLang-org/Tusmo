@@ -1,11 +1,83 @@
 keen "xiriiriye";
 
+___c__code_("""
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+
+static char tusmo_hex2char(char ch) {
+    if (ch >= '0' && ch <= '9') return ch - '0';
+    if (ch >= 'A' && ch <= 'F') return ch - 'A' + 10;
+    if (ch >= 'a' && ch <= 'f') return ch - 'a' + 10;
+    return 0;
+}
+
+static char* tusmo_url_decode(const char* str) {
+    if (!str) return tusmo_strdup("");
+    size_t len = strlen(str);
+    char* decoded = (char*)malloc(len + 1);
+    if (!decoded) return tusmo_strdup("");
+    
+    size_t d_idx = 0;
+    for (size_t i = 0; i < len; i++) {
+        if (str[i] == '+') {
+            decoded[d_idx++] = ' ';
+        } else if (str[i] == '%' && i + 2 < len && isxdigit((unsigned char)str[i+1]) && isxdigit((unsigned char)str[i+2])) {
+            char high = tusmo_hex2char(str[i+1]);
+            char low = tusmo_hex2char(str[i+2]);
+            decoded[d_idx++] = (char)((high << 4) | low);
+            i += 2;
+        } else {
+            decoded[d_idx++] = str[i];
+        }
+    }
+    decoded[d_idx] = 0;
+    return decoded;
+}
+
+void tusmo_parse_form_data(TusmoQaamuus* qaamuus, const char* raw_data) {
+    if (!qaamuus || !raw_data || strlen(raw_data) == 0) return;
+    
+    char* copy = tusmo_strdup(raw_data);
+    char* token = strtok(copy, "&");
+    while (token != NULL) {
+        char* eq = strchr(token, '=');
+        if (eq) {
+            *eq = 0;
+            char* raw_key = token;
+            char* raw_val = eq + 1;
+            
+            char* dec_key = tusmo_url_decode(raw_key);
+            char* dec_val = tusmo_url_decode(raw_val);
+            
+            TusmoValue val;
+            val.type = TUSMO_ERAY;
+            val.value.as_eray = dec_val;
+            
+            tusmo_qaamuus_set(qaamuus, dec_key, val);
+            free(dec_key);
+        } else if (strlen(token) > 0) {
+            char* dec_key = tusmo_url_decode(token);
+            TusmoValue val;
+            val.type = TUSMO_ERAY;
+            val.value.as_eray = tusmo_strdup("");
+            
+            tusmo_qaamuus_set(qaamuus, dec_key, val);
+            free(dec_key);
+        }
+        token = strtok(NULL, "&");
+    }
+    free(copy);
+}
+""");
+
 koox CodsiHttp {
     keyd:eray Habka;          // "DOON", "DIR", "BEDDEL", "TIR"
     keyd:eray Method;         // "GET", "POST", "PUT", "DELETE"
     keyd:eray Jidka;          // e.g. "/adeeg"
     keyd:qaamuus Madax;       // Headers dictionary
     keyd:eray Jidhka;         // Request body
+    keyd:qaamuus Foom;        // Form data dictionary
     keyd:miyaa WaaAnsax;      // Is the request valid?
 
     dhis(): waxbo {
@@ -14,6 +86,7 @@ koox CodsiHttp {
         kan.Jidka = "";
         kan.Madax = {};
         kan.Jidhka = "";
+        kan.Foom = {};
         kan.WaaAnsax = been;
     }
 
@@ -28,6 +101,13 @@ koox CodsiHttp {
             haddii (kan.Method == "DELETE") { soo_celi run; }
         }
         soo_celi been;
+    }
+
+    shaqo aqri_faahfaahin(fure: eray): eray {
+        haddii (majiraa(kan.Foom, fure)) {
+            soo_celi eray(kan.Foom[fure]);
+        }
+        soo_celi "";
     }
 }
 
@@ -72,8 +152,18 @@ koox AdeegeHttp {
                     
                     haddii (dherer(ereyada) >= 2) {
                         keyd:eray raw_method = ereyada[0];
-                        req.Jidka = ereyada[1];
+                        keyd:eray raw_path = ereyada[1];
                         req.Method = eray(raw_method);
+                        
+                        keyd:tiro q_idx = sooRaadi(raw_path, "?");
+                        haddii (q_idx != -1) {
+                            req.Jidka = ___c__call_("tusmo_strdup", raw_path);
+                            ___c__call_("tusmo_set_char", req.Jidka, q_idx, 0);
+                            keyd:eray query_str = ___c__call_("tusmo_strdup", ___c__call_("tusmo_str_offset", raw_path, q_idx + 1));
+                            ___c__call_("tusmo_parse_form_data", req.Foom, query_str);
+                        } haddii_kale {
+                            req.Jidka = raw_path;
+                        }
                         
                         haddii (raw_method == "GET") {
                             req.Habka = "DOON";
@@ -100,12 +190,22 @@ koox AdeegeHttp {
                     }
                     i = i + 1;
                 }
+
+                haddii (dherer(req.Jidhka) > 0) {
+                    ___c__call_("tusmo_parse_form_data", req.Foom, req.Jidhka);
+                }
             }
         }
         soo_celi req;
     }
 
     shaqo dir_jawaab(status: eray, content_type: eray, body: eray): waxbo {
+        """
+         kani waxa uu soo diraa jawaabta HTTP ee ku socota codsiga hadda jira. Waxay qaadataa saddex aragti:
+         - status: Xaaladda jawaabta, tusaale ahaan "200 OK" ama "404 Not Found"
+         - content_type: Nooca nuxurka, tusaale ahaan "text/html" ama "application/json"
+         - body: Jidhka jawaabta, kaas oo noqon kara HTML, JSON, qoraal caadi ah, iwm.
+        """
         haddii (kan.client_socket.waa_ansax()) {
             keyd:eray len_str = eray(dherer(body));
             keyd:eray response = "HTTP/1.1 " + status + "\r\n" +
@@ -117,4 +217,6 @@ koox AdeegeHttp {
             kan.client_socket.xir();
         }
     }
+    
 }
+

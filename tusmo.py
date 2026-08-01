@@ -311,7 +311,7 @@ def main():
 
         
 
-        strict_flags = " -Wall -Wextra -Werror -Wno-unused-parameter"
+        strict_flags = " -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable"
 
         compile_command = (
             f'"{cc}" -O3 -march=native -flto{strict_flags} -o "{binary}" '
@@ -321,12 +321,86 @@ def main():
             f'{get_static_lib()} ' 
             f'{lib_flag}  {math_flag}'
         )
-        compile_result = os.system(compile_command)
+        import subprocess
+        import re
+        result = subprocess.run(compile_command, shell=True, capture_output=True, text=True)
+        compile_result = result.returncode
 
         if compile_result != 0:
-            print(
-                f"\nCilad ayaa ka dhacday isku-darka C code-ka. Faylka C wuxuu ku yaal: {out_file}"
-            )
+            print("\n\033[1;31m[!] CILAD DHACDAY KA HOR SOO SAARIDA FAYLKA BINARY-GA (C-Level Compilation Error):\033[0m")
+            print("\033[90m--------------------------------------------------------\033[0m")
+            
+            raw_errors = result.stderr or result.stdout or ""
+            translated_lines = []
+            
+            def clean_diagnostics(text):
+                # Clean up function/variable name mangling and entry points
+                text = re.sub(r'__tusmo_main__', r'main', text)
+                text = re.sub(r'__tusmo_(\w+)__', r'\1', text)
+                text = re.sub(r'__tusmo_lambda_(\d+)', r'hawl_aan_magac_lahayn_\1', text)
+                text = re.sub(r'__tusmo_temp_\d+', r'doorsoome_kumeelgaar', text)
+                
+                # Clean up standard I/O helper wrappers
+                text = re.sub(r'tusmo_qor_walbo\((.*?)\)', r'qor(\1)', text)
+                text = re.sub(r'tusmo_qor_tiro\((.*?)\)', r'qor(\1)', text)
+                text = re.sub(r'tusmo_qor_jajab\((.*?)\)', r'qor(\1)', text)
+                text = re.sub(r'tusmo_qor_eray\((.*?)\)', r'qor(\1)', text)
+                text = re.sub(r'tusmo_qor_xaraf\((.*?)\)', r'qor(\1)', text)
+                text = re.sub(r'tusmo_qor_miyaa\((.*?)\)', r'qor(\1)', text)
+                
+                text = re.sub(r'tusmo_gali_tiro\((.*?)\)', r'gali(\1)', text)
+                text = re.sub(r'tusmo_gali_jajab\((.*?)\)', r'gali(\1)', text)
+                text = re.sub(r'tusmo_gali_eray\((.*?)\)', r'gali(\1)', text)
+                
+                # Clean up transpiler array and dictionary types
+                text = text.replace("TusmoString", "eray")
+                text = text.replace("TusmoValue", "walbo")
+                text = text.replace("TusmoTixTiro", "tiro[]")
+                text = text.replace("TusmoTixJajab", "jajab[]")
+                text = text.replace("TusmoTixEray", "eray[]")
+                text = text.replace("TusmoTixXaraf", "xaraf[]")
+                text = text.replace("TusmoTixMiyaa", "miyaa[]")
+                text = text.replace("TusmoTixWalbo", "walbo[]")
+                text = text.replace("TusmoQaamuus", "qaamuus")
+                return text
+
+            for line in raw_errors.splitlines():
+                # Map generated C file back to original TUSMO file name
+                if out_file in line:
+                    line = line.replace(out_file, filename)
+                elif out_file.replace(".c", "") in line:
+                    line = line.replace(out_file.replace(".c", ""), filename.replace(".tus", ""))
+                
+                # Apply custom Somali cleanups to GCC diagnostics
+                line = clean_diagnostics(line)
+                
+                # Replace standard diagnostic markers with Somali
+                if "error: " in line:
+                    line = line.replace("error: ", "\033[1;31mCilad:\033[0m ")
+                if "warning: " in line:
+                    line = line.replace("warning: ", "\033[1;33mDigniin:\033[0m ")
+                if "note: " in line:
+                    line = line.replace("note: ", "\033[1;36mFiiro Gaar Ah:\033[0m ")
+                if "In function " in line:
+                    line = line.replace("In function ", "Gudaha hawsha ")
+                
+                # Common compiler errors translations
+                if "undeclared" in line:
+                    line += " \033[1;35m// Doorsoomahan laguma qeexin koodhkaaga!\033[0m"
+                elif "too few arguments" in line:
+                    line += " \033[1;35m// Parameter-ada aad u dhiibtay hawsha way ka yaryihiin intii loo baahnaa!\033[0m"
+                elif "too many arguments" in line:
+                    line += " \033[1;35m// Parameter-ada aad u dhiibtay hawsha way ka badanyihiin intii loo baahnaa!\033[0m"
+                elif "conflicting types" in line:
+                    line += " \033[1;35m// Noocyada xogta ee aad isticmaashay way iska hor-imaanayaan!\033[0m"
+                elif "expected" in line and "before" in line:
+                    line += " \033[1;35m// Waxaa meashan ka maqan calaamad ama sumad (Syntax mismatch)!\033[0m"
+                
+                translated_lines.append(line)
+            
+            print("\n".join(translated_lines))
+            print("\033[90m--------------------------------------------------------\033[0m")
+            print(f"\nCilad ayaa ka dhacday isku-darka C code-ka. Faylka C wuxuu ku yaal: {out_file}")
 
         if remove_c_code and compile_result == 0:
             if os.path.exists(out_file):

@@ -134,6 +134,14 @@ def _find_function_calls(node, visited=None):
             calls.update(_find_function_calls(val, visited))
     return calls
 
+def _find_method_enclosing_class(resolved_imported_ast, method_name):
+    for imported_node in resolved_imported_ast:
+        if isinstance(imported_node, ClassNode):
+            for method in (getattr(imported_node, "methods", []) or []):
+                if getattr(method, "name", None) == method_name:
+                    return imported_node.name
+    return None
+
 def _select_requested_nodes(resolved_imported_ast, requested_names, seen_metadata, is_partial=False):
     selected_nodes = []
     found_names = set()
@@ -161,11 +169,34 @@ def _select_requested_nodes(resolved_imported_ast, requested_names, seen_metadat
                 if node not in selected_nodes:
                     selected_nodes.append(node)
                     found_names.add(name)
-                    # Scan for internal references
+
+                    # 1. Scan for internal function/class references inside node
                     refs = _find_function_calls(node)
                     for ref in refs:
                         if ref in name_to_nodes and ref not in processed:
                             queue.append(ref)
+
+                    # 2. Deep ClassNode dependencies (Parent class, member types, method params/returns)
+                    if isinstance(node, ClassNode):
+                        pname = getattr(node, "parent_name", None)
+                        if pname and pname in name_to_nodes and pname not in processed:
+                            queue.append(pname)
+                        for m in (getattr(node, "members", []) or []):
+                            mtype = getattr(m, "var_type", None)
+                            if isinstance(mtype, str) and mtype in name_to_nodes and mtype not in processed:
+                                queue.append(mtype)
+                        for meth in (getattr(node, "methods", []) or []):
+                            mret = getattr(meth, "return_type", None)
+                            if isinstance(mret, str) and mret in name_to_nodes and mret not in processed:
+                                queue.append(mret)
+                            for p in getattr(meth, "params", []):
+                                ptype = getattr(p, "param_type", None)
+                                if isinstance(ptype, str) and ptype in name_to_nodes and ptype not in processed:
+                                    queue.append(ptype)
+                            m_refs = _find_function_calls(getattr(meth, "body", []))
+                            for m_ref in m_refs:
+                                if m_ref in name_to_nodes and m_ref not in processed:
+                                    queue.append(m_ref)
 
     # 2. Identify C-call dependencies
     needed_c_identifiers = set()
@@ -218,6 +249,22 @@ def _find_missing_partial_import_dependencies(resolved_imported_ast, selected_no
             vtype = getattr(node, "var_type", None)
             if isinstance(vtype, str) and vtype in module_top_level_names and vtype not in available_set:
                 add_reason(vtype, f"nooca doorsoomaha '{node.var_name}'")
+        elif isinstance(node, ClassNode):
+            pname = getattr(node, "parent_name", None)
+            if isinstance(pname, str) and pname in module_top_level_names and pname not in available_set:
+                add_reason(pname, f"waalidka dhaxalka ah ee kooxda '{node.name}'")
+            for m in (getattr(node, "members", []) or []):
+                mtype = getattr(m, "var_type", None)
+                if isinstance(mtype, str) and mtype in module_top_level_names and mtype not in available_set:
+                    add_reason(mtype, f"nooca xubinta '{getattr(m, 'var_name', '')}' ee kooxda '{node.name}'")
+            for meth in (getattr(node, "methods", []) or []):
+                mret = getattr(meth, "return_type", None)
+                if isinstance(mret, str) and mret in module_top_level_names and mret not in available_set:
+                    add_reason(mret, f"nooca soo-celinta ee hawsha '{meth.name}' ee kooxda '{node.name}'")
+                for p in getattr(meth, "params", []):
+                    ptype = getattr(p, "param_type", None)
+                    if isinstance(ptype, str) and ptype in module_top_level_names and ptype not in available_set:
+                        add_reason(ptype, f"nooca halbeegga '{p.name}' ee hawsha '{meth.name}' ee kooxda '{node.name}'")
 
         # Deep FFI / nested code dependency analysis
         referenced_names = _find_function_calls(node)
@@ -332,6 +379,15 @@ def process_imports(initial_ast_nodes, base_directory, stdlib_path="stdlib", pro
                     found_set = set(found_list)
                     missing = [n for n in node.names if n not in found_set and n not in seen_top_level_names]
                     if missing:
+                        for m_name in missing:
+                            enclosing_class = _find_method_enclosing_class(resolved_imported_ast, m_name)
+                            if enclosing_class:
+                                print(
+                                    f"\n\033[1;31m[!] KHALAD:\033[0m Hawsha '{m_name}' waa method ku jira Kooxda '\033[1;33m{enclosing_class}\033[0m' ee module-ka '{module_name}'.\n"
+                                    f"\033[1;36m💡 Talo:\033[0m Hawl (method) ku dhex jirta Koox kaligeed ma dhoofi karto. Fadlan dhoofi Kooxda dhan adigoo isticmaalaya:\n"
+                                    f"   \033[1;32misticmaal {{ {enclosing_class} }} kujira \"{module_name}\";\033[0m"
+                                )
+                                sys.exit(1)
                         print(f"\n\033[1;31m[!] KHALAD:\033[0m '{module_name}' kuma jiraan: {', '.join(missing)}!")
                         sys.exit(1)
                         

@@ -276,6 +276,17 @@ class CCodeGenerator:
             cleanup_code += f"    if ({name}) {free_fn}({name});\n"
         cleanup_code += "    if (amrd) tusmo_free_tix_eray(amrd);\n"
             
+        main_call = ""
+        if self.symbol_table.exists_in_global_scope("main"):
+            symbol_info = self.symbol_table.get("main")
+            if symbol_info and symbol_info[1] == "hawl":
+                func_node = symbol_info[0]
+                if "__tusmo_main__(" not in self.c_code:
+                    if func_node and hasattr(func_node, 'params') and len(func_node.params) > 0:
+                        main_call = "    __tusmo_main__(amrd);\n"
+                    else:
+                        main_call = "    __tusmo_main__();\n"
+
         final_c_code = (
             f"{header_include}"
             f"{self.struct_definitions}"
@@ -290,6 +301,7 @@ class CCodeGenerator:
             f"        tusmo_hp_tix_eray_append(amrd, tusmo_strdup(argv[i]));\n"
             f"    }}\n"
             f"{self.c_code}"
+            f"{main_call}"
             f"{cleanup_code}"
             f"    return 0;\n"
             f"}}\n"

@@ -34,7 +34,7 @@ from compiler.midend.docstring_utils import (
 )
 
 
-LOCAL_VERSION = "0.0.6"
+LOCAL_VERSION = "2.0.0"
 REPO_URL = "https://api.github.com/repos/TusmoLang-org/Tusmo/releases/latest"
 
 

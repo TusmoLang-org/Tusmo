@@ -16,10 +16,6 @@ command -v x86_64-w64-mingw32-gcc >/dev/null || {
     echo 'Missing x86_64-w64-mingw32-gcc.' >&2
     exit 1
 }
-command -v wine >/dev/null || {
-    echo 'Missing wine.' >&2
-    exit 1
-}
 
 cd "$project_root"
 export TUSMO_CC=x86_64-w64-mingw32-gcc
@@ -36,6 +32,13 @@ if [[ "${CROSS_COMPILE_ONLY:-0}" == '1' ]]; then
     echo 'Linux Windows cross-compilation passed.'
     exit 0
 fi
+
+# Wine is only needed for the execution check, so this runs after the
+# CROSS_COMPILE_ONLY early exit above.
+command -v wine >/dev/null || {
+    echo 'Missing wine (needed only to run the .exe; use CROSS_COMPILE_ONLY=1 to skip).' >&2
+    exit 1
+}
 
 echo 'Running the Windows executable under Wine...'
 wine_log="$(mktemp "${TMPDIR:-/tmp}/tusmo-wine-log.XXXXXX")"

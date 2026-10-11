@@ -40,7 +40,16 @@ class LoopGenerator:
         self.symbol_table.push_scope()
         self.symbol_table.set(iterator, 'tiro')
 
-        self.main_generator.c_code += f"    for (int {iterator} = {start_c}{"" if node.increase else "-1"}; {iterator} {"<" if node.increase else ">="} {end_c}; {"++" if node.increase else "--"}{iterator}) {{\n"
+        # Kept as separate names: nesting quotes of the same type inside an
+        # f-string expression needs PEP 701 (Python 3.12+), and the compiler
+        # must also run on the Python 3.11 used by CI and older distros.
+        start_offset = "" if node.increase else "-1"
+        compare_op = "<" if node.increase else ">="
+        step_op = "++" if node.increase else "--"
+        self.main_generator.c_code += (
+            f"    for (int {iterator} = {start_c}{start_offset}; "
+            f"{iterator} {compare_op} {end_c}; {step_op}{iterator}) {{\n"
+        )
         self.main_generator._generate_node(node.body)
         
         # --- NEW: Inject Cleanup code ---

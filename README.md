@@ -122,7 +122,7 @@ haddii (dhibco >= 90) {
 ### Loops
 
 ```tusmo
-soco keyd:tiro i laga bilaabo 1 ilaa 5 {
+soco i laga bilaabo 1..5 {
     qor("Tirada: ", i);
 }
 ```

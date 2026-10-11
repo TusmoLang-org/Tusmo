@@ -97,8 +97,8 @@ inta ay (kow <= 5) {
 Wuxuu ku habboon yahay marka aad garanayso inta jeer ee loop-ku ordi doono:
 
 ```tusmo
-// For loop: Orod 1 ilaa 5
-soco keyd:tiro i laga bilaabo 1 ilaa 5 {
+// For loop: Orod 1 ilaa 4 (5 lama soo bixinayo - upper bound waa la ka tirtiraa)
+soco i laga bilaabo 1..5 {
     qor("Wareegga: ", i);
 }
 ```

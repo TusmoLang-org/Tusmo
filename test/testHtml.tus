@@ -1,0 +1,4 @@
+keyd:eray salaan;
+salaan = "Maalin wanaagsan!";
+keyd:eray heshiis = salaan;
+qor(salaan);

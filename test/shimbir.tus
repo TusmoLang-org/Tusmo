@@ -1,0 +1,122 @@
+keen "stdlib/raylib/core";
+
+// 1. Game Config
+qeex BALLAC = 450;
+qeex DHEER = 700;
+
+qeex SAWIR_SHIMBIR = "bird.png";
+qeex MAQAL_DHAMMAAD = "gameOver.mp3";
+qeex FAR_TINOS_BOLD = "stdlib/raylib/fonts/Tinos-Bold.ttf";
+
+bilowDaaqada(BALLAC, DHEER, "Shimbirta Kacaysa - Tusmo Game");
+bilowMaqal();
+xaddidFps(60);
+
+// Load Assets
+keyd:walbo far_weyn = helFar(FAR_TINOS_BOLD);
+keyd:walbo sawir_shimbir = helSawir(SAWIR_SHIMBIR);
+keyd:walbo maqal_dhammaad = helMaqal(MAQAL_DHAMMAAD);
+
+// Physics & Game Variables
+keyd:jajab birdY = 350.0;
+keyd:jajab birdV = 0.0;
+keyd:jajab gravity = 0.5;
+keyd:jajab jump = -8.0;
+
+keyd:jajab pipeX = 500.0;
+keyd:jajab pipeGapY = 250.0;
+keyd:jajab pipeGapSize = 160.0;
+
+keyd:tiro score = 0;
+keyd:miyaa isPlaying = been;
+keyd:miyaa gameOver = been;
+keyd:miyaa soundPlayed = been;
+
+inta ay (daaqadaMaXirantahay() == been) {
+    
+    // --- 2. UPDATE ---
+    haddii (isPlaying) {
+        birdV = birdV + gravity;
+        birdY = birdY + birdV;
+
+        haddii (laTaabtayFurahan(FURE_SPACE)) {
+            birdV = jump;
+        }
+
+        pipeX = pipeX - 4.5;
+        
+        // --- 2.1 COLLISION ---
+        keyd:AfarGees shimbir_box = (AfarGees){85.0, birdY - 15.0, 30.0, 30.0};
+        keyd:AfarGees tiir_sare = (AfarGees){pipeX, 0.0, 60.0, pipeGapY};
+        keyd:AfarGees tiir_hoose = (AfarGees){pipeX, pipeGapY + pipeGapSize, 60.0, 700.0 - (pipeGapY + pipeGapSize)};
+
+        keyd:miyaa dhacay_sare = hubiIskuDhacAfarGees(shimbir_box, tiir_sare);
+        keyd:miyaa dhacay_hoose = hubiIskuDhacAfarGees(shimbir_box, tiir_hoose);
+        
+        haddii (dhacay_sare ama dhacay_hoose ama birdY > 700.0 ama birdY < 0.0) {
+            isPlaying = been;
+            gameOver = haa;
+            
+            haddii (soundPlayed == been) {
+                daarMaqal(maqal_dhammaad);
+                soundPlayed = haa;
+            }
+        }
+
+        haddii (pipeX < -65.0) {
+            pipeX = 450.0;
+            score = score + 1;
+            pipeGapY = 150.0 + jajab(score * 73 % 250); 
+        }
+
+    } haddii_kale {
+        haddii (laTaabtayFurahan(FURE_SPACE)) {
+            birdY = 350.0;
+            birdV = 0.0;
+            pipeX = 500.0;
+            score = 0;
+            isPlaying = haa;
+            gameOver = been;
+            soundPlayed = been;
+        }
+    }
+
+    // --- 3. DRAW ---
+    bilowSawirka();
+    nadiifiShaashada(CIRKA);
+
+    // Draw Pipes
+    sawirAfarGees(pipeX, 0.0, 60.0, pipeGapY, CAGAAR);
+    sawirAfarGees(pipeX, pipeGapY + pipeGapSize, 60.0, 700.0 - (pipeGapY + pipeGapSize), CAGAAR);
+    
+    // Draw Bird
+    haddii (isPlaying ama gameOver) {
+        keyd:Boos2D birdPos = (Boos2D){75.0, birdY - 17.0};
+        muujiSawirLahelay(sawir_shimbir, birdPos, 0.0, 0.02, CAD);
+    }
+
+    // UI
+    keyd:Boos2D scorePos = (Boos2D){15.0, 15.0};
+    kuqor(far_weyn, "DHIBCAHA: " + eray(score), scorePos, 30.0, MADOW);
+
+    haddii (gameOver) {
+        sawirAfarGees(0.0, 0.0, 450.0, 700.0, (Midab){0, 0, 0, 150});
+        keyd:Boos2D goPos = (Boos2D){100.0, 280.0};
+        kuqor(far_weyn, "GAME OVER!", goPos, 40.0, CAS);
+        keyd:Boos2D scoreResPos = (Boos2D){130.0, 340.0};
+        kuqor(far_weyn, "DHIBCAHA: " + eray(score), scoreResPos, 25.0, CAD);
+        keyd:Boos2D spacePos = (Boos2D){50.0, 450.0};
+        kuqor(far_weyn, "TAABO [SPACE] SI AAD U CIYAARTO", spacePos, 20.0, JAALLE);
+        
+    } haddii (isPlaying == been iyo gameOver == been) {
+        keyd:Boos2D titlePos = (Boos2D){60.0, 250.0};
+        kuqor(far_weyn, "SHIMBIRTA KACAYSA", titlePos, 35.0, MADOW);
+        keyd:Boos2D startPos = (Boos2D){80.0, 350.0};
+        kuqor(far_weyn, "TAABO [SPACE] SI AAD U BILAABO", startPos, 18.0, CAS);
+    }
+
+    dhameeySawirka();
+}
+
+xirMaqal();
+xirDaaqada();

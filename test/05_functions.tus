@@ -1,0 +1,95 @@
+// ============================================
+// Test: Functions (hawl)
+// ============================================
+
+qor("=== Function Tests ===");
+
+// Simple procedure with no parameters (using SHAQO)
+shaqo greet() : waxbo {
+    qor("Hello from function!");
+}
+qor("\n--- Simple Function ---");
+greet();
+
+// Function with parameters
+hawl add(a:tiro, b:tiro) : tiro {
+    keyd:tiro result = a + b;
+    soo_celi result;
+}
+qor("\n--- Function with Parameters ---");
+keyd:tiro sum = add(10, 20);
+qor("add(10, 20) =", sum);
+
+// Function with different return types
+hawl get_message() : eray {
+    soo_celi "Tusmo is awesome!";
+}
+qor("\n--- Function returning string ---");
+keyd:eray msg = get_message();
+qor("get_message() =", msg);
+
+hawl is_even(n:tiro) : miyaa {
+    keyd:miyaa result = (n % 2 == 0);
+    soo_celi result;
+}
+qor("\n--- Function returning boolean ---");
+qor("is_even(4) =", is_even(4));
+qor("is_even(7) =", is_even(7));
+
+// Function with default parameters
+hawl greet_user(name:eray = "Guest") : eray {
+    keyd:eray greeting = "Hello, " + name;
+    soo_celi greeting;
+}
+qor("\n--- Function with Default Parameters ---");
+qor("greet_user() =", greet_user());
+qor("greet_user(Ali) =", greet_user("Ali"));
+
+// Function with multiple parameters
+hawl calculate(a:tiro, b:tiro, op:eray) : tiro {
+    haddii (op == "+") {
+        soo_celi a + b;
+    } ama_haddii (op == "-") {
+        soo_celi a - b;
+    } ama_haddii (op == "*") {
+        soo_celi a * b;
+    } haddii_kale {
+        soo_celi 0;
+    }
+}
+qor("\n--- Function with multiple params ---");
+qor("calculate(10, 5, +) =", calculate(10, 5, "+"));
+qor("calculate(10, 5, *) =", calculate(10, 5, "*"));
+
+// Recursive function
+hawl factorial(n:tiro) : tiro {
+    haddii (n <= 1) {
+        soo_celi 1;
+    } ama_haddii (n > 1) {
+        soo_celi n * factorial(n - 1);
+    } haddii_kale {
+        soo_celi 0;
+    }
+}
+qor("\n--- Recursive Function ---");
+qor("factorial(5) =", factorial(5));
+qor("factorial(0) =", factorial(0));
+
+// Function with array parameter
+hawl sum_array(n1:tiro, n2:tiro, n3:tiro, n4:tiro, n5:tiro) : tiro {
+    keyd:tiro total = n1 + n2 + n3 + n4 + n5;
+    soo_celi total;
+}
+qor("\n--- Function with Array-like Parameters ---");
+qor("sum_array(1,2,3,4,5) =", sum_array(1, 2, 3, 4, 5));
+
+// Function returning array
+hawl create_array() : tix:tiro {
+    keyd:tix:tiro result = [1, 2, 3, 4, 5];
+    soo_celi result;
+}
+qor("\n--- Function returning Array ---");
+keyd:tix:tiro range_result = create_array();
+qor("create_array() =", range_result);
+
+qor("\n=== All Function Tests Passed ===");

@@ -1,0 +1,51 @@
+// 1. Unary Minus and Plus Tests
+keyd:tiro x = 5;
+keyd:tiro neg_x = -x;
+keyd:tiro pos_x = +x;
+keyd:tiro neg_const = -10;
+keyd:tiro pos_const = +10;
+
+qor("x: ", x);
+qor("neg_x: ", neg_x);
+qor("pos_x: ", pos_x);
+qor("neg_const: ", neg_const);
+qor("pos_const: ", pos_const);
+
+// 2. Logical Unary Tests
+keyd:miyaa t = run;
+keyd:miyaa not_t_symbol = !t;
+keyd:miyaa not_t_somali = been ahayn t;
+
+qor("t: ", t);
+qor("!t: ", not_t_symbol);
+qor("been ahayn t: ", not_t_somali);
+
+// 3. Symbolic Relational Operator Tests (including =<, >=, ==, ===)
+keyd:tiro a = 100;
+keyd:tiro b = 200;
+keyd:miyaa lt_symbol = (a < b);
+keyd:miyaa gt_symbol = (a > b);
+keyd:miyaa le_symbol1 = (a <= b);
+keyd:miyaa le_symbol2 = (a =< b); // Custom alternative supported by user request
+keyd:miyaa ge_symbol = (a >= b);
+keyd:miyaa eq_symbol1 = (a == b);
+keyd:miyaa eq_symbol2 = (a === b); // Triple equals supported by user request
+
+qor("a < b: ", lt_symbol);
+qor("a > b: ", gt_symbol);
+qor("a <= b: ", le_symbol1);
+qor("a =< b: ", le_symbol2);
+qor("a >= b: ", ge_symbol);
+qor("a == b: ", eq_symbol1);
+qor("a === b: ", eq_symbol2);
+
+// 4. Symbolic and Somali Logical Binary Tests
+keyd:miyaa and_symbol = (t && been);
+keyd:miyaa or_symbol = (t || been);
+keyd:miyaa and_somali = (t iyo been);
+keyd:miyaa or_somali = (t ama been);
+
+qor("t && been: ", and_symbol);
+qor("t || been: ", or_symbol);
+qor("t iyo been: ", and_somali);
+qor("t ama been: ", or_somali);

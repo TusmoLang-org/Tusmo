@@ -1,0 +1,28 @@
+keyd:jajab lacagta = 0.0;
+
+keyd:eray pin = "1234";
+
+
+hawl itusDooroshooyinka():waxbo{
+    qor("--------Evc Plus------");
+    qor("1. itus haragaaga");
+    qor("2. Kaarka hadalka");
+    qor("3. Bixi Bill");
+    qor("4. Uwareeji evc-plus");
+    qor("5. Warbixin kooban");
+}
+
+hawl main():waxbo{
+    keyd:eray userPin;
+    qor("fadlan gali pin-kaada");
+    hel userPin;
+
+    haddii(userPin == pin){
+        itusDooroshooyinka();
+    }
+    haddii_kale{
+        qor("Pin-ka aad galisay waa khalad fadlan iska hubi");
+    }
+    
+
+}

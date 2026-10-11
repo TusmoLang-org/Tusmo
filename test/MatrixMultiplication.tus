@@ -1,0 +1,57 @@
+hawl matrix_multiply(a:tix:tix:tiro, b:tix:tix:tiro) => tix:tix:tiro {
+    keyd:tiro n = dherer(a);      
+    keyd:tiro m = dherer(a[0]);   
+    keyd:tiro p = dherer(b[0]);   
+
+    keyd:tix:tix:tiro natiijo = [];
+    keyd:tiro r = 0;
+    inta ay (r < n) {
+        keyd:tix:tiro row = [];
+        keyd:tiro c = 0;
+        inta ay (c < p) {
+            row.gali(0);
+            c = c + 1;
+        }
+        natiijo.gali(row);
+        r = r + 1;
+    }
+
+    keyd:tiro i = 0;
+    inta ay (i < n) { 
+        keyd:tiro k = 0;
+        inta ay (k < m) { 
+            keyd:tiro val_a = a[i][k];
+            keyd:tiro j = 0;
+            inta ay (j < p) { 
+                natiijo[i][j] = natiijo[i][j] + (val_a * b[k][j]);
+                j = j + 1;
+            }
+            k = k + 1;
+        }
+        i = i + 1;
+    }
+    soo_celi natiijo;
+}
+
+hawl abuur_matrix(size: tiro) => tix:tix:tiro {
+    keyd:tix:tix:tiro mat = [];
+    keyd:tiro i = 0;
+    inta ay (i < size) {
+        keyd:tix:tiro row = [];
+        keyd:tiro j = 0;
+        inta ay (j < size) {
+            row.gali(1); 
+            j = j + 1;
+        }
+        mat.gali(row);
+        i = i + 1;
+    }
+    soo_celi mat;
+}
+
+keyd:tiro cabbir = 500;
+keyd:tix:tix:tiro A = abuur_matrix(cabbir);
+keyd:tix:tix:tiro B = abuur_matrix(cabbir);
+
+keyd:tix:tix:tiro res = matrix_multiply(A, B);
+qor("Xisaabtii 500x500 waa dhammaatay!\n");

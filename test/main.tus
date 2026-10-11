@@ -1,0 +1,20 @@
+hawl xisaabi(f: hawl(tiro, tiro): tiro, x: tiro, y: tiro) : tiro {
+    soo_celi f(x, y);
+}
+
+qor("--- Tijaabada Anonymous Functions ---");
+
+// 1. Isticmaalka lambda kooban (concise)
+keyd:tiro n1 = xisaabi(hawl(a: tiro, b: tiro) => a + b, 10, 5);
+qor("10 + 5 =", n1);
+
+// 2. Isticmaalka lambda weyn (block)
+keyd:tiro n2 = xisaabi(hawl(a: tiro, b: tiro) : tiro {
+    keyd:tiro m = a * b;
+    soo_celi m;
+}, 10, 5);
+qor("10 * 5 =", n2);
+
+// 3. Ku keydinta lambda variable
+keyd:hawl(tiro, tiro):tiro kalajar = hawl(x: tiro, y: tiro) => x - y;
+qor("10 - 5 =", kalajar(10, 5));

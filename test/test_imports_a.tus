@@ -1,0 +1,10 @@
+koox NoocaA {
+    keyd:eray Magac;
+    dhis(m: eray): waxbo {
+        kan.Magac = m;
+    }
+}
+
+shaqo hawl_a(): eray {
+    soo_celi "Ka yimid A!";
+}

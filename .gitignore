@@ -5,6 +5,8 @@
 # EXPLICITLY ALLOWED FOLDERS AND FILES (Do not ignore these)
 # ------------------------------------------------------------------
 !/README.md
+!/README-so.md
+!/.gitattributes
 !/compiler/
 !/Extension/
 !/runtime/
@@ -12,7 +14,34 @@
 !/tusmo.py
 !/.gitignore
 !/docs/
+!/doc/
 !/mkdocs.yml
+!/install.sh
+!/install.ps1
+!/.github/
+!/windows/
+!/languages.yml
+
+# Source files required for `python3 tusmo.py <file>.tus` to work at all:
+# tusmo.py imports tusmo_cli at startup (line 12).
+!/tusmo_cli.py
+!/tusmo_lexer.py
+
+# Tooling and samples
+!/run_benchmarks.py
+!/run_exact_bench.py
+!/tusmo.tus
+
+# Test suite: keep the sources, drop the compiled binaries and generated C
+!/test/
+/test/*
+!/test/*.tus
+!/test/*.txt
+!/test/*.json
+!/test/*.png
+!/test/*.html
+!/test/*.md
+!/test/*.rs
 
 # ------------------------------------------------------------------
 # IGNORE SPECIFIC JUNK FILES INSIDE ALLOWED FOLDERS

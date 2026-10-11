@@ -29,7 +29,7 @@ double tusmo_random_double(double min, double max) {
 }
 """);
 
-hawl bilaab_nasiib() => waxbo {
+hawl bilaaw_nasiib() => waxbo {
     """Diyaari nasiibka ka hor inta la isticmaalin hawlaha kale."""
     ___c__call_("tusmo_init_random");
 }

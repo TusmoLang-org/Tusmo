@@ -1,0 +1,99 @@
+keen "xiriiriye";
+
+hawl main(): waxbo {
+    keyd:Xiriiriye server = Xiriiriye() cusub;
+    server.samee_server("8080");
+    server.dhageyso(15);
+    qor("Server-ka HTTP ee laga dhisay Pure Tusmo wuxuu ka shaqaynayaa port 8080...");
+
+    inta ay (run) {
+        keyd:Xiriiriye client = server.aqbal();
+        haddii (client.waa_ansax()) {
+            keyd:eray codsi = client.soo_hel(4096);
+            
+            haddii (dherer(codsi) > 0) {
+                keyd:tix:eray sadarada = qaybi(codsi, "\r\n");
+                keyd:eray sadarka_koobaad = sadarada[0];
+                keyd:tix:eray ereyada = qaybi(sadarka_koobaad, " ");
+                
+                keyd:eray habka = ereyada[0];
+                keyd:eray jidka = ereyada[1];
+                
+                qor("--- CODSIGA LA HELAY ---");
+                qor("Habka: " + habka);
+                qor("Jidka: " + jidka);
+                
+                keyd:eray response = "";
+                
+                haddii (jidka == "/") {
+                    keyd:eray html = "<html><head><style>" +
+                                     "body { background: #0f172a; color: #f8fafc; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }" +
+                                     "h1 { color: #38bdf8; font-size: 3rem; margin-bottom: 10px; text-shadow: 0 0 10px rgba(56,189,248,0.3); animation: fade 2s infinite alternate; }" +
+                                     "p { font-size: 1.2rem; color: #94a3b8; }" +
+                                     ".btn { background: #38bdf8; color: #0f172a; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 20px; transition: 0.3s; }" +
+                                     ".btn:hover { background: #0ea5e9; transform: scale(1.05); }" +
+                                     "@keyframes fade { from { opacity: 0.8; } to { opacity: 1; } }" +
+                                     "</style></head><body>" +
+                                     "<h1>Tusmo HTTP Server</h1>" +
+                                     "<p>Ku soo dhawaada server-ka rasmiga ah ee laga dhisay Pure Tusmo!</p>" +
+                                     "<a href='/adeeg' class='btn'>Eeg Adeegyada</a>" +
+                                     "</body></html>";
+                    
+                    keyd:eray len_str = eray(dherer(html));
+                    response = "HTTP/1.1 200 OK\r\n" +
+                               "Content-Type: text/html; charset=utf-8\r\n" +
+                               "Content-Length: " + len_str + "\r\n" +
+                               "Connection: close\r\n\r\n" +
+                               html;
+                }
+                ama_haddii (jidka == "/adeeg") {
+                    keyd:eray html = "<html><head><style>" +
+                                     "body { background: #0f172a; color: #f8fafc; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }" +
+                                     "h1 { color: #a855f7; font-size: 2.5rem; margin-bottom: 20px; }" +
+                                     "ul { list-style: none; padding: 0; }" +
+                                     "li { background: #1e293b; padding: 15px 30px; border-radius: 8px; margin-bottom: 10px; font-size: 1.1rem; border-left: 5px solid #a855f7; }" +
+                                     ".btn { background: #a855f7; color: #ffffff; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 20px; }" +
+                                     "</style></head><body>" +
+                                     "<h1>Adeegyada Aan Bixinno</h1>" +
+                                     "<ul>" +
+                                     "<li>1. Shabakadaha Degdegga ah (High-speed Networking)</li>" +
+                                     "<li>2. Embed FFI integration (Embedded C Core)</li>" +
+                                     "<li>3. Memory-Safe Application Development</li>" +
+                                     "</ul>" +
+                                     "<a href='/' class='btn'>Ku Laabo Guriga</a>" +
+                                     "</body></html>";
+                    
+                    keyd:eray len_str = eray(dherer(html));
+                    response = "HTTP/1.1 200 OK\r\n" +
+                               "Content-Type: text/html; charset=utf-8\r\n" +
+                               "Content-Length: " + len_str + "\r\n" +
+                               "Connection: close\r\n\r\n" +
+                               html;
+                }
+                haddii_kale {
+                    keyd:eray html = "<html><head><style>" +
+                                     "body { background: #0f172a; color: #f8fafc; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }" +
+                                     "h1 { color: #ef4444; font-size: 4rem; margin-bottom: 10px; }" +
+                                     "p { font-size: 1.2rem; color: #94a3b8; }" +
+                                     ".btn { background: #ef4444; color: #ffffff; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 20px; }" +
+                                     "</style></head><body>" +
+                                     "<h1>404</h1>" +
+                                     "<p>Bogga aad raadinayso lama helin sxb!</p>" +
+                                     "<a href='/' class='btn'>Ku Laabo Guriga</a>" +
+                                     "</body></html>";
+                    
+                    keyd:eray len_str = eray(dherer(html));
+                    response = "HTTP/1.1 404 Not Found\r\n" +
+                               "Content-Type: text/html; charset=utf-8\r\n" +
+                               "Content-Length: " + len_str + "\r\n" +
+                               "Connection: close\r\n\r\n" +
+                               html;
+                }
+                
+                client.dir(response);
+            }
+            client.xir();
+        }
+    }
+}
+main();

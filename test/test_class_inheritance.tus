@@ -1,0 +1,27 @@
+koox Nool {
+    keyd:eray magac;
+    dhis(m: eray): waxbo {
+        kan.magac = m;
+    }
+    hawl sheeg_magac(): waxbo {
+        qor(kan.magac);
+    }
+}
+
+koox Qof dhaxlaya Nool {
+    keyd:tiro da;
+    dhis(m: eray, d: tiro): waxbo {
+        waalid.dhis(m);
+        kan.da = d;
+    }
+    hawl sheeg(): waxbo {
+        kan.sheeg_magac();
+        qor(kan.da);
+    }
+}
+
+hawl main(): waxbo {
+    keyd:Qof q = Qof("Axmed", 20) cusub;
+    q.sheeg();
+}
+main();

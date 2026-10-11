@@ -1,0 +1,67 @@
+// ============================================
+// Test: Dictionaries (qaamuus)
+// ============================================
+
+qor("=== Dictionary Tests ===");
+
+// Dictionary Creation
+qor("\n--- Dictionary Creation ---");
+keyd:qaamuus person = {
+    "magac": "Ali",
+    "da": 25,
+    "shirk": "Software Engineer"
+};
+qor("person =", person);
+
+// Dictionary Access (using bracket syntax)
+qor("\n--- Dictionary Access ---");
+qor("person[magac] =", person["magac"]);
+qor("person[da] =", person["da"]);
+qor("person[shirk] =", person["shirk"]);
+
+// Dictionary Modification
+qor("\n--- Dictionary Modification ---");
+person["magac"] = "Ahmed";
+qor("After person[magac] = 'Ahmed':", person);
+
+person["da"] = 30;
+qor("After person[da] = 30:", person);
+
+// Add new key
+qor("\n--- Adding New Keys ---");
+person["wadan"] = "Somalia";
+qor("After adding 'wadan':", person);
+
+// Dictionary Methods
+qor("\n--- Dictionary Methods ---");
+keyd:qaamuus scores = {
+    "math": 90,
+    "science": 85,
+    "english": 88
+};
+
+qor("scores =", scores);
+keyd:miyaa has_math = scores.majiraa("math");
+qor("scores.majiraa('math'):", has_math);
+
+keyd:miyaa has_art = scores.majiraa("art");
+qor("scores.majiraa('art'):", has_art);
+
+// Nested Dictionary
+qor("\n--- Nested Dictionary ---");
+keyd:qaamuus school = {
+    "name": "Tusmo School",
+    "students": {
+        "count": 100,
+        "active": run
+    }
+};
+qor("school =", school);
+qor("school[students][count] =", school["students"]["count"]);
+
+// Empty Dictionary
+qor("\n--- Empty Dictionary ---");
+keyd:qaamuus empty_dict = {};
+qor("empty_dict =", empty_dict);
+
+qor("\n=== All Dictionary Tests Passed ===");

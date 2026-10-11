@@ -162,7 +162,7 @@ hawl main() : waxbo {
 Ku soo dhex gasho: `keen "nasiib";`
 
 #### Shaqooyinka:
-* `bilaab_nasiib() : waxbo` — Diyaari nasiibka (initializes random seed using time).
+* `bilaaw_nasiib() : waxbo` — Diyaari nasiibka (initializes random seed using time).
 * `nasiib_tiro(ugu_yaraan: tiro, ugu_badnaan: tiro) : tiro` — Soo saar tiro random ah oo u dhaxaysa tiradaas.
 * `nasiib_jajab(ugu_yaraan: jajab, ugu_badnaan: jajab) : jajab` — Soo saar jajab random ah oo u dhexeeya.
 
@@ -170,7 +170,7 @@ Ku soo dhex gasho: `keen "nasiib";`
 keen "nasiib";
 
 hawl main() : waxbo {
-    bilaab_nasiib(); // Waa in la waco mar kaliya marka la bilaabayo
+    bilaaw_nasiib(); // Waa in la waco mar kaliya marka la bilaabayo
     keyd:tiro lambar = nasiib_tiro(1, 100);
     qor("Tirada nasiibka ee 1 ilaa 100 waa: ", lambar);
 }

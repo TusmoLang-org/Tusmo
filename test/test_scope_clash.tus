@@ -1,0 +1,13 @@
+hawl function_one(): waxbo {
+    keyd:eray s = "hello";
+    keyd:eray y = s; // s is moved here!
+    qor(y);
+}
+
+hawl function_two(): waxbo {
+    keyd:eray s = "world"; // Another variable named s!
+    qor(s); // Does this raise ERR_USE_AFTER_MOVE because of function_one?
+}
+
+function_one();
+function_two();

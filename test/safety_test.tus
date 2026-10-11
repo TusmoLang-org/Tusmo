@@ -1,0 +1,1 @@
+keyd:tix:tiro a = [1,2,3]; haddii (run) { keyd:tix:tiro b = a; qor(b); } haddii_kale { qor(a); } qor(a);

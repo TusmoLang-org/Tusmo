@@ -1,0 +1,6 @@
+keyd:tix:tiro a = [1,2,3];
+keyd:tix:tiro b = a;
+keyd:tix:tiro c = a;  // 🚨 illegal if a already moved
+
+qor(b);
+qor(c);

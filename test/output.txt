@@ -1,0 +1,19 @@
+x: 5
+neg_x: -5
+pos_x: 5
+neg_const: -10
+pos_const: 10
+t: run
+!t: been
+been ahayn t: been
+a < b: run
+a > b: been
+a <= b: run
+a =< b: run
+a >= b: been
+a == b: been
+a === b: been
+t && been: been
+t || been: run
+t iyo been: been
+t ama been: run

@@ -1,0 +1,5 @@
+keyd:miyaa t = run;
+keyd:miyaa not1 = !t;
+keyd:miyaa not2 = been ahayn t;
+qor("not1:", not1);
+qor("not2:", not2);

@@ -1,0 +1,61 @@
+keen "opencv";
+
+// ==========================================
+// 1. TIJAABADA SAWIRKA (Image Test)
+// ==========================================
+qor("--- Tijaabada Sawirka ---");
+sawir_magac = "tijaabo.jpg"; // Hubi inuu sawirkan jiro ama bedel magaca
+
+s = opencv.akhriSawirka(sawir_magac);
+
+hadii (s != waxbo) {
+    qor("Sawirka waa la helay. Waxaan ku tusayaa daaqad...");
+    opencv.muujiSawirka("Sawirka la Akhriyay", s);
+    
+    // Kaydi sawirka isagoo magac kale leh
+    hadii (opencv.qorSawirka("nuqul_sawir.png", s)) {
+        qor("Sawirka waa la nuqulay (nuqul_sawir.png).");
+    }
+    
+    qor("Riix badhan kasta si aad u gudubto camerada...");
+    opencv.badhanLaRiixay(0);
+    opencv.xusuustaNadiifi(s);
+} ama {
+    qor("Digniin: Sawirka 'tijaabo.jpg' lama helin. Waan ka boodayaa qaybtan.");
+}
+
+
+// ==========================================
+// 2. TIJAABADA CAMERADA (Camera Test)
+// ==========================================
+qor("\n--- Tijaabada Camerada ---");
+qor("Camerada ayaa la furayaa... (Riix 'q' si aad u xirto)");
+
+cam = opencv.furCamerada(0);
+
+hadii (cam != waxbo) {
+    inta (haa) {
+        frame = opencv.qaboSawir(cam);
+        
+        hadii (frame != waxbo) {
+            opencv.muujiSawirka("Camerada Tooska ah", frame);
+            
+            // 113 waa code-ka badhanka 'q'
+            b = opencv.badhanLaRiixay(1);
+            hadii (b == 113) {
+                opencv.xusuustaNadiifi(frame);
+                break;
+            }
+            
+            opencv.xusuustaNadiifi(frame);
+        }
+    }
+    
+    opencv.xirCamerada(cam);
+    qor("Camerada waa la xiray.");
+} ama {
+    qor("Cilad: Camerada lama furi karo!");
+}
+
+opencv.xirDaaqadaha();
+qor("Tijaabada waa dhammaatay.");

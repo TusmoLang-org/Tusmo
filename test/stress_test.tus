@@ -1,0 +1,36 @@
+// test/stress_test.tus
+
+koox Qof {
+    keyd:eray magac;
+    dhis(n: eray) : waxbo {
+        kan.magac = n;
+    }
+}
+
+// 1. Tijaabada Function Return (Ownership Handoff)
+hawl abuur_tix() => tix:tiro {
+    keyd:tix:tiro t = [10, 20, 30];
+    soo_celi t; 
+}
+
+// 2. Tijaabada Conditional Move
+hawl test_conditional(doorasho: miyaa) : waxbo {
+    keyd:tix:tiro a = [1, 2];
+    haddii (doorasho) {
+        keyd:tix:tiro b = a; 
+        qor("Waa la wareejiyay");
+    } haddii_kale {
+        qor("Lama wareejin");
+    }
+}
+
+qor("--- Bilaabidda Tijaabada ---");
+
+keyd:tix:tiro natiijo = abuur_tix();
+qor(natiijo); 
+
+keyd:Qof q1 = Qof("Mubaarak") cusub;
+keyd:Qof q2 = q1; 
+qor(q2.magac); 
+
+qor("--- Tijaabadii waa dhammaatay ---");

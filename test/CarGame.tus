@@ -1,0 +1,33 @@
+// Soo daji qaybaha Raylib adigoo isticmaalaya "isticmaal" si aadan xusuusta u buuxin
+isticmaal {Midab, Boos2D, AfarGees} kujira "stdlib/raylib/types";
+isticmaal {bilowDaaqada, xaddidFps, daaqadaMaXirantahay, bilowSawirka, dhameeySawirka, xirDaaqada} kujira "stdlib/raylib/window";
+isticmaal {nadiifiShaashada, sawirGoob} kujira "stdlib/raylib/graphics";
+isticmaal {kuqor, helFar} kujira "stdlib/raylib/text";
+
+qeex MADOW = (Midab){0, 0, 0, 255};
+qeex CAGAAR = (Midab){0, 228, 48, 255};
+qeex CAD = (Midab){255, 255, 255, 255};
+
+hawl main(): waxbo {
+    bilowDaaqada(800, 600, "Ciyaartayda Koowaad!");
+    xaddidFps(60);
+
+    // Soo ruriso farta (Load Font)
+    // Tusaale ahaan: qeex MAGACA_FARTA = "font_kasta.ttf";
+    keyd:walbo far = helFar("stdlib/raylib/fonts/Tinos-Bold.ttf");
+
+    inta ay (daaqadaMaXirantahay() == been) {
+        bilowSawirka();
+        nadiifiShaashada(MADOW);
+        
+        sawirGoob(400.0, 300.0, 50.0, CAGAAR);
+        
+        keyd:Boos2D booska = (Boos2D){250.0, 400.0};
+        kuqor(far, "Tusmo waa cajiib!", booska, 30.0, CAD);
+        
+        dhameeySawirka();
+    }
+    xirDaaqada();
+}
+
+main();

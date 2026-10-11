@@ -1,0 +1,5 @@
+hawl main(): waxbo {
+    keyd:eray s = "test";
+    qor(s);
+}
+main();

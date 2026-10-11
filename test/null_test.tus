@@ -1,0 +1,11 @@
+// test/null_test.tus
+
+koox Qof {
+    keyd:eray magac;
+    dhis(n: eray) : waxbo {
+        kan.magac = n;
+    }
+}
+
+keyd:Qof q;
+qor(q.magac);

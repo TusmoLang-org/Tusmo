@@ -1,0 +1,63 @@
+// ============================================
+// Test: Built-in Functions
+// ============================================
+
+qor("=== Built-in Functions Tests ===");
+
+// qor() - print
+qor("\n--- qor() function ---");
+qor("Hello World!");
+qor("Number:", 42);
+qor("Multiple:", 1, 2, 3);
+qor("Mixed:", "text", 100, run);
+
+// nooc() - type query
+qor("\n--- nooc() function ---");
+keyd:tiro num = 10;
+keyd:eray str_val = "hello";
+keyd:tix:tiro arr = [1, 2, 3];
+keyd:qaamuus dict_val = {};
+
+qor("nooc(num) =", nooc(num));
+qor("nooc(str_val) =", nooc(str_val));
+qor("nooc(arr[]) =", nooc(arr[]));
+qor("nooc(dict_val) =", nooc(dict_val));
+
+// dherer() - length
+qor("\n--- dherer() function ---");
+keyd:eray text = "Tusmo";
+keyd:tix:tiro numbers = [1, 2, 3, 4, 5];
+
+qor("dherer(Tusmo) =", dherer(text));
+qor("dherer([1,2,3,4,5]) =", dherer(numbers));
+
+// Array methods
+qor("\n--- Array Methods ---");
+keyd:tix:eray fruits = ["banana"];
+qor("Initial:", fruits);
+
+fruits.gali("apple");
+qor("After gali(apple):", fruits);
+
+fruits.gali(boos = 0, "orange");
+qor("After gali(boos=0, orange):", fruits);
+
+keyd:tix:tiro nums = [1, 2, 3, 2, 4];
+qor("Before kasaar(2):", nums);
+nums.kasaar(2);
+qor("After kasaar(2):", nums);
+
+nums = [10, 20, 30];
+nums.kasaar(boos = 1);
+qor("After kasaar(boos=1):", nums);
+
+// Dictionary methods
+qor("\n--- Dictionary Methods ---");
+keyd:qaamuus student = {"magac": "Ali", "da": 20};
+qor("student =", student);
+keyd:miyaa has_name = student.majiraa("magac");
+keyd:miyaa has_age = student.majiraa("age");
+qor("student.majiraa(magac):", has_name);
+qor("student.majiraa(age):", has_age);
+
+qor("\n=== All Built-in Function Tests Passed ===");

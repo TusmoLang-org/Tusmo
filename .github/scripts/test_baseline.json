@@ -1,0 +1,335 @@
+{
+  "generated_by": ".github/scripts/run_tests.py (curated)",
+  "tests": {
+    "01_variables.tus": {
+      "expect": "pass"
+    },
+    "02_operators.tus": {
+      "expect": "pass"
+    },
+    "03_arrays.tus": {
+      "expect": "pass"
+    },
+    "04_dictionaries.tus": {
+      "expect": "pass"
+    },
+    "05_functions.tus": {
+      "expect": "pass"
+    },
+    "06_classes.tus": {
+      "expect": "pass"
+    },
+    "07_controlflow.tus": {
+      "expect": "pass"
+    },
+    "08_builtin.tus": {
+      "expect": "pass"
+    },
+    "09_ascii.tus": {
+      "expect": "pass"
+    },
+    "CarGame.tus": {
+      "expect": "skip",
+      "reason": "raylib game: needs a display server"
+    },
+    "MatrixMultiplication.tus": {
+      "expect": "known-fail",
+      "reason": "C backend: incompatible pointer types on nested/mixed arrays"
+    },
+    "binary_search.tus": {
+      "expect": "pass"
+    },
+    "bouncingBall.tus": {
+      "expect": "skip",
+      "reason": "raylib game: needs a display server"
+    },
+    "chatbot.tus": {
+      "expect": "skip",
+      "reason": "interactive: reads from stdin"
+    },
+    "chatbot_coverstation.tus": {
+      "expect": "known-fail",
+      "reason": "syntax error: unexpected '}'"
+    },
+    "clear.tus": {
+      "expect": "pass"
+    },
+    "clearBinaries.tus": {
+      "expect": "skip",
+      "reason": "utility script, not a test program (empty file)"
+    },
+    "dashboard.tus": {
+      "expect": "known-fail",
+      "reason": "stdlib module 'opengl/opengl' not found"
+    },
+    "div_zero.tus": {
+      "expect": "run-error",
+      "reason": "division by zero exits non-zero by design"
+    },
+    "double_move.tus": {
+      "expect": "compile-error",
+      "reason": "negative test: ownership/move diagnostic"
+    },
+    "eveTusmo.tus": {
+      "expect": "pass"
+    },
+    "fayl1.tus": {
+      "expect": "skip",
+      "reason": "raylib game: needs a display server"
+    },
+    "forloop.tus": {
+      "expect": "pass"
+    },
+    "game.tus": {
+      "expect": "known-fail",
+      "reason": "stdlib module 'opengl/opengl' not found"
+    },
+    "gameTusmo.tus": {
+      "expect": "skip",
+      "reason": "raylib game: needs a display server"
+    },
+    "hello.tus": {
+      "expect": "pass"
+    },
+    "http_server.tus": {
+      "expect": "skip",
+      "reason": "binds a TCP port and blocks"
+    },
+    "http_test.tus": {
+      "expect": "known-fail",
+      "reason": "import path 'http/http' not found"
+    },
+    "init_test.tus": {
+      "expect": "compile-error",
+      "reason": "negative test: uninitialized variable diagnostic"
+    },
+    "input_test.tus": {
+      "expect": "pass"
+    },
+    "isSafe.tus": {
+      "expect": "compile-error",
+      "reason": "negative test: ownership/move diagnostic"
+    },
+    "lib_koox.tus": {
+      "expect": "pass"
+    },
+    "lib_tijaabo.tus": {
+      "expect": "known-fail",
+      "reason": "syntax error: 'keyd' unexpected at top level"
+    },
+    "main.tus": {
+      "expect": "pass"
+    },
+    "main_koox.tus": {
+      "expect": "pass"
+    },
+    "main_tijaabo.tus": {
+      "expect": "known-fail",
+      "reason": "syntax error: 'keyd' unexpected at top level"
+    },
+    "math.tus": {
+      "expect": "pass"
+    },
+    "move_test.tus": {
+      "expect": "compile-error",
+      "reason": "negative test: ownership/move diagnostic"
+    },
+    "naming_test.tus": {
+      "expect": "known-fail",
+      "reason": "C backend: incompatible argument type for tusmo_qor_walbo"
+    },
+    "null_test.tus": {
+      "expect": "compile-error",
+      "reason": "negative test: uninitialized variable diagnostic"
+    },
+    "quickSort.tus": {
+      "expect": "pass"
+    },
+    "reassignment_test.tus": {
+      "expect": "pass"
+    },
+    "return_leak_test.tus": {
+      "expect": "pass"
+    },
+    "revive_test.tus": {
+      "expect": "known-fail",
+      "reason": "-Werror=unused-but-set-variable is not disabled by -Wno-unused-variable"
+    },
+    "safety_test.tus": {
+      "expect": "compile-error",
+      "reason": "negative test: ownership/move diagnostic"
+    },
+    "shimbir.tus": {
+      "expect": "skip",
+      "reason": "raylib game: needs a display server"
+    },
+    "stdlib_basic.tus": {
+      "expect": "pass"
+    },
+    "stdlib_os.tus": {
+      "expect": "pass"
+    },
+    "stress_test.tus": {
+      "expect": "known-fail",
+      "reason": "-Werror=unused-but-set-variable is not disabled by -Wno-unused-variable"
+    },
+    "string_methods.tus": {
+      "expect": "pass"
+    },
+    "test11.tus": {
+      "expect": "pass"
+    },
+    "testHtml.tus": {
+      "expect": "compile-error",
+      "reason": "negative test: ownership/move diagnostic"
+    },
+    "test_.tus": {
+      "expect": "known-fail",
+      "reason": "requires a downloaded library (.lib/libtusmo.a)"
+    },
+    "test_argv.tus": {
+      "expect": "pass"
+    },
+    "test_arr.tus": {
+      "expect": "pass"
+    },
+    "test_array_2d.tus": {
+      "expect": "known-fail",
+      "reason": "C backend: invalid type on 2D array access"
+    },
+    "test_array_4d.tus": {
+      "expect": "known-fail",
+      "reason": "C backend: invalid type on 4D array access"
+    },
+    "test_array_5d.tus": {
+      "expect": "known-fail",
+      "reason": "C backend: invalid type on 5D array access"
+    },
+    "test_array_leak.tus": {
+      "expect": "pass"
+    },
+    "test_awr.tus": {
+      "expect": "known-fail",
+      "reason": "stdlib module 'awr' not found"
+    },
+    "test_bare_return.tus": {
+      "expect": "compile-error",
+      "reason": "negative test: return type diagnostic"
+    },
+    "test_callback_bug.tus": {
+      "expect": "compile-error",
+      "reason": "negative test: argument type diagnostic"
+    },
+    "test_class_basic.tus": {
+      "expect": "pass"
+    },
+    "test_class_inheritance.tus": {
+      "expect": "pass"
+    },
+    "test_class_inheritance_member.tus": {
+      "expect": "pass"
+    },
+    "test_conversions.tus": {
+      "expect": "pass"
+    },
+    "test_core_builtins.tus": {
+      "expect": "pass"
+    },
+    "test_dict_leak.tus": {
+      "expect": "pass"
+    },
+    "test_eray_bug.tus": {
+      "expect": "pass"
+    },
+    "test_fib.tus": {
+      "expect": "pass"
+    },
+    "test_forward_decl.tus": {
+      "expect": "pass"
+    },
+    "test_fstring_escaped.tus": {
+      "expect": "pass"
+    },
+    "test_fstring_quotes.tus": {
+      "expect": "pass"
+    },
+    "test_fstring_triple.tus": {
+      "expect": "pass"
+    },
+    "test_global_local_move.tus": {
+      "expect": "pass"
+    },
+    "test_golaha.tus": {
+      "expect": "known-fail",
+      "reason": "stdlib module 'golaha' not found"
+    },
+    "test_http_lib.tus": {
+      "expect": "skip",
+      "reason": "binds a TCP port and blocks"
+    },
+    "test_imports_a.tus": {
+      "expect": "pass"
+    },
+    "test_imports_b.tus": {
+      "expect": "pass"
+    },
+    "test_imports_main.tus": {
+      "expect": "pass"
+    },
+    "test_isticmaal_class_main.tus": {
+      "expect": "known-fail",
+      "reason": "semantic error: identifier 'u' not recognized"
+    },
+    "test_isticmaal_class_mod.tus": {
+      "expect": "known-fail",
+      "reason": "semantic error: identifier 'magac' not recognized"
+    },
+    "test_lambda.tus": {
+      "expect": "pass"
+    },
+    "test_main.tus": {
+      "expect": "pass"
+    },
+    "test_memory.tus": {
+      "expect": "compile-error",
+      "reason": "negative test: type mismatch diagnostic"
+    },
+    "test_named_args.tus": {
+      "expect": "pass"
+    },
+    "test_nooc.tus": {
+      "expect": "pass"
+    },
+    "test_not.tus": {
+      "expect": "pass"
+    },
+    "test_not2.tus": {
+      "expect": "pass"
+    },
+    "test_ops.tus": {
+      "expect": "pass"
+    },
+    "test_pure_http.tus": {
+      "expect": "skip",
+      "reason": "binds a TCP port and blocks"
+    },
+    "test_scope_clash.tus": {
+      "expect": "pass"
+    },
+    "test_walbo.tus": {
+      "expect": "pass"
+    },
+    "tijaabo.tus": {
+      "expect": "known-fail",
+      "reason": "stdlib module 'opengl/opengl' not found"
+    },
+    "tijaabo_opencv.tus": {
+      "expect": "known-fail",
+      "reason": "syntax error: unexpected '{'"
+    },
+    "waxbo_test.tus": {
+      "expect": "compile-error",
+      "reason": "negative test: uninitialized variable diagnostic"
+    }
+  }
+}

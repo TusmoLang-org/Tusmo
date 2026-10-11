@@ -1,0 +1,48 @@
+// ============================================
+// Simple Chatbot in Tusmo
+// ============================================
+
+qor("=== Tusmo Chatbot ===");
+
+
+// Function to process user input
+hawl process_input(input:eray) : waxbo {
+    input.XarafYar();
+    // Greeting responses
+    haddii (input.lagaHelay("asc")) {
+        qor("Wcs, Maxaa kaa caawiyaa walaal");
+    }
+    ama_haddii(input.lagaHelay("magacaa")){
+        qor("Magacaygu waa Tusmo Bot, soo dahwaaw");
+    }
+    ama_haddii(input.lagaHelay("waxbo")){
+        qor("hmm, haya macsalaama");
+    }
+    ama_haddii(input.lagaHelay("macsalaama")){
+        running=been;
+        qor("haye nabad galyo");
+    }
+}
+
+// Main chat loop
+keyd:miyaa running = run;
+keyd:eray user_input;
+
+inta ay (running) {
+    hel ">" user_input;
+    
+    haddii (user_input.lagaHelay("nabad galyo")) {
+        running = been;
+    } ama_haddii (user_input.lagaHelay("bye")) {
+        running = been;
+    } ama_haddii (user_input.lagaHelay("waryaa")) {
+        running = been;
+    } haddii_kale {
+        // Process the input
+        qor("Chatbot:");
+        process_input(user_input);
+    }
+}
+
+qor("\n=== Chatbot Ended ===");
+qor("Mahadsanid isticmaalka Tusmo!");

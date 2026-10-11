@@ -1,0 +1,77 @@
+name: Windows tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up MSYS2 MinGW toolchain
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-binutils
+            mingw-w64-x86_64-make
+
+      - name: Add MinGW to PATH
+        shell: pwsh
+        run: Add-Content -Path $env:GITHUB_PATH -Value 'C:\msys64\mingw64\bin'
+
+      - name: Install Python dependencies
+        shell: pwsh
+        run: python -m pip install --upgrade pip ply requests
+
+      - name: Repository preflight
+        shell: bash
+        run: bash .github/scripts/preflight.sh
+
+      - name: Run Windows smoke tests
+        shell: pwsh
+        run: .\windows\test_windows.ps1
+
+  linux-cross-windows:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Windows cross-compiler and Wine
+        run: |
+          sudo dpkg --add-architecture amd64
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64-x86-64 wine64
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: python -m pip install --upgrade pip ply requests
+
+      - name: Repository preflight
+        run: bash .github/scripts/preflight.sh
+
+      - name: Cross-compile Windows executable
+        env:
+          CROSS_COMPILE_ONLY: '1'
+        run: ./windows/test_linux_cross.sh

@@ -1,0 +1,82 @@
+// ============================================
+// Test: Control Flow (if/else, loops)
+// ============================================
+
+qor("=== Control Flow Tests ===");
+
+// If-else (haddii)
+qor("\n--- If-Else Tests ---");
+keyd:tiro a = 10;
+
+haddii (a > 5) {
+    qor("a is greater than 5");
+}
+
+haddii (a < 5) {
+    qor("a is less than 5");
+} ama_haddii (a == 10) {
+    qor("a equals 10");
+}
+
+// If-elif-else chain
+qor("\n--- If-Elif-Else ---");
+keyd:tiro grade = 85;
+
+haddii (grade >= 90) {
+    qor("Grade: A");
+} ama_haddii (grade >= 80) {
+    qor("Grade: B");
+} ama_haddii (grade >= 70) {
+    qor("Grade: C");
+} haddii_kale {
+    qor("Grade: F");
+}
+
+// While loop (inta ay)
+qor("\n--- While Loop ---");
+keyd:tiro counter = 0;
+keyd:tiro sum = 0;
+inta ay (counter < 5) {
+    sum = sum + counter;
+    counter = counter + 1;
+}
+qor("Sum of 0+1+2+3+4 =", sum);
+
+// For range loop - using simpler syntax
+qor("\n--- Loop Test ---");
+keyd:tiro total = 0;
+keyd:tiro count = 0;
+inta ay (count < 5) {
+    total = total + (count + 1);
+    count = count + 1;
+}
+qor("Sum of 1+2+3+4+5 =", total);
+
+// Break test
+qor("\n--- Break Test ---");
+keyd:tiro break_sum = 0;
+keyd:tiro i = 1;
+inta ay (i <= 10) {
+    haddii (i == 6) {
+        joog;
+    }
+    break_sum = break_sum + i;
+    i = i + 1;
+}
+qor("Sum of 1+2+3+4+5 =", break_sum);
+
+// Continue test
+qor("\n--- Continue Test ---");
+keyd:tiro skip_sum = 0;
+keyd:tiro k = 1;
+inta ay (k <= 5) {
+    haddii (k == 3) {
+        k = k + 1;
+        kasoco;
+    }
+    skip_sum = skip_sum + k;
+    k = k + 1;
+}
+qor("Sum of 1+2+4+5 (skip 3) =", skip_sum);
+
+qor("\n=== All Control Flow Tests Passed ===");

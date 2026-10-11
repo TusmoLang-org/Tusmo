@@ -1,0 +1,8 @@
+hawl main(): waxbo {
+    // 1. Concise lambda
+    keyd:hawl(tiro):tiro f = hawl(x: tiro) => x + 1;
+    
+    qor("f(5) = ", f(5));
+}
+
+main();

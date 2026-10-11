@@ -1,0 +1,11 @@
+hawl fibonacci(n: tiro) : tiro {
+    haddii (n <= 1) {
+        soo_celi n;
+    }
+    soo_celi fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+hawl main() : waxbo {
+    keyd:tiro tiro_fib = fibonacci(25);
+    qor("Tusmo: ", tiro_fib);
+}

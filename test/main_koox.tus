@@ -1,0 +1,13 @@
+// main_koox.tus
+isticmaal {Xisaabiye} kujira "lib_koox";
+
+hawl main() : waxbo {
+    keyd:Xisaabiye xisaab = Xisaabiye(10) cusub;
+    xisaab.ku_dar(20);
+    xisaab.ku_dar(5);
+    
+    keyd:tiro jawaab = xisaab.hel_wadarta();
+    qor("Wadarta waa: ", jawaab);
+}
+
+main();

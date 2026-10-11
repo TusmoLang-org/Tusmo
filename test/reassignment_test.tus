@@ -1,0 +1,15 @@
+// test/reassignment_test.tus
+
+hawl test_reassign() : waxbo {
+    keyd:tix:tiro a = [1, 2, 3];
+    qor("Xogta hore waa: ");
+    qor(a);
+
+    a = [4, 5, 6]; // Halkan xogtii hore waa inay dhimataa!
+    qor("Xogta cusub waa: ");
+    qor(a);
+}
+
+qor("--- Bilaabidda Reassignment Test ---");
+test_reassign();
+qor("--- Dhammaad ---");

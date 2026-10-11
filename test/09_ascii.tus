@@ -1,0 +1,38 @@
+// ============================================
+// Test: ASCII Conversions
+// ============================================
+
+qor("=== ASCII Conversion Tests ===");
+
+// Test char to ASCII (qor_tiro = get int value)
+qor("\n--- Char to ASCII ---");
+keyd:xaraf ch = 'A';
+qor("Character:", ch);
+keyd:tiro ascii_val = qor_tiro(ch);
+qor("qor_tiro('A') =", ascii_val);
+
+keyd:xaraf ch2 = 'z';
+qor("qor_tiro('z') =", qor_tiro(ch2));
+
+keyd:xaraf ch3 = '0';
+qor("qor_tiro('0') =", qor_tiro(ch3));
+
+// Test ASCII to char (qor_xaraf = get char)
+qor("\n--- ASCII to Char ---");
+keyd:xaraf back = qor_xaraf(65);
+qor("qor_xaraf(65) =", back);
+
+keyd:xaraf back2 = qor_xaraf(97);
+qor("qor_xaraf(97) =", back2);
+
+keyd:xaraf back3 = qor_xaraf(48);
+qor("qor_xaraf(48) =", back3);
+
+// Combined test
+qor("\n--- Combined Test ---");
+keyd:xaraf letter = 'B';
+keyd:tiro code = qor_tiro(letter);
+keyd:xaraf restored = qor_xaraf(code);
+qor("Original:", letter, "-> ASCII:", code, "-> Restored:", restored);
+
+qor("\n=== All ASCII Tests Passed ===");

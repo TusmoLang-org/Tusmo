@@ -1,0 +1,7 @@
+// Simple Input Test
+qor("Enter your name:");
+keyd:eray name;
+hel name;
+qor("You entered:");
+qor(name);
+qor("Done!");

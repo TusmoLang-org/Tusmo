@@ -1,0 +1,31 @@
+// Test String Methods
+keyd:eray str = "   Hello World   ";
+
+qor("=== String Methods Test ===");
+qor("Original:", str);
+
+keyd:eray upper = str.XarafWeyn();
+qor("XarafWeyn():", upper);
+
+keyd:eray lower = str.XarafYar();
+qor("XarafYar():", lower);
+
+keyd:eray trimmed = str.kaReeb();
+qor("kaReeb():", trimmed);
+
+keyd:eray left_trimmed = str.Bkareeb();
+qor("Bkareeb():", left_trimmed);
+
+keyd:eray right_trimmed = str.Mkareeb();
+qor("Mkareeb():", right_trimmed);
+
+keyd:eray replaced = str.kuBadal("World", "Tusmo");
+qor("kuBadal(World, Tusmo):", replaced);
+
+keyd:tiro found = str.kaReeb().sooRaadi("o");
+qor("kaReeb().sooRaadi('o'):", found);
+
+keyd:tix:eray parts = str.kaReeb().qaybi(" ");
+qor("kaReeb().qaybi(' '):", parts);
+
+qor("\n=== Test Passed ===");

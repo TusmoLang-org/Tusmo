@@ -1,4 +1,4 @@
-# tusmo.py (Correctly Updated)
+# Tusmo.py waa faylka main driver-ka ah ee luuqada Tusmo.
 
 import sys
 import os
@@ -45,8 +45,6 @@ def _platform_key(os_type: str) -> str:
     if os_type == "Darwin":
         return "macos"
     return "linux"
-
-
 
 def help(command=None):
     if command in ["-h", "--help", "-c", "--caawimaad"]:
@@ -153,7 +151,6 @@ def list_libraries(command=None):
         print("- opengl: Waxay la xiriirtaa sawirid (graphics), daaqad, iyo game-loop.")
         sys.exit(0)
    
-
 def get_static_lib():
     flags = []
     seen = set()
@@ -228,7 +225,6 @@ def main():
 
     script_directory = os.path.dirname(os.path.abspath(__file__))
     project_root = script_directory
-    runtime_dir = os.path.join(project_root, "runtime")
     stdlib_dir = os.path.join(project_root, "stdlib")
     
 
@@ -253,7 +249,7 @@ def main():
         # Injekti 'core' standard library si toos ah (Automatic Linking)
         from compiler.frontend.parser.ast_nodes import KeenNode
         initial_ast.insert(0, KeenNode(0, f'"{os.path.join(stdlib_dir, "core.tus")}"', filename))
-
+        
         main_file_directory = os.path.dirname(os.path.abspath(filename))
         all_imported_files = {os.path.abspath(filename)}
         final_ast = process_imports(initial_ast, base_directory=main_file_directory, stdlib_path=stdlib_dir, processed_files=all_imported_files)

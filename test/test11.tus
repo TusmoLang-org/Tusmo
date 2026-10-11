@@ -1,0 +1,3 @@
+hawl add(num1:tiro, num2:tiro):tiro{
+    soo_celi num1+num2;
+}

@@ -1,0 +1,15 @@
+// test/stdlib_basic.tus
+keen "nasiib";
+keen "wakhti";
+
+qor("--- Tijaabada Nasiib ---");
+bilaaw_nasiib();
+keyd:tiro t = nasiib_tiro(1, 100);
+qor("Lambar nasiib ah (1-100): " + t);
+
+qor("\n--- Tijaabada Wakhti ---");
+keyd:Wakhti w = Wakhti() cusub;
+keyd:eray hadda = w.hadda();
+qor("Saacaddu waa: " + hadda);
+
+qor("\n--- Tijaabadii waa dhammaatay ---");

@@ -1,0 +1,10 @@
+keyd:eray s = "global";
+
+hawl function_one(): waxbo {
+    keyd:eray s = "local";
+    keyd:eray y = s; // local s is moved here!
+    qor(y);
+}
+
+function_one();
+qor(s); // Should print "global". Does this throw a false positive ERR_USE_AFTER_MOVE because of function_one?

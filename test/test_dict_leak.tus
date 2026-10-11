@@ -1,0 +1,5 @@
+hawl main(): waxbo {
+    keyd:qaamuus q = { "key": "value" };
+    qor(q);
+}
+main();

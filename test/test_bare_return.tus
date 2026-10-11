@@ -1,0 +1,8 @@
+hawl xisaabi(): tiro {
+    soo_celi; 
+}
+
+hawl main(): waxbo {
+    xisaabi();
+}
+main();

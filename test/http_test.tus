@@ -1,0 +1,19 @@
+// test/http_test.tus
+keen "http/http";
+
+hawl maamule(c: Codsi) : waxbo {
+    qor("Codsiga cusub ee la helay: " + c.hab + " " + c.waddo);
+    c.jawaab(200, "text/html", "<h1>Salaam Tusmo!</h1><p>Kani waa HTTP Server ku qoran Tusmo saafi ah.</p>");
+}
+
+keyd:HttpServer server = HttpServer() cusub;
+
+haddii (server.bilow(8080)) {
+    qor("--- TUSMO HTTP SERVER ---");
+    qor("Server-ku wuxuu si guul leh uga bilowday: http://localhost:8080");
+    qor("Riix Ctrl+C si aad u joojiso.");
+    
+    server.dhageyso(maamule);
+} haddii_kale {
+    qor("Cilad: Ma suurtoobin in la furo Port 8080.");
+}

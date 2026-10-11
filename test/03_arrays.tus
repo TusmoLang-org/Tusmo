@@ -1,0 +1,87 @@
+// ============================================
+// Test: Arrays (tix)
+// ============================================
+
+qor("=== Array Tests ===");
+
+// Array Declaration and Initialization
+qor("\n--- Array Creation ---");
+keyd:tix:tiro numbers = [1, 2, 3, 4, 5];
+qor("numbers =", numbers);
+qor("dherer(numbers) =", dherer(numbers));
+
+// Array Access
+qor("\n--- Array Access ---");
+qor("numbers[0] =", numbers[0]);
+qor("numbers[2] =", numbers[2]);
+qor("numbers[4] =", numbers[4]);
+
+// Array Modification
+qor("\n--- Array Modification ---");
+numbers[0] = 100;
+qor("After numbers[0] = 100:", numbers);
+
+numbers[2] = 300;
+qor("After numbers[2] = 300:", numbers);
+
+// Array Methods
+qor("\n--- Array Methods ---");
+
+// gali() - append
+keyd:tix:eray fruits = ["banana", "orange"];
+qor("Before gali:", fruits);
+fruits.gali("apple");
+qor("After gali('apple'):", fruits);
+
+// gali(boos, value) - insert at position
+fruits.gali(boos = 1, "mango");
+qor("After gali(boos=1, 'mango'):", fruits);
+
+// kasaar() - remove by value
+keyd:tix:tiro arr1 = [1, 2, 3, 2, 4];
+qor("Before kasaar(2):", arr1);
+arr1.kasaar(2);
+qor("After kasaar(2):", arr1);
+
+// kasaar(boos) - remove by index
+keyd:tix:eray arr2 = ["a", "b", "c"];
+qor("Before kasaar(boos=1):", arr2);
+arr2.kasaar(boos = 1);
+qor("After kasaar(boos=1):", arr2);
+
+// nooc() - get element type
+qor("\n--- nooc() function ---");
+keyd:tix:eray str_arr = ["a", "b", "c"];
+keyd:tix:tiro int_arr = [1, 2, 3];
+qor("nooc(str_arr[]) =", nooc(str_arr[]));
+qor("nooc(int_arr[]) =", nooc(int_arr[]));
+
+// Homogeneous Array with different types - use eray array
+qor("\n--- String Array ---");
+keyd:tix:eray words = ["hello", "world"];
+qor("words =", words);
+qor("dherer(words) =", dherer(words));
+
+// Empty Array
+qor("\n--- Empty Array ---");
+keyd:tix:tiro empty = [];
+qor("empty =", empty);
+qor("dherer(empty) =", dherer(empty));
+
+// gali() with array - extend
+qor("\n--- gali() with array (extend) ---");
+keyd:tix:tiro arr3 = [1, 2, 3];
+keyd:tix:tiro arr4 = [4, 5, 6];
+qor("Before gali(arr4): arr3 =", arr3);
+arr3.gali(arr4);
+qor("After gali(arr4): arr3 =", arr3);
+qor("dherer(arr3) =", dherer(arr3));
+
+// gali() with empty array
+keyd:tix:tiro arr5 = [1, 2];
+keyd:tix:tiro arr6 = [];
+qor("Before gali([]): arr5 =", arr5);
+arr5.gali(arr6);
+qor("After gali([]): arr5 =", arr5);
+
+qor("\n=== All Array Tests Passed ===");

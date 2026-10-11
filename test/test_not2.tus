@@ -1,0 +1,12 @@
+keyd:miyaa t = run;
+keyd:miyaa f = been;
+keyd:miyaa not_t = !t;
+keyd:miyaa not_f = !f;
+keyd:miyaa not2_t = been ahayn t;
+keyd:miyaa not2_f = been ahayn f;
+qor("t = run:", t);
+qor("f = been:", f);
+qor("!t (should be been):", not_t);
+qor("!f (should be run):", not_f);
+qor("been ahayn t (should be been):", not2_t);
+qor("been ahayn f (should be run):", not2_f);

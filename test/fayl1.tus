@@ -1,0 +1,43 @@
+keen "raylib/core";
+keen "nasiib";
+
+qeex H = 600;
+qeex W = 400;
+
+
+bilowDaaqada(W, H, "Snake Game");
+xaddidFps(60);
+
+hawl badalBooaskaCuntada() => qaamuus {
+    //sameeynta random booska cagaarka
+    bilaaw_nasiib();
+    keyd:jajab randomX = nasiib_jajab(50.0, 500.0);
+    keyd:jajab randomY = nasiib_jajab(50.0, 500.0);
+
+    soo_celi { "randomX": randomX, "randomY": randomY };
+}
+
+hawl backgroundMusic():waxbo{
+    bilowMaqal();
+    keyd:walbo music = helMaqal("test/Aylex - Colossal (freetouse.com).mp3");
+    daarMaqal(music);
+}
+
+inta ay (daaqadaMaXirantahay() == been){
+
+    backgroundMusic();
+    keyd:qaamuus booskaCuntada = badalBooaskaCuntada();
+    keyd:jajab randomX = booskaCuntada["randomX"];
+    keyd:jajab randomY = booskaCuntada["randomY"];
+
+    
+
+
+    bilowSawirka();
+    nadiifiShaashada(MADOW);
+
+    sawirAfarGees(randomX, randomY, 10.0, 10.0, CAGAAR);
+    
+    dhameeySawirka();
+    xirMaqal();
+}

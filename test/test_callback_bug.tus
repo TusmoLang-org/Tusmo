@@ -1,0 +1,13 @@
+hawl salaan(callback: hawl(tiro):eray): eray {
+    // Calling callback(eray) instead of callback(tiro)!
+    soo_celi callback("Axmed"); 
+}
+
+hawl turjum(n: tiro): eray {
+    soo_celi "Nambarku waa: " + n;
+}
+
+hawl main(): waxbo {
+    qor(salaan(turjum));
+}
+main();

@@ -1,0 +1,9 @@
+hawl xisaabi(magac: eray): eray {
+    soo_celi $"Waa {magac}";
+}
+
+hawl main(): waxbo {
+    keyd:eray salaan = $"Hello {xisaabi("Axmed")}";
+    qor(salaan);
+}
+main();

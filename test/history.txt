@@ -1,0 +1,129 @@
+=== USER ===
+.
+
+=== USER ===
+i need to know if tusmo support that i can declare function that has parameter type which is function so latter i can pass that function
+
+=== USER ===
+wait how? bro what is the syntax i mean when you say f:hawl(tiro) what we put () is that what parameters that need f
+
+=== USER ===
+please look the main.tus in the root why i got error :
+[!] KHALAD: Tirada arguments-ka waa khaldan! 'getfn' waxay rabtaa 1, laakiin waxaad siisay 3.
+    
+         getfn(arg1, arg2, arg3)  // 3 argument, laakiin 1 ayaa la rabay
+         getfn(arg1)  // 1 argument.
+---------------------------------------------
+Faylka:   main.tus
+Saddarka: 10
+
+=== USER ===
+[!] KHALAD: Hawsha 'getfn' waxay qaybta 1 ka rabtaa 'hawl(tiro, tiro):tiro', laakiin waxaad siisay 'hawl'.
+---------------------------------------------
+Faylka:   main.tus
+Saddarka: 10
+
+=== USER ===
+why, you didn't give the reason so how do i accept the code i don't know its purpose
+
+=== USER ===
+can you implement anounmouce function, before implimantation i need to see how it look like
+
+=== USER ===
+i agree, and i liked it that styles good, just avoid to reimplement things that already exist
+
+=== USER ===
+can we say tusmo can became a real lanaguge
+
+=== USER ===
+can you continue these canaan error mesasge, sometimes there is crashes that user C the c error and i don't want to happend that
+
+=== USER ===
+bro instead of saying you cant use these forbiden names what if we add our own predefined text like user just type keyd:tiro int = 10; because he think tusmo is different and its somali programing langauge instead of showing you can't use that int what if we add this ___tusmo123___ so that is user never guest it like they can't not use that just easy bro how is that
+
+=== USER ===
+good perfect, but wait does tusmo has GCC
+
+=== USER ===
+ooh you mean gcc the compiler i though you are talking about the garbage collection one which i totaly removed and bring another idea after tusmo became slower than rust
+
+=== USER ===
+did you belive if i try to build machine learning model using this tusmo i can do it from scratch
+
+=== USER ===
+before that i want to scan tusmo to and get all built in funcion we have, because i have idea i want to share you which is the way tusmo has built in functions are in choes way i need to refactor so please scan them
+
+=== USER ===
+yeah i want to move all builts in functions or other features in the stdlib/core.tus file that always the compiler automaticly linked so yeah i need to take one by and test one by one in core so put all built in functins there and make that file that always the compiler link using keen or isticmaal if we are avoiding dead code so yeah how do you see that
+
+=== USER ===
+hey man i think you didn't get what i just talking about when i say buuilt in functins i am not talking about those that stand as libaray in stdlib/ like os, xisaab etc, i am talking these one that user uses without import libarary i am talking those that doens't need keen or isticmaal did you get , exmaple tix_cayiman, nooc(), dherer(), eray(), miyaa() etc i don't want like these:
+functions_ = {
+    "tix_cayiman": {"return_type": None, "feature": "array"}, 
+    "nooc": {"return_type": "eray"},
+    "dherer": {"return_type": "tiro"},
+    "hel": {"return_type": "eray", "feature": "io"},
+    
+    # Type Conversion Functions
+    "eray":  {"return_type": "eray", "feature": "conversion"},
+    "tiro":  {"return_type": "tiro", "feature": "conversion"},
+    "jajab": {"return_type": "jajab", "feature": "conversion"},
+    "miyaa": {"return_type": "miyaa", "feature": "conversion"},
+    "xaraf": {"return_type": "xaraf", "feature": "conversion"},
+
+    # Character/ASCII Conversion
+    "qor_tiro": {"return_type": "tiro", "feature": "char"},  # char → ASCII (int)
+    "qor_xaraf": {"return_type": "xaraf", "feature": "char"},  # ASCII (int) → char
+
+    # String Methods (as function calls - for semantic analysis)
+    "kuBadal": {"return_type": "eray", "feature": "string"},
+    "kaReeb": {"return_type": "eray", "feature": "string"},
+    "Bkareeb": {"return_type": "eray", "feature": "string"},
+    "Mkareeb": {"return_type": "eray", "feature": "string"},
+    "XarafWeyn": {"return_type": "eray", "feature": "string"},
+    "XarafYar": {"return_type": "eray", "feature": "string"},
+    "sooRaadi": {"return_type": "tiro", "feature": "string"},
+    "lagaHelay": {"return_type": "miyaa", "feature": "string"},
+    "qaybi": {"return_type": "tix:eray", "feature": "string"},
+
+    "tusmo_os_system": {"return_type": "tiro", "feature": "os"},
+    "koobi": {"return_type": "waxbo", "feature": "os"},
+    "nuqul": {"return_type": "waxbo", "feature": "os"},
+    "u_dhaqaaji": {"return_type": "waxbo", "feature": "os"},
+    "aqri_fayl": {"return_type": "eray", "feature": "os"},
+    "qor_fayl": {"return_type": "waxbo", "feature": "os"},
+    "isku_dar_waddo": {"return_type": "eray", "feature": "os"},
+    "cabbir_fayl": {"return_type": "tiro", "feature": "os"},
+
+    # Math Functions
+    "tusmo_sin": {"return_type": "jajab", "feature": "math"},
+    "tusmo_cos": {"return_type": "jajab", "feature": "math"},
+    "tusmo_sqrt": {"return_type": "jajab", "feature": "math"},
+    "tusmo_abs": {"return_type": "jajab", "feature": "math"},
+    "tusmo_pow": {"return_type": "jajab", "feature": "math"},
+    "tusmo_floor": {"return_type": "jajab", "feature": "math"},
+    "tusmo_ceil": {"return_type": "jajab", "feature": "math"},
+    "tusmo_round": {"return_type": "jajab", "feature": "math"},
+}
+
+
+just i want to be in the stdlib the compiler shuld be blind on that and use docstring as tusmo support docs string when you are writtin in core.tus instead now we are relying on addfeature in the compiler so as we have xiddig we need to move that add feature to these new better way and these files in runtime that add feature in the compiler calls we are now use xiddid to call these files i wish you got it that
+
+=== USER ===
+before writing any thing to accept i need to know what you are doing, and also when you implemented one function i need to test immedetnly before you move implementing the next built in function
+
+=== USER ===
+no just say TUSMO_XIDID "runtime/type_conversion.c.maya"; so tusmo.py remove .maya and continue that
+
+=== USER ===
+yeah go head i see it and if we init the first built-in function i wish others should be easy
+
+=== USER ===
+i see in core.tus you are using the docstring in wrong way the doctring should be on the body fo the function not outside also add the docstring of nooc function
+
+=== USER ===
+continue please
+
+=== USER ===
+continue please
+

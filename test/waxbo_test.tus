@@ -1,0 +1,23 @@
+// test/waxbo_test.tus
+
+koox Qof {
+    keyd:eray magac;
+    dhis(m: eray) : waxbo {
+        kan.magac = m;
+    }
+}
+
+keyd:Qof q;
+
+haddii (q == waxbo) {
+    qor("1. Shaygu waa waxbo (NULL).");
+}
+
+keyd:eray magac = "Tusmo";
+qor("2. Magaca hadda: " + magac);
+
+magac = waxbo; // Ownership moves, and old memory is freed silently!
+
+haddii (magac == waxbo) {
+    qor("3. Magaca hadda waa waxbo (NULL).");
+}

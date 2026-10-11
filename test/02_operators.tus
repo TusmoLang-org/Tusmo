@@ -1,0 +1,75 @@
+// ============================================
+// Test: Operators
+// ============================================
+
+qor("=== Operator Tests ===");
+
+// Arithmetic Operators
+keyd:tiro a = 10;
+keyd:tiro b = 3;
+
+qor("\n--- Arithmetic Operators ---");
+keyd:tiro sum = a + b;
+keyd:tiro diff = a - b;
+keyd:tiro prod = a * b;
+keyd:tiro quot = a / b;
+keyd:tiro mod = a % b;
+
+qor("a + b =", sum);
+qor("a - b =", diff);
+qor("a * b =", prod);
+qor("a / b =", quot);
+qor("a % b =", mod);
+
+// Increment/Decrement
+qor("\n--- Increment/Decrement ---");
+keyd:tiro x = 5;
+qor("x =", x);
+x = x + 1;
+qor("x + 1 =", x);
+x = x - 1;
+qor("x - 1 =", x);
+
+// Comparison Operators
+qor("\n--- Comparison Operators ---");
+keyd:tiro p = 10;
+keyd:tiro q = 20;
+
+keyd:miyaa eq = (p == q);
+keyd:miyaa ne = (p != q);
+keyd:miyaa lt = (p < q);
+keyd:miyaa gt = (p > q);
+keyd:miyaa le = (p <= q);
+keyd:miyaa ge = (p >= q);
+
+qor("p =", p, ", q =", q);
+qor("p == q:", eq);
+qor("p != q:", ne);
+qor("p < q:", lt);
+qor("p > q:", gt);
+qor("p <= q:", le);
+qor("p >= q:", ge);
+
+// Logical Operators
+qor("\n--- Logical Operators ---");
+keyd:miyaa t = run;
+keyd:miyaa f = been;
+
+keyd:miyaa and_result = t iyo f;
+keyd:miyaa or_result = t ama f;
+keyd:miyaa not_t = been ahayn t;
+keyd:miyaa not_f = been ahayn f;
+
+qor("t iyo f:", and_result);
+qor("t ama f:", or_result);
+qor("been ahayn t:", not_t);
+qor("been ahayn f:", not_f);
+
+// String Concatenation
+qor("\n--- String Concatenation ---");
+keyd:eray str1 = "Hello";
+keyd:eray str2 = "World";
+keyd:eray combined = str1 + " " + str2;
+qor("str1 + ' ' + str2 =", combined);
+
+qor("\n=== All Operator Tests Passed ===");

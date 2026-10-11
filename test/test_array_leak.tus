@@ -1,0 +1,4 @@
+hawl main(): waxbo {
+    qor([1, 2, 3]);
+}
+main();

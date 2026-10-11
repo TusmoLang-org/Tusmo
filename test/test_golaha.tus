@@ -1,0 +1,40 @@
+keen "golaha";
+
+keyd:Golaha app = Golaha() cusub;
+
+hawl home_page(req: CodsiHttp): waxbo {
+    qor("Codsiga la helay: " + req.Jidka);
+    app.jawaab("200 OK", "text/html; charset=utf-8", 
+        "<html><head><style>" +
+        "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: #c9d1d9; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }" +
+        "h1 { color: #58a6ff; font-size: 3rem; margin-bottom: 10px; text-shadow: 0 0 10px rgba(88,166,255,0.3); }" +
+        "p { font-size: 1.2rem; color: #8b949e; }" +
+        "div { padding: 20px; border: 1px solid #30363d; border-radius: 10px; background-color: #161b22; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }" +
+        "</style></head><body>" +
+        "<div>" +
+        "<h1>Golaha Framework 🚀</h1>" +
+        "<p>Ku soo dhawaada framework-ga rasmiga ah ee Tusmo!</p>" +
+        "<p>Ku dhisay luuqadda 100% Pure Somali.</p>" +
+        "</div>" +
+        "</body></html>");
+}
+
+hawl info_page(req: CodsiHttp): waxbo {
+    qor("Codsiga adeeg: " + req.Jidka);
+    app.jawaab("200 OK", "text/html; charset=utf-8", 
+        "<html><body><h1>Adeegyada framework-ga Golaha!</h1></body></html>");
+}
+
+hawl post_data(req: CodsiHttp): waxbo {
+    qor("Xogta lagu helay Golaha: " + req.Jidhka);
+    app.jawaab("200 OK", "application/json", "{\"framework\":\"Golaha\",\"status\":\"guul\"}");
+}
+
+hawl main(): waxbo {
+    app.doon("/", home_page);
+    app.doon("/adeeg", info_page);
+    app.dir("/dir", post_data);
+    
+    app.kici("8080");
+}
+main();

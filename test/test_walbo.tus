@@ -1,0 +1,11 @@
+hawl tijaabi_wax(qiimo: walbo): waxbo {
+    qor(qiimo);
+}
+
+hawl main(): waxbo {
+    tijaabi_wax(100);
+    tijaabi_wax("Salaam Lipaax!");
+    tijaabi_wax(haa);
+}
+
+main();

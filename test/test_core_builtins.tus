@@ -1,0 +1,15 @@
+hawl kow() : tiro {
+    keyd:tiro y = uguYar(100, 200);
+    keyd:tiro w = uguWeyn(100, 200);
+    keyd:tiro q = qaado(-45);
+
+    qor("Yar: ", y);
+    qor("Weyn: ", w);
+    qor("Qaado: ", q);
+
+    qor("Barnaamijku hadda wuu istaagi doonaa...");
+    jooji(0);
+
+    qor("Khadkan lama daabici doono!");
+    soo_celi 0;
+}

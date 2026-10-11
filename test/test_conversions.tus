@@ -1,0 +1,10 @@
+qor("Testing conversions:");
+
+qor("eray(10) -> " + eray(10));
+qor("tiro(\"20\") -> " + eray(tiro("20")));
+qor("jajab(\"3.14\") -> " + eray(jajab("3.14")));
+qor("miyaa(1) -> " + eray(miyaa(1)));
+qor("miyaa(0) -> " + eray(miyaa(0)));
+
+qor("nooc(10) -> " + nooc(10));
+qor("nooc(\"hi\") -> " + nooc("hi"));

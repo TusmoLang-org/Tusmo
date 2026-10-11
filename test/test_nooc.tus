@@ -1,0 +1,8 @@
+keyd:tiro x = 10;
+keyd:eray y = "waa barnaamij";
+keyd:jajab z = 3.14;
+
+qor("Nooca x waa:", nooc(x));
+qor("Nooca y waa:", nooc(y));
+qor("Nooca z waa:", nooc(z));
+qor("Nooca 100 waa:", nooc(100));

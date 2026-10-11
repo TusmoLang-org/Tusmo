@@ -1,0 +1,10 @@
+keen "test_imports_a";
+keen "test_imports_b";
+
+hawl main(): waxbo {
+    keyd:NoocaA a = NoocaA("Mubaarak") cusub;
+    keyd:NoocaB b = NoocaB(a) cusub;
+    
+    qor(b.sheeg());
+}
+main();

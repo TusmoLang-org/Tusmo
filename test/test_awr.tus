@@ -1,0 +1,40 @@
+keen "awr";
+
+keyd:Awr app = Awr() cusub;
+
+hawl home_page(req: CodsiHttp): waxbo {
+    qor("Codsiga la helay: " + req.Jidka);
+    app.jawaab("200 OK", "text/html; charset=utf-8", 
+        "<html><head><style>" +
+        "body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: #c9d1d9; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }" +
+        "h1 { color: #ff9f43; font-size: 3rem; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,159,67,0.3); }" +
+        "p { font-size: 1.2rem; color: #8b949e; }" +
+        "div { padding: 20px; border: 1px solid #30363d; border-radius: 10px; background-color: #161b22; box-shadow: 0 4px 20px rgba(0,0,0,0.5); text-align: center; }" +
+        "</style></head><body>" +
+        "<div>" +
+        "<h1>Awr Framework 🐪</h1>" +
+        "<p>Ku soo dhawaada framework-ga rasmiga ah ee Tusmo!</p>" +
+        "<p>Rar-qaadaha shabakada (web server) ee loogu talagalay culaysyada waawayn.</p>" +
+        "</div>" +
+        "</body></html>");
+}
+
+hawl info_page(req: CodsiHttp): waxbo {
+    qor("Codsiga adeeg: " + req.Jidka);
+    app.jawaab("200 OK", "text/html; charset=utf-8", 
+        "<html><body><h1>Adeegyada framework-ga Awr! 🐪</h1></body></html>");
+}
+
+hawl post_data(req: CodsiHttp): waxbo {
+    qor("Xogta lagu helay Awr: " + req.Jidhka);
+    app.jawaab("200 OK", "application/json", "{\"framework\":\"Awr\",\"status\":\"guul\"}");
+}
+
+hawl main(): waxbo {
+    app.doon("/", home_page);
+    app.doon("/adeeg", info_page);
+    app.dir("/dir", post_data);
+    
+    app.kici("8080");
+}
+main();

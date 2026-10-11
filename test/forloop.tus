@@ -1,0 +1,3 @@
+soco i laga bilaabo 1..5{
+    qor(i);//print 1 upto 5
+}

@@ -1,0 +1,18 @@
+keyd:tix:tiro nums = [1,2,3,4,5,6,7];
+hawl binarySearch(arr:tix:tiro, target:tiro):tiro{
+    keyd:tiro low = 0;
+    keyd:tiro high = dherer(arr) - 1;
+    inta ay (low <= high){
+        keyd:tiro mid = low + (high - low) / 2;
+        haddii (arr[mid] == target){
+            soo_celi mid;
+        }ama_haddii (arr[mid] < target){
+            low = mid + 1;
+        }haddii_kale{
+            high = mid - 1;
+        }
+    }
+    soo_celi -1;
+}
+
+qor(binarySearch(nums, 3));

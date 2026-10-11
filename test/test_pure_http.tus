@@ -1,0 +1,26 @@
+keen "xiriiriye";
+
+hawl main(): waxbo {
+    keyd:Xiriiriye server = Xiriiriye() cusub;
+    server.samee_server("8080");
+    server.dhageyso(10);
+    qor("Server-ka HTTP ee Tusmo wuxuu ka shaqaynayaa port 8080...");
+
+    inta ay (run) {
+        keyd:Xiriiriye client = server.aqbal();
+        haddii (client.waa_ansax()) {
+            keyd:eray codsi = client.soo_hel(2048);
+            qor("--- Codsi Cusub ---");
+            qor(codsi);
+
+            keyd:eray response = "HTTP/1.1 200 OK\r\n" +
+                                 "Content-Type: text/html; charset=utf-8\r\n" +
+                                 "Content-Length: 66\r\n" +
+                                 "Connection: close\r\n\r\n" +
+                                 "<h1>Ku soo dhawaada Server-ka HTTP ee laga dhisay Pure Tusmo!</h1>";
+            client.dir(response);
+            client.xir();
+        }
+    }
+}
+main();

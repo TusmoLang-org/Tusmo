@@ -1,0 +1,17 @@
+koox Qof {
+    keyd:eray magac;
+    keyd:tiro da;
+    dhis(m: eray, d: tiro): waxbo {
+        kan.magac = m;
+        kan.da = d;
+    }
+    hawl sheeg(): waxbo {
+        qor(kan.magac, kan.da);
+    }
+}
+
+hawl main(): waxbo {
+    keyd:Qof q = Qof("Axmed", 20) cusub;
+    q.sheeg();
+}
+main();

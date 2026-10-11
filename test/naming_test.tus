@@ -1,0 +1,15 @@
+// test/naming_test.tus
+
+koox Qof { 
+    keyd:eray magac;
+    dhis(n: eray) : waxbo {
+        kan.magac = n;
+    }
+}
+
+hawl salaan() : waxbo { // Hadda waa sax (lowercase)
+    qor("Haye");
+}
+
+keyd:Qof q = Qof("Ali") cusub;
+qor(q); // Cilad: Object lama qori karo (Waa inuu halkan ku qabto)

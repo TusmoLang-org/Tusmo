@@ -1,0 +1,39 @@
+keen "http";
+
+hawl main(): waxbo {
+    keyd:AdeegeHttp server = AdeegeHttp() cusub;
+    server.kici("8080");
+    qor("Adeege HTTP ee Tusmo wuxuu ka shaqaynayaa port 8080...");
+
+    inta ay (run) {
+        keyd:CodsiHttp req = server.aqbal_codsi();
+        haddii (req.WaaAnsax) {
+            keyd:eray user_agent = req.Madax["User-Agent"];
+            qor("--- CODSIGA LA HELAY ---");
+            qor("Habka: " + req.Habka);
+            qor("Method: " + req.Method);
+            qor("Jidka: " + req.Jidka);
+            qor("User-Agent: " + user_agent);
+            
+            haddii (req.waa("DOON")) {
+                haddii (req.Jidka == "/") {
+                    server.dir_jawaab("200 OK", "text/html; charset=utf-8", 
+                        "<html><body><h1>Ku soo dhawaada Standard Library-ga HTTP ee Pure Tusmo!</h1>" +
+                        "<p>Kani waa bogga guriga ee laga dhisay standard library-ga rasmiga ah.</p></body></html>");
+                } ama_haddii (req.Jidka == "/adeeg") {
+                    server.dir_jawaab("200 OK", "text/html; charset=utf-8", 
+                        "<html><body><h1>Adeegga Standard-ka ah</h1><p>Wax walba waa Pure Somali Programming!</p></body></html>");
+                } haddii_kale {
+                    server.dir_jawaab("404 Not Found", "text/html; charset=utf-8", 
+                        "<html><body><h1>404 Bogga Lama Helin!</h1></body></html>");
+                }
+            } ama_haddii (req.waa("DIR")) {
+                qor("Xogta la soo diray (Body): " + req.Jidhka);
+                server.dir_jawaab("200 OK", "application/json", "{\"status\":\"xogta_waa_la_helay\"}");
+            } haddii_kale {
+                server.dir_jawaab("405 Method Not Allowed", "text/plain", "Habkan lama ogola!");
+            }
+        }
+    }
+}
+main();

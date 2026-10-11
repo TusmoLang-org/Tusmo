@@ -1,0 +1,64 @@
+// ============================================
+// Test: Variables and Data Types
+// ============================================
+
+// Test integer (tiro)
+keyd:tiro a = 10;
+keyd:tiro b = 20;
+keyd:tiro c = -5;
+keyd:tiro d = 0;
+keyd:tiro e = -100;
+qor("Integer tests:");
+qor("a =", a);
+qor("b =", b);
+qor("c =", c);
+qor("d =", d);
+qor("e =", e);
+
+// Test float (jajab)
+keyd:jajab f1 = 3.14;
+keyd:jajab f2 = 2.5;
+keyd:jajab f3 = 0.0;
+keyd:jajab f4 = -2.5;
+keyd:jajab f5 = -1.414;
+qor("\nFloat tests:");
+qor("f1 =", f1);
+qor("f2 =", f2);
+qor("f3 =", f3);
+qor("f4 =", f4);
+qor("f5 =", f5);
+qor("\nFloat tests:");
+qor("f1 =", f1);
+qor("f2 =", f2);
+qor("f3 =", f3);
+
+// Test string (eray)
+keyd:eray s1 = "Hello";
+keyd:eray s2 = "World";
+keyd:eray s3 = "";
+keyd:eray s4 = "Tusmo Programming";
+qor("\nString tests:");
+qor("s1 =", s1);
+qor("s2 =", s2);
+qor("s3 =", s3);
+qor("s4 =", s4);
+
+// Test character (xaraf)
+keyd:xaraf ch2 = 'z';
+keyd:xaraf ch1 = 'A';
+keyd:xaraf ch3 = '9';
+qor("\nCharacter tests:");
+qor("ch1 =", ch1);
+qor("ch2 =", ch2);
+qor("ch3 =", ch3);
+
+// Test boolean (miyaa)
+keyd:miyaa flag1 = run;
+keyd:miyaa flag2 = been;
+keyd:miyaa flag3 = run;
+qor("\nBoolean tests:");
+qor("flag1 =", flag1);
+qor("flag2 =", flag2);
+qor("flag3 =", flag3);
+
+qor("\n=== All Variable ests Passed ===");

@@ -1,0 +1,13 @@
+isticmaal { NoocaA, hawl_a } ee kujira "test_imports_a";
+
+koox NoocaB {
+    keyd:NoocaA a_val;
+    
+    dhis(a: NoocaA): waxbo {
+        kan.a_val = a;
+    }
+    
+    shaqo sheeg(): eray {
+        soo_celi kan.a_val.Magac + " -> " + hawl_a();
+    }
+}

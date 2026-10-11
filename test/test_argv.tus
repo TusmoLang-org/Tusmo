@@ -1,0 +1,16 @@
+hawl main(): waxbo {
+    keyd:tiro tirada = dherer(amrd);
+    qor("Tirada amrd: " + eray(tirada));
+    
+    qor("Magaca barnaamijka: " + amrd[0]);
+    
+    haddii (tirada > 1) {
+        qor("Doodda koobaad: " + amrd[1]);
+    }
+    
+    qor("--- Dhammaan Doodaha ---");
+    soco d kasta laga helo amrd {
+        qor("- " + d);
+    }
+}
+main();

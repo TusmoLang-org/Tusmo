@@ -1,0 +1,22 @@
+// test/stdlib_os.tus
+keen "os";
+
+qor("--- Tijaabada OS (Faylasha) ---");
+
+keyd:Os nidaam = Os() cusub;
+keyd:eray magaca_faylka = "test_file.txt";
+keyd:eray nuxurka = "Salaam Tusmo! Kani waa tijaabo OS.";
+
+// 1. Qorista faylka
+haddii (nidaam.majiraa(magaca_faylka)) {
+    nidaam.tirtir_fayl(magaca_faylka);
+}
+
+nidaam.qor_fayl(magaca_faylka, nuxurka, been);
+qor("Faylkii waa la qoray.");
+
+// 2. Akhrinta faylka
+keyd:eray akhris = nidaam.aqri_fayl(magaca_faylka);
+qor("Nuxurka faylka: " + akhris);
+
+qor("\n--- Tijaabadii waa dhammaatay ---");

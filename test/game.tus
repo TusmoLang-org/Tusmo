@@ -1,0 +1,13 @@
+keen "opengl/opengl";
+
+keyd:Daaqad w = Daaqad() cusub;
+keyd:Sawire draw = Sawire() cusub;
+
+w.fur(300, 300, "Snake");
+
+
+inta ay (w.ma_socotaa()){
+    draw.leydi(10.0, 50.0, 50.0, 50.0, 255.0, 100.5, 190.0);
+}
+
+w.xir();

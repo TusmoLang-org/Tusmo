@@ -1,0 +1,5 @@
+hawl main(): waxbo {
+    keyd:tix:tix:tix:tix:tiro arr = [[[[1, 2], [3, 4]]]];
+    qor(arr[0][0][1][0]);
+}
+main();

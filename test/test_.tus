@@ -1,0 +1,11 @@
+___c__code_("""
+
+// We tell the program that salaam() exists elsewhere
+extern void salaam(); 
+
+""");
+
+___c__call_("salaam");
+
+
+TUSMO_XIDID ".lib/libtusmo";

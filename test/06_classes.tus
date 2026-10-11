@@ -1,0 +1,42 @@
+// ============================================
+// Test: Classes (koox)
+// ============================================
+
+qor("=== Class Tests ===");
+
+// Simple Class without constructor first
+koox Point {
+    keyd:tiro x;
+    keyd:tiro y;
+    
+    shaqo set_x(val:tiro) : waxbo {
+        kan.x = val;
+    }
+    
+    shaqo set_y(val:tiro) : waxbo {
+        kan.y = val;
+    }
+    
+    hawl get_x() : tiro {
+        soo_celi kan.x;
+    }
+    
+    hawl get_y() : tiro {
+        soo_celi kan.y;
+    }
+}
+
+qor("\n--- Class with Setters ---");
+keyd:Point p1 = Point() cusub;
+p1.set_x(10);
+p1.set_y(20);
+qor("p1.get_x() =", p1.get_x());
+qor("p1.get_y() =", p1.get_y());
+
+// Direct field access
+p1.x = 100;
+p1.y = 200;
+qor("After direct access p1.x =", p1.x);
+qor("After direct access p1.y =", p1.y);
+
+qor("\n=== All Class Tests Passed ===");

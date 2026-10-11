@@ -1,0 +1,44 @@
+// test/tijaabo.tus
+keen "opengl/opengl";
+
+// 1. Sameynta Daaqadda iyo Sawiraha (Naxwaha: Koox() cusub)
+keyd:Daaqad daaqada = Daaqad() cusub;
+keyd:Sawire sawire = Sawire() cusub;
+
+// 2. Furitaanka Daaqadda (Ballaca: 800, Dhererka: 600)
+haddii (daaqada.fur(800, 600, "Tusmo OpenGL - Tijaabo")) {
+    
+    // Deji midabka masaxida (Madow khafiif ah)
+    sawire.midabka_masaxida(0.05, 0.05, 0.05, 1.0);
+
+    // 3. Loop-ka Ciyaarta (Naxwaha: inta ay (condition))
+    inta ay (daaqada.ma_socotaa()) {
+        
+        // Nadiifi shaashadda (Masax xusuusta midabka)
+        sawire.nadiifi(XUSUUSTA_MIDABKA);
+        
+        // Dib u deji xisaabta Matrix-ka
+        sawire.dib_u_deji();
+
+        // 4. Sawiridda Saddex-gees midabo leh
+        sawire.bilow(SADDEX_GEES);
+            
+            sawire.midab(1.0, 0.0, 0.0); // Cas (Kala bar sare)
+            sawire.bar_2d(0.0, 0.5);
+            
+            sawire.midab(0.0, 1.0, 0.0); // Cagaar (Bidix hoose)
+            sawire.bar_2d(-0.5, -0.5);
+            
+            sawire.midab(0.0, 0.0, 1.0); // Buluug (Midig hoose)
+            sawire.bar_2d(0.5, -0.5);
+            
+        sawire.dhameey();
+
+        // 5. Cusboonaysii shaashadda
+        daaqada.muuji();
+        daaqada.hubi();
+    }
+}
+
+// 6. Xiritaanka marka loop-ku dhammaado
+daaqada.xir();

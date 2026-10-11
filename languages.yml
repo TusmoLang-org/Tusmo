@@ -1,0 +1,10 @@
+Tusmo:
+  type: programming
+  color: "#4A90D9"
+  extensions:
+    - .tus
+  aliases:
+    - tusmo
+  tm_scope: source.tusmo
+  ace_mode: text
+  language_id: 847291053

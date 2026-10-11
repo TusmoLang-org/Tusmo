@@ -1,0 +1,21 @@
+// test_isticmaal_class_mod.tus
+
+koox WaalidKoox {
+    keyd magac: eray;
+    
+    hawl sheeg_magac(): eray {
+        soo_celi "Waalid: " + kan.magac;
+    }
+}
+
+koox UboodKoox dhaxlaya WaalidKoox {
+    keyd da: tiro;
+
+    hawl sheeg_da(): tiro {
+        soo_celi kan.da;
+    }
+}
+
+hawl caawiye_hawl(): eray {
+    soo_celi "Caawiye waa la yeeray";
+}

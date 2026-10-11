@@ -1,0 +1,5 @@
+hawl tijaabo(a: tiro, b: tiro, c: eray): waxbo {
+    qor("a=", a, "b=", b, "c=", c);
+}
+
+tijaabo(c="Magac", b=20, a=10);

@@ -1,0 +1,24 @@
+hawl tijaabi_xusuusta(tirada: tiro): waxbo {
+    soco i laga bilaabo 0..tirada {
+        // String allocation and concatenation
+        keyd:eray magac = "Tijaabo ";
+        keyd:eray nambar = qor_xaraf(i % 10 + 48); // Just some string operation
+        keyd:eray isku_dar = magac + nambar;
+        
+        // Array allocation
+        keyd:tix:tiro tirooyin = [1, 2, i];
+        tirooyin.gali(i * 2);
+        
+        // Array of strings
+        keyd:tix:eray erayo = ["Mid", "Laba", isku_dar];
+        erayo.gali("Saddex");
+        
+        // Reassignment to see if old memory is freed
+        magac = "Magac cusub";
+        tirooyin = [10, 20, 30];
+    }
+}
+
+qor("Bilowga tijaabada...");
+tijaabi_xusuusta(10000);
+qor("Dhammaadka tijaabada!");

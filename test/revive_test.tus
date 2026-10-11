@@ -1,0 +1,13 @@
+// test/revive_test.tus
+
+hawl tijaabi_revive() : waxbo {
+    keyd:tix:tiro a = [1, 2, 3];
+    keyd:tix:tiro b = a; // Ownership moved to 'b'
+
+    a = [4, 5, 6]; // 'a' revived! (LHS check should skip 'moved' error)
+
+    qor("Xogta cusub ee 'a' waa: ");
+    qor(a);
+}
+
+tijaabi_revive();

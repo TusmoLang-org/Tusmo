@@ -1,0 +1,9 @@
+// test_isticmaal_class_main.tus
+isticmaal { UboodKoox } kujira "test/test_isticmaal_class_mod";
+
+keyd u: UboodKoox = UboodKoox() cusub;
+u.magac = "Cali";
+u.da = 20;
+
+qor(u.sheeg_magac());
+qor("Da: ", u.sheeg_da());

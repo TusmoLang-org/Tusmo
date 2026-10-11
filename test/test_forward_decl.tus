@@ -1,0 +1,12 @@
+hawl kowaad(): waxbo {
+    labaad();
+}
+
+hawl labaad(): waxbo {
+    qor("Labaad");
+}
+
+hawl main(): waxbo {
+    kowaad();
+}
+main();

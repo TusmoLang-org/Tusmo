@@ -1,0 +1,13 @@
+___c__code_("""
+
+int add(int x, int y){
+	return x+y;
+}
+""");
+
+shaqo iskudar(x:tiro, y:tiro):tiro{
+	soo_celi ___c__call_("add",x,y);
+}
+
+qor(iskudar(12,21));
+

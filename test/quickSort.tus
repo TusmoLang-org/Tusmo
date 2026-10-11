@@ -1,0 +1,29 @@
+keyd:tix:tiro nums = [8, 3, 7, 5, 2, 9];
+
+hawl quicksort(arr:tix:tiro) => tix:tiro {
+    haddii (dherer(arr) <= 1) {
+        soo_celi arr;
+    }
+
+    keyd:tiro pivot = arr[0];
+    keyd:tiro indx = 1;
+    keyd:tix:tiro Left = [];
+    keyd:tix:tiro Right = [];
+
+    inta ay (indx < dherer(arr)) {
+        haddii (arr[indx] < pivot) {
+            Left.gali(arr[indx]);
+        } haddii_kale {
+            Right.gali(arr[indx]);
+        }
+        indx = indx + 1;
+    }
+    
+    keyd:tix:tiro sorted = quicksort(Left);
+    sorted.gali(pivot);
+    sorted.gali(quicksort(Right));
+     
+    soo_celi sorted;
+}
+
+qor(quicksort(nums));

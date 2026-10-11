@@ -1,0 +1,49 @@
+// test/dashboard.tus
+keen "opengl/opengl";
+
+// 1. Sameynta Daaqadda, Sawiraha, iyo Jiirka
+keyd:Daaqad daaqada = Daaqad() cusub;
+keyd:Sawire sawire = Sawire() cusub;
+keyd:Jiir jiir = Jiir() cusub;
+
+keyd:tiro ballac = 1000;
+keyd:tiro dheer = 700;
+
+haddii (daaqada.fur(ballac, dheer, "Tusmo Dashboard - GUI")) {
+    
+    sawire.midabka_masaxida(0.1, 0.1, 0.1, 1.0);
+
+    inta ay (daaqada.ma_socotaa()) {
+        sawire.nadiifi(XUSUUSTA_MIDABKA);
+        
+        // U diyaari nidaamka 2D (Pixels)
+        sawire.diyaar_2d(ballac, dheer);
+
+        // --- 1. Sidebar (Bidix) ---
+        sawire.leydi(0.0, 0.0, 250.0, dheer, 0.15, 0.15, 0.15);
+
+        // --- 2. Top Bar (Sare) ---
+        sawire.leydi(250.0, 0.0, ballac - 250.0, 60.0, 0.2, 0.2, 0.2);
+
+        // --- 3. Main Content Area ---
+        sawire.leydi(270.0, 80.0, 710.0, 300.0, 0.25, 0.25, 0.25);
+        sawire.leydi(270.0, 400.0, 345.0, 280.0, 0.25, 0.25, 0.25);
+        sawire.leydi(635.0, 400.0, 345.0, 280.0, 0.25, 0.25, 0.25);
+
+        // --- 4. Interactive Button (Xeelad yar) ---
+        keyd:jajab mx = jiir.x();
+        keyd:jajab my = jiir.y();
+        
+        // Hubi haddii mouse-ku uu dul joogo Button-ka (Hover)
+        haddii (mx > 30.0 iyo mx < 220.0 iyo my > 100.0 iyo my < 150.0) {
+            sawire.leydi(30.0, 100.0, 190.0, 50.0, 0.0, 0.5, 0.8); // Midab buluug ah (Hover)
+        } haddii_kale {
+            sawire.leydi(30.0, 100.0, 190.0, 50.0, 0.3, 0.3, 0.3); // Midab caadi ah
+        }
+
+        daaqada.muuji();
+        daaqada.hubi();
+    }
+}
+
+daaqada.xir();

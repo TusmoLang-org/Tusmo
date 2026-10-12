@@ -115,7 +115,8 @@ if [ "$TRIPLET" = "windows-x86_64" ]; then
   PLATFORM_ARGS+=("PLATFORM=PLATFORM_DESKTOP_WIN32")
   CUSTOM_CFLAGS_ARGS+=("CUSTOM_CFLAGS=-D_WIN32_WINNT=0x0A00")
 fi
-"$MAKE_BIN" -C "$SRC" \
+pushd "$SRC" >/dev/null
+"$MAKE_BIN" \
   CC="$BUILD_CC" AR="$BUILD_AR" RAYLIB_RELEASE_PATH="$BUILD" \
   RAYLIB_LIBTYPE=STATIC RAYLIB_BUILD_MODE=RELEASE \
   RAYLIB_MODULE_AUDIO=TRUE RAYLIB_MODULE_MODELS=TRUE \
@@ -125,7 +126,7 @@ if [ "$TRIPLET" = "windows-x86_64" ]; then
   # mingw32-make invokes the archive recipe from a different Windows path
   # context, so its relative rcore.o arguments are not found by ar. Compile
   # the objects through Make, then archive them using absolute paths.
-  "$MAKE_BIN" -C "$SRC" \
+  "$MAKE_BIN" \
     CC="$BUILD_CC" AR="$BUILD_AR" RAYLIB_RELEASE_PATH="$BUILD" \
     RAYLIB_LIBTYPE=STATIC RAYLIB_BUILD_MODE=RELEASE \
     RAYLIB_MODULE_AUDIO=TRUE RAYLIB_MODULE_MODELS=TRUE \
@@ -135,12 +136,13 @@ if [ "$TRIPLET" = "windows-x86_64" ]; then
     "$SRC/rcore.o" "$SRC/rshapes.o" "$SRC/rtextures.o" \
     "$SRC/rtext.o" "$SRC/rmodels.o" "$SRC/raudio.o"
 else
-  "$MAKE_BIN" -C "$SRC" \
+  "$MAKE_BIN" \
     CC="$BUILD_CC" AR="$BUILD_AR" RAYLIB_RELEASE_PATH="$BUILD" \
     RAYLIB_LIBTYPE=STATIC RAYLIB_BUILD_MODE=RELEASE \
     RAYLIB_MODULE_AUDIO=TRUE RAYLIB_MODULE_MODELS=TRUE \
     "${PLATFORM_ARGS[@]}" "${CUSTOM_CFLAGS_ARGS[@]}" all
 fi
+popd >/dev/null
 
 NATIVE_LIBRARY="$BUILD/libraylib.a"
 [ -f "$NATIVE_LIBRARY" ] || {

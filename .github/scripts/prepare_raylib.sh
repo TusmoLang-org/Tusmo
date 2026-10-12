@@ -41,7 +41,7 @@ if [ "$TRIPLET" = "linux-x86_64" ]; then
   }
   DEST="$BUNDLE/stdlib/raylib/libraylib.a"
   mkdir -p "$(dirname "$DEST")"
-  tar -xOzf "$ARCHIVE" "raylib-6.0/lib/libraylib.a" > "$DEST"
+  tar -xOzf "$ARCHIVE" "raylib-6.0_linux_amd64/lib/libraylib.a" > "$DEST"
   echo "installed native Raylib $RAYLIB_VERSION at $DEST"
   file "$DEST" 2>/dev/null || true
   exit 0
@@ -77,6 +77,12 @@ if [ "$TRIPLET" = "macos-arm64" ] && command -v clang >/dev/null 2>&1; then
   BUILD_CC="$(command -v clang)"
   BUILD_AR="$(command -v ar)"
 fi
+PLATFORM_ARGS=()
+if [ "$TRIPLET" = "windows-x86_64" ]; then
+  # Use Raylib's native Win32 backend. It avoids importing a prebuilt GLFW
+  # object archive and is linkable with the bundled Zig GNU target.
+  PLATFORM_ARGS+=("PLATFORM=PLATFORM_DESKTOP_WIN32")
+fi
 "$MAKE_BIN" -C "$SRC" \
   CC="$BUILD_CC" \
   AR="$BUILD_AR" \
@@ -85,6 +91,7 @@ fi
   RAYLIB_BUILD_MODE=RELEASE \
   RAYLIB_MODULE_AUDIO=TRUE \
   RAYLIB_MODULE_MODELS=TRUE \
+  "${PLATFORM_ARGS[@]}" \
   clean all
 
 NATIVE_LIBRARY="$BUILD/libraylib.a"

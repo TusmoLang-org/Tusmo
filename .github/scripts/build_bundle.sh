@@ -187,6 +187,12 @@ if [ -x "$here/zig/zig" ]; then
     # native framework set explicit because Zig 0.11 does not infer these
     # transitive dependencies from a static archive.
     args+=("-framework" "Foundation" "-framework" "AppKit" "-framework" "IOKit" "-framework" "OpenGL" "-framework" "CoreAudio" "-framework" "CoreVideo" "-lobjc")
+    # Zig 0.11's Mach-O linker cannot resolve the selector-specific Objective-C
+    # stubs emitted by Raylib's GLFW backend. Apple Clang delegates this final
+    # native link to ld64 and is present on supported macOS runners/systems.
+    if command -v clang >/dev/null 2>&1; then
+      exec clang "${args[@]}"
+    fi
   fi
   exec "$here/zig/zig" cc "${args[@]}"
 fi

@@ -118,6 +118,9 @@ jobs:
       - name: Install platform Raylib
         run: bash .github/scripts/prepare_raylib.sh --bundle bundle --triplet linux-x86_64
 
+      - name: Pack platform bundle
+        run: tar -czf tusmo-linux-x86_64.tar.gz -C bundle .
+
       - name: Verify the install end to end (offline sandbox)
         run: bash .github/scripts/verify_install.sh tusmo-linux-x86_64.tar.gz
 

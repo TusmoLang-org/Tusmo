@@ -84,13 +84,13 @@ if (Test-Path $cc) {
 # Test the native compiler/linker directly before involving Tusmo. This keeps
 # a Windows toolchain failure separate from a Tusmo code-generation failure.
 Step "compiling and running a native C toolchain smoke test"
-@
+@"
 #include <stdio.h>
 int main(void) {
     puts("Tusmo toolchain smoke test");
     return 0;
 }
-@ | Set-Content -Path (Join-Path $scratch "toolchain-smoke.c") -Encoding ASCII
+"@ | Set-Content -Path (Join-Path $scratch "toolchain-smoke.c") -Encoding ASCII
 $smokeExe = Join-Path $scratch "toolchain-smoke.exe"
 $smokeLog = Join-Path $work "toolchain-smoke.log"
 Push-Location $scratch

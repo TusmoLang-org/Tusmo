@@ -141,7 +141,11 @@ if [ "$IS_WINDOWS" = "1" ]; then
 setlocal
 set "TUSMO_ZIG=%~dp0zig\zig.exe"
 if exist "%TUSMO_ZIG%" (
-  "%TUSMO_ZIG%" cc %*
+  rem Zig 0.11 does not support LTO with the Windows COFF object format.
+  rem Tusmo passes -flto unconditionally, so remove that one flag here.
+  set "TUSMO_ARGS=%*"
+  set "TUSMO_ARGS=%TUSMO_ARGS:-flto=%"
+  "%TUSMO_ZIG%" cc %TUSMO_ARGS%
   exit /b %errorlevel%
 )
 where gcc >nul 2>nul && (gcc %* & exit /b %errorlevel%)
@@ -155,7 +159,16 @@ else
 # Tusmo toolchain wrapper: bundled zig cc, with a system-compiler fallback.
 here="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 if [ -x "$here/zig/zig" ]; then
-  exec "$here/zig/zig" cc "$@"
+  args=()
+  for arg in "$@"; do
+    # Zig 0.11 does not support LTO with the Mach-O object format.
+    # Tusmo passes -flto unconditionally, so remove that one flag on macOS.
+    if [ "$(uname -s)" = "Darwin" ] && [ "$arg" = "-flto" ]; then
+      continue
+    fi
+    args+=("$arg")
+  done
+  exec "$here/zig/zig" cc "${args[@]}"
 fi
 for candidate in gcc clang cc; do
   if command -v "$candidate" >/dev/null 2>&1; then

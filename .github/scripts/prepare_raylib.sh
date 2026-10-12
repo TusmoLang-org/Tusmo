@@ -44,9 +44,18 @@ command -v "$MAKE_BIN" >/dev/null 2>&1 || {
 }
 
 echo "building Raylib $RAYLIB_VERSION for $TRIPLET with bundled Zig"
+BUILD_CC="$ZIG cc"
+BUILD_AR="$ZIG ar"
+if [ "$TRIPLET" = "macos-arm64" ] && command -v clang >/dev/null 2>&1; then
+  # Raylib's GLFW backend is Objective-C on macOS. Apple Clang is the native
+  # compiler for that source; the arm64 objects remain compatible with the
+  # bundled Zig linker used when Tusmo programs are compiled.
+  BUILD_CC="$(command -v clang)"
+  BUILD_AR="$(command -v ar)"
+fi
 "$MAKE_BIN" -C "$SRC" \
-  CC="$ZIG cc" \
-  AR="$ZIG ar" \
+  CC="$BUILD_CC" \
+  AR="$BUILD_AR" \
   RAYLIB_RELEASE_PATH="$BUILD" \
   RAYLIB_LIBTYPE=STATIC \
   RAYLIB_BUILD_MODE=RELEASE \

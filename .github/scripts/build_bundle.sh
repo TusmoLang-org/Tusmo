@@ -138,18 +138,18 @@ fi
 if [ "$IS_WINDOWS" = "1" ]; then
   cat > "$OUT_DIR/toolchain/cc.bat" <<'EOS'
 @echo off
-setlocal
+setlocal EnableExtensions EnableDelayedExpansion
 set "TUSMO_ZIG=%~dp0zig\zig.exe"
 if exist "%TUSMO_ZIG%" (
   rem Zig 0.11 does not support LTO with the Windows COFF object format.
   rem Tusmo passes -flto unconditionally, so remove that one flag here.
   set "TUSMO_ARGS=%*"
-  set "TUSMO_ARGS=%TUSMO_ARGS:-flto=%"
-  "%TUSMO_ZIG%" cc %TUSMO_ARGS%
-  exit /b %errorlevel%
+  set "TUSMO_ARGS=!TUSMO_ARGS:-flto=!"
+  "%TUSMO_ZIG%" cc !TUSMO_ARGS!
+  exit /b !errorlevel!
 )
-where gcc >nul 2>nul && (gcc %* & exit /b %errorlevel%)
-where clang >nul 2>nul && (clang %* & exit /b %errorlevel%)
+where gcc >nul 2>nul && (gcc %* & exit /b !errorlevel!)
+where clang >nul 2>nul && (clang %* & exit /b !errorlevel!)
 echo Tusmo: ma jiro C compiler (zig/gcc/clang). Fadlan xakamee kaydka toolchain-ka. 1>&2
 exit /b 1
 EOS

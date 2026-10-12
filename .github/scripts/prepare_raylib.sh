@@ -92,7 +92,15 @@ if [ "$TRIPLET" = "macos-arm64" ]; then
     exit 1
   fi
   lipo "$WORK/raylib.a" -thin arm64 -output "$WORK/raylib-arm64.a"
-  NATIVE_LIBRARY="$WORK/raylib-arm64.a"
+  # Repack the thin archive so Zig 0.11 does not have to consume the
+  # universal archive's platform-specific symbol-table format.
+  mkdir "$WORK/raylib-objects"
+  (
+    cd "$WORK/raylib-objects"
+    ar -x "$WORK/raylib-arm64.a"
+  )
+  libtool -static -o "$WORK/raylib-arm64-repacked.a" "$WORK"/raylib-objects/*.o
+  NATIVE_LIBRARY="$WORK/raylib-arm64-repacked.a"
 fi
 cp "$NATIVE_LIBRARY" "$DEST"
 echo "installed Raylib $VERSION for $TRIPLET at $DEST"

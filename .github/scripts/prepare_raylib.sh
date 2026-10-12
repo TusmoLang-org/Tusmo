@@ -15,6 +15,7 @@ done
 
 [ -n "$BUNDLE" ] || { echo "prepare_raylib: --bundle is required" >&2; exit 2; }
 [ -n "$TRIPLET" ] || { echo "prepare_raylib: --triplet is required" >&2; exit 2; }
+BUNDLE_ABS="$(cd "$BUNDLE" && pwd)"
 case "$TRIPLET" in
   linux-x86_64|macos-arm64|windows-x86_64) ;;
   *) echo "prepare_raylib: unsupported triplet: $TRIPLET" >&2; exit 2 ;;
@@ -47,6 +48,30 @@ if [ "$TRIPLET" = "linux-x86_64" ]; then
   exit 0
 fi
 
+if [ "$TRIPLET" = "macos-arm64" ]; then
+  ASSET="raylib-6.0_macos.tar.gz"
+  ASSET_SHA256="6ae5947fbd36aee4c280e3a2b3e1893316c433e292bda6e94e0f2b037498ad70"
+  ARCHIVE="$WORK/$ASSET"
+  curl --fail --silent --show-error --location --retry 5 --retry-delay 3 \
+    "https://github.com/raysan5/raylib/releases/download/$RAYLIB_VERSION/$ASSET" \
+    -o "$ARCHIVE"
+  ACTUAL="$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')"
+  [ "$ACTUAL" = "$ASSET_SHA256" ] || {
+    echo "prepare_raylib: macOS Raylib SHA-256 mismatch" >&2
+    exit 1
+  }
+  tar -xOzf "$ARCHIVE" "raylib-6.0_macos/lib/libraylib.a" > "$WORK/raylib-universal.a"
+  lipo "$WORK/raylib-universal.a" -thin arm64 -output "$WORK/raylib-arm64.a"
+  mkdir "$WORK/raylib-objects"
+  (cd "$WORK/raylib-objects" && ar -x "$WORK/raylib-arm64.a")
+  DEST="$BUNDLE_ABS/stdlib/raylib/libraylib.a"
+  mkdir -p "$(dirname "$DEST")"
+  libtool -static -o "$DEST" "$WORK"/raylib-objects/*.o
+  echo "installed native Raylib $RAYLIB_VERSION at $DEST"
+  file "$DEST" 2>/dev/null || true
+  exit 0
+fi
+
 SOURCE_DIR="$WORK/raylib"
 echo "checking out Raylib tag $RAYLIB_VERSION"
 git clone --depth 1 --branch "$RAYLIB_VERSION" --single-branch \
@@ -55,7 +80,7 @@ SRC="$SOURCE_DIR/src"
 BUILD="$WORK/raylib-build"
 mkdir -p "$BUILD"
 
-ZIG="$BUNDLE/toolchain/zig/zig"
+ZIG="$BUNDLE_ABS/toolchain/zig/zig"
 if [ "$TRIPLET" = "windows-x86_64" ]; then ZIG="$ZIG.exe"; fi
 [ -x "$ZIG" ] || { echo "prepare_raylib: bundled Zig not found: $ZIG" >&2; exit 1; }
 MAKE_BIN="make"

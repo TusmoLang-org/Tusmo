@@ -183,7 +183,10 @@ if [ -x "$here/zig/zig" ]; then
     args+=("$arg")
   done
   if [ "$(uname -s)" = "Darwin" ] && [ "$needs_raylib" -eq 1 ]; then
-    args+=("-framework" "Cocoa" "-framework" "IOKit" "-framework" "OpenGL" "-framework" "CoreVideo" "-lobjc")
+    # Raylib's GLFW backend uses Cocoa/Objective-C symbols.  Keep the full
+    # native framework set explicit because Zig 0.11 does not infer these
+    # transitive dependencies from a static archive.
+    args+=("-framework" "Foundation" "-framework" "AppKit" "-framework" "IOKit" "-framework" "OpenGL" "-framework" "CoreAudio" "-framework" "CoreVideo" "-lobjc")
   fi
   exec "$here/zig/zig" cc "${args[@]}"
 fi

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install the native Raylib library matching the release platform.
+# Build Raylib with the same native Zig toolchain shipped by Tusmo.
 
 set -euo pipefail
 
@@ -15,111 +15,74 @@ done
 
 [ -n "$BUNDLE" ] || { echo "prepare_raylib: --bundle is required" >&2; exit 2; }
 [ -n "$TRIPLET" ] || { echo "prepare_raylib: --triplet is required" >&2; exit 2; }
-
-VERSION="6.0"
 case "$TRIPLET" in
-  linux-x86_64)
-    ASSET="raylib-6.0_linux_amd64.tar.gz"
-    SHA256="b64ba618a19e7da9e9c0e09bb398ecfd477a77d2d7231901bafc8739d27c08d2"
-    ;;
-  macos-arm64)
-    ASSET="raylib-6.0_macos.tar.gz"
-    SHA256="6ae5947fbd36aee4c280e3a2b3e1893316c433e292bda6e94e0f2b037498ad70"
-    ;;
-  windows-x86_64)
-    ASSET="raylib-6.0_win64_msvc16.zip"
-    SHA256="c93c7dc74576e00e3ee57fa2bd5fd109fbfc5aca87e12046dd7ec2c2268b3f78"
-    ;;
-  *)
-    echo "prepare_raylib: unsupported triplet: $TRIPLET" >&2
-    exit 2
-    ;;
+  linux-x86_64|macos-arm64|windows-x86_64) ;;
+  *) echo "prepare_raylib: unsupported triplet: $TRIPLET" >&2; exit 2 ;;
 esac
 
+RAYLIB_VERSION="6.0"
+SOURCE_SHA256="2b3ee1e2120c7a0796b33062c7e9a694dd8a8caa56a96319ac8c8ecf54a90d0b"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
-ARCHIVE="$WORK/$ASSET"
-URL="https://github.com/raysan5/raylib/releases/download/$VERSION/$ASSET"
-PYTHON_BIN="python3"
-if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
-  PYTHON_BIN="python"
-fi
-command -v "$PYTHON_BIN" >/dev/null 2>&1 || {
-  echo "prepare_raylib: Python is required to extract the Raylib archive" >&2
-  exit 1
-}
+ARCHIVE="$WORK/raylib-$RAYLIB_VERSION.tar.gz"
+SOURCE_URL="https://github.com/raysan5/raylib/archive/refs/tags/$RAYLIB_VERSION.tar.gz"
 
-echo "downloading $URL"
+echo "downloading $SOURCE_URL"
 curl --fail --silent --show-error --location --retry 5 --retry-delay 3 \
-  "$URL" -o "$ARCHIVE"
-echo "downloaded $(wc -c < "$ARCHIVE") bytes"
-
-"$PYTHON_BIN" - "$ARCHIVE" "$WORK/raylib.a" <<'PY'
-import hashlib
-import pathlib
-import sys
-import tarfile
-import zipfile
-
-archive = pathlib.Path(sys.argv[1])
-output = pathlib.Path(sys.argv[2])
-
-if archive.suffix == ".zip":
-    with zipfile.ZipFile(archive) as package:
-        member = next(
-            name for name in package.namelist()
-            if name.endswith("/lib/raylib.lib") or name.endswith("/lib/libraylib.a")
-        )
-        output.write_bytes(package.read(member))
-else:
-    with tarfile.open(archive) as package:
-        member = next(info for info in package.getmembers() if info.name.endswith("/lib/libraylib.a"))
-        stream = package.extractfile(member)
-        if stream is None:
-            raise SystemExit("Raylib archive member could not be read")
-        output.write_bytes(stream.read())
-
-print(f"extracted {output} ({output.stat().st_size} bytes)")
-PY
-
-ACTUAL="$("$PYTHON_BIN" - "$ARCHIVE" <<'PY'
-import hashlib
-import pathlib
-import sys
-print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())
-PY
-)"
-if [ "$ACTUAL" != "$SHA256" ]; then
-  echo "prepare_raylib: SHA-256 mismatch for $ASSET" >&2
-  echo "expected: $SHA256" >&2
+  "$SOURCE_URL" -o "$ARCHIVE"
+if command -v sha256sum >/dev/null 2>&1; then
+  ACTUAL="$(sha256sum "$ARCHIVE" | awk '{print $1}')"
+else
+  ACTUAL="$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')"
+fi
+if [ "$ACTUAL" != "$SOURCE_SHA256" ]; then
+  echo "prepare_raylib: SHA-256 mismatch for Raylib source" >&2
+  echo "expected: $SOURCE_SHA256" >&2
   echo "actual:   $ACTUAL" >&2
   exit 1
 fi
 
+tar -xzf "$ARCHIVE" -C "$WORK"
+SRC="$WORK/raylib-$RAYLIB_VERSION/src"
+BUILD="$WORK/raylib-build"
+mkdir -p "$BUILD"
+
+ZIG="$BUNDLE/toolchain/zig/zig"
+if [ "$TRIPLET" = "windows-x86_64" ]; then ZIG="$ZIG.exe"; fi
+[ -x "$ZIG" ] || { echo "prepare_raylib: bundled Zig not found: $ZIG" >&2; exit 1; }
+MAKE_BIN="make"
+if ! command -v "$MAKE_BIN" >/dev/null 2>&1 && command -v mingw32-make >/dev/null 2>&1; then
+  MAKE_BIN="mingw32-make"
+fi
+command -v "$MAKE_BIN" >/dev/null 2>&1 || {
+  echo "prepare_raylib: make or mingw32-make is required to build Raylib" >&2
+  exit 1
+}
+
+echo "building Raylib $RAYLIB_VERSION for $TRIPLET with bundled Zig"
+"$MAKE_BIN" -C "$SRC" \
+  CC="$ZIG cc" \
+  AR="$ZIG ar" \
+  RAYLIB_RELEASE_PATH="$BUILD" \
+  RAYLIB_LIBTYPE=STATIC \
+  RAYLIB_BUILD_MODE=RELEASE \
+  RAYLIB_MODULE_AUDIO=TRUE \
+  RAYLIB_MODULE_MODELS=TRUE \
+  clean all
+
+NATIVE_LIBRARY="$BUILD/libraylib.a"
+[ -f "$NATIVE_LIBRARY" ] || {
+  echo "prepare_raylib: Raylib build did not produce $NATIVE_LIBRARY" >&2
+  exit 1
+}
+
 if [ "$TRIPLET" = "windows-x86_64" ]; then
-  # The Tusmo metadata ends in .a and Windows normalizes it to .lib.
+  # Tusmo metadata ends in .a and Windows normalizes it to .lib.
   DEST="$BUNDLE/stdlib/raylib/libraylib.a.lib"
 else
   DEST="$BUNDLE/stdlib/raylib/libraylib.a"
 fi
 mkdir -p "$(dirname "$DEST")"
-NATIVE_LIBRARY="$WORK/raylib.a"
-if [ "$TRIPLET" = "macos-arm64" ]; then
-  if ! command -v lipo >/dev/null 2>&1; then
-    echo "prepare_raylib: lipo is required to select the macOS arm64 archive slice" >&2
-    exit 1
-  fi
-  lipo "$WORK/raylib.a" -thin arm64 -output "$WORK/raylib-arm64.a"
-  # Repack the thin archive so Zig 0.11 does not have to consume the
-  # universal archive's platform-specific symbol-table format.
-  mkdir "$WORK/raylib-objects"
-  (
-    cd "$WORK/raylib-objects"
-    ar -x "$WORK/raylib-arm64.a"
-  )
-  libtool -static -o "$WORK/raylib-arm64-repacked.a" "$WORK"/raylib-objects/*.o
-  NATIVE_LIBRARY="$WORK/raylib-arm64-repacked.a"
-fi
 cp "$NATIVE_LIBRARY" "$DEST"
-echo "installed Raylib $VERSION for $TRIPLET at $DEST"
+echo "installed native Raylib $RAYLIB_VERSION at $DEST"
 file "$DEST" 2>/dev/null || true

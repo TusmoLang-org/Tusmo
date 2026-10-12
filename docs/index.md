@@ -23,7 +23,7 @@ Si aan u tijaabino awoodda dhabta ah ee Tusmo, waxaan ku sameynay tijaabooyin ra
 
 ---
 
-### 📊 Tijaabada 1aad: Xisaabinta Fibonacci (Recursion Benchmark)
+### Tijaabada 1aad: Xisaabinta Fibonacci (Recursion Benchmark)
 Tijaabadani waxay cabbiraysaa xawaaraha CPU-ga iyo xusuusta ee recursion-ka dhowr jeer lagu celceliyo (**Fibonacci 38**):
 
 | Luuqadda | Xawaaraha Socodsiinta (Seconds) | Isticmaalka Peak RAM (Memory) | Habka Socodsiinta (Execution Model) |
@@ -34,7 +34,7 @@ Tijaabadani waxay cabbiraysaa xawaaraha CPU-ga iyo xusuusta ee recursion-ka dhow
 
 *(Fiiro gaar ah: Tijaabadan waxaa si cilmiyeysan loogu cabbiray isolated C process memory harness `getrusage` oo toos looga orodsiyeey nidaamkaaga Kali Linux si meesha looga saaro wax kasta oo ka baxsan orodka barnaamijka).*
 
-#### 💻 Koodhka Tijaabada (Fibonacci 38 Source Codes):
+#### Koodhka Tijaabada (Fibonacci 38 Source Codes):
 
 **Tusmo**
 ```tusmo
@@ -77,7 +77,7 @@ Tijaabadani waxay cabbiraysaa xawaaraha CPU-ga iyo xusuusta ee recursion-ka dhow
 
 ---
 
-### 📊 Tijaabada 2aad: Gelinta iyo Habaynta Array (Memory Allocation Benchmark)
+### Tijaabada 2aad: Gelinta iyo Habaynta Array (Memory Allocation Benchmark)
 Tijaabadani waxay cabbiraysaa dhisidda iyo gelinta **1,000,000 (Hal milyan) oo xogood** oo ku jira tix (array allocation & push):
 
 | Luuqadda | Xawaaraha Socodsiinta (Seconds) | Isticmaalka Peak RAM (Memory) | Maamulka Xusuusta (Memory Management) |
@@ -86,7 +86,7 @@ Tijaabadani waxay cabbiraysaa dhisidda iyo gelinta **1,000,000 (Hal milyan) oo x
 | **Tusmo (Af-Soomaali)** | **`0.005s`** | **`5.67 MB`** | **Automatic Scope Ownership (No GC)** |
 | **Rust** | `0.008s` | `4.10 MB` | Ownership & Borrow Checker (No GC) |
 
-#### 💻 Koodhka Tijaabada (Array 1M Push Source Codes):
+#### Koodhka Tijaabada (Array 1M Push Source Codes):
 
 **Tusmo**
 ```tusmo
@@ -120,7 +120,7 @@ print(f"Python Array: {len(tixda)}")
 
 ---
 
-### 🔍 Falanqaynta Natiijooyinka:
+### Falanqaynta Natiijooyinka:
 * **Tusmo vs Python (Fibonacci & Array)**: Tusmo waxay ka dhakhsaha badan tahay Python in ka baxsan **83 jeer** dhanka recursion-ka, halka dhanka Array Allocation ay ka dhakhsaha badan tahay **32 jeer**, iyadoo isticmaalaysa xusuus (RAM) aad u yar (ku dhowaad **8 jeer** ka yar Python).
 * **Tusmo vs Rust (Fibonacci & Array)**: Tusmo waxay si buuxda ula tartantaa luuqadda **Rust** dhanka xawaaraha labada tijaaboba (xitaa waxay ka yara xusuus yar tahay recursive-ka sababtoo ah compiler-keeda GCC wuxuu sameeyaa fine-tuned call-stack optimization). Labaduba waxay isticmaalaan maamul xusuuseed Scope-based ah oo aan lahayn Garbage Collector oo barnaamijka gaabiya.
 

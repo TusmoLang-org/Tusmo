@@ -95,6 +95,11 @@ command -v "$MAKE_BIN" >/dev/null 2>&1 || {
 echo "building Raylib $RAYLIB_VERSION for $TRIPLET with bundled Zig"
 BUILD_CC="$ZIG cc"
 BUILD_AR="$ZIG ar"
+if [ "$TRIPLET" = "windows-x86_64" ] && command -v ar >/dev/null 2>&1; then
+  # Git Bash's native ar sees the Windows object paths correctly. Zig 0.11's
+  # ar frontend loses the source-directory mapping when invoked by make.
+  BUILD_AR="$(command -v ar)"
+fi
 if [ "$TRIPLET" = "macos-arm64" ] && command -v clang >/dev/null 2>&1; then
   # Raylib's GLFW backend is Objective-C on macOS. Apple Clang is the native
   # compiler for that source; the arm64 objects remain compatible with the

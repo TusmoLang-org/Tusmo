@@ -81,70 +81,32 @@ BUILD="$WORK/raylib-build"
 mkdir -p "$BUILD"
 
 ZIG="$BUNDLE_ABS/toolchain/zig/zig"
-if [ "$TRIPLET" = "windows-x86_64" ]; then ZIG="$ZIG.exe"; fi
+ZIG="$ZIG.exe"
 [ -x "$ZIG" ] || { echo "prepare_raylib: bundled Zig not found: $ZIG" >&2; exit 1; }
-MAKE_BIN="make"
-if ! command -v "$MAKE_BIN" >/dev/null 2>&1 && command -v mingw32-make >/dev/null 2>&1; then
-  MAKE_BIN="mingw32-make"
-fi
-command -v "$MAKE_BIN" >/dev/null 2>&1 || {
-  echo "prepare_raylib: make or mingw32-make is required to build Raylib" >&2
-  exit 1
-}
-
 echo "building Raylib $RAYLIB_VERSION for $TRIPLET with bundled Zig"
-BUILD_CC="$ZIG cc"
-BUILD_AR="$ZIG ar"
-if [ "$TRIPLET" = "windows-x86_64" ] && command -v ar >/dev/null 2>&1; then
-  # Git Bash's native ar sees the Windows object paths correctly. Zig 0.11's
-  # ar frontend loses the source-directory mapping when invoked by make.
-  BUILD_AR="$(command -v ar)"
-fi
-if [ "$TRIPLET" = "macos-arm64" ] && command -v clang >/dev/null 2>&1; then
-  # Raylib's GLFW backend is Objective-C on macOS. Apple Clang is the native
-  # compiler for that source; the arm64 objects remain compatible with the
-  # bundled Zig linker used when Tusmo programs are compiled.
-  BUILD_CC="$(command -v clang)"
-  BUILD_AR="$(command -v ar)"
-fi
-PLATFORM_ARGS=()
-CUSTOM_CFLAGS_ARGS=()
-if [ "$TRIPLET" = "windows-x86_64" ]; then
-  # Use Raylib's native Win32 backend. It avoids importing a prebuilt GLFW
-  # object archive and is linkable with the bundled Zig GNU target.
-  PLATFORM_ARGS+=("PLATFORM=PLATFORM_DESKTOP_WIN32")
-  CUSTOM_CFLAGS_ARGS+=("CUSTOM_CFLAGS=-D_WIN32_WINNT=0x0A00")
-fi
-pushd "$SRC" >/dev/null
-"$MAKE_BIN" \
-  CC="$BUILD_CC" AR="$BUILD_AR" RAYLIB_RELEASE_PATH="$BUILD" \
-  RAYLIB_LIBTYPE=STATIC RAYLIB_BUILD_MODE=RELEASE \
-  RAYLIB_MODULE_AUDIO=TRUE RAYLIB_MODULE_MODELS=TRUE \
-  "${PLATFORM_ARGS[@]}" "${CUSTOM_CFLAGS_ARGS[@]}" clean
-
-if [ "$TRIPLET" = "windows-x86_64" ]; then
-  # mingw32-make invokes the archive recipe from a different Windows path
-  # context, so its relative rcore.o arguments are not found by ar. Compile
-  # the objects through Make, then archive them using absolute paths.
-  "$MAKE_BIN" \
-    CC="$BUILD_CC" AR="$BUILD_AR" RAYLIB_RELEASE_PATH="$BUILD" \
-    RAYLIB_LIBTYPE=STATIC RAYLIB_BUILD_MODE=RELEASE \
-    RAYLIB_MODULE_AUDIO=TRUE RAYLIB_MODULE_MODELS=TRUE \
-    "${PLATFORM_ARGS[@]}" "${CUSTOM_CFLAGS_ARGS[@]}" \
-    rcore.o rshapes.o rtextures.o rtext.o rmodels.o raudio.o
-  "$BUILD_AR" rcs "$BUILD/libraylib.a" \
-    "$SRC/rcore.o" "$SRC/rshapes.o" "$SRC/rtextures.o" \
-    "$SRC/rtext.o" "$SRC/rmodels.o" "$SRC/raudio.o"
-else
-  "$MAKE_BIN" \
-    CC="$BUILD_CC" AR="$BUILD_AR" RAYLIB_RELEASE_PATH="$BUILD" \
-    RAYLIB_LIBTYPE=STATIC RAYLIB_BUILD_MODE=RELEASE \
-    RAYLIB_MODULE_AUDIO=TRUE RAYLIB_MODULE_MODELS=TRUE \
-    "${PLATFORM_ARGS[@]}" "${CUSTOM_CFLAGS_ARGS[@]}" all
-fi
-popd >/dev/null
-
 NATIVE_LIBRARY="$BUILD/libraylib.a"
+
+# Compile the native Win32 backend directly to absolute output paths. On this
+# runner, Make/MinGW changes the effective working directory for compiler jobs,
+# which leaves the objects outside Raylib's source tree and breaks its archive
+# recipe. Explicit input and output paths avoid that ambiguity.
+AR_BIN="$(command -v ar)"
+RAYLIB_OBJECTS=()
+for module in rcore rshapes rtextures rtext rmodels raudio; do
+  object="$BUILD/$module.o"
+  echo "compiling Raylib $module.c"
+  "$ZIG" cc -c "$SRC/$module.c" -o "$object" \
+    -Wall -D_GNU_SOURCE \
+    -DPLATFORM_DESKTOP_WIN32 -DGRAPHICS_API_OPENGL_33 \
+    -Wno-missing-braces -Werror=pointer-arith -fno-strict-aliasing \
+    -std=c99 -DUNICODE -D_WIN32_WINNT=0x0A00 -I"$SRC"
+  [ -f "$object" ] || {
+    echo "prepare_raylib: compiler did not create $object" >&2
+    exit 1
+  }
+  RAYLIB_OBJECTS+=("$object")
+done
+"$AR_BIN" rcs "$NATIVE_LIBRARY" "${RAYLIB_OBJECTS[@]}"
 [ -f "$NATIVE_LIBRARY" ] || {
   echo "prepare_raylib: Raylib build did not produce $NATIVE_LIBRARY" >&2
   exit 1

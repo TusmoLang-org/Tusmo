@@ -96,6 +96,7 @@ for module in rcore rshapes rtextures rtext rmodels raudio; do
   object="$BUILD/$module.o"
   echo "compiling Raylib $module.c"
   "$ZIG" cc -c "$SRC/$module.c" -o "$object" \
+    -fno-stack-protector \
     -Wall -D_GNU_SOURCE \
     -DPLATFORM_DESKTOP_WIN32 -DGRAPHICS_API_OPENGL_33 \
     -Wno-missing-braces -Werror=pointer-arith -fno-strict-aliasing \

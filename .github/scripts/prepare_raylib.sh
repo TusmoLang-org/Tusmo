@@ -40,11 +40,21 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 ARCHIVE="$WORK/$ASSET"
 URL="https://github.com/raysan5/raylib/releases/download/$VERSION/$ASSET"
+PYTHON_BIN="python3"
+if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+  PYTHON_BIN="python"
+fi
+command -v "$PYTHON_BIN" >/dev/null 2>&1 || {
+  echo "prepare_raylib: Python is required to extract the Raylib archive" >&2
+  exit 1
+}
 
+echo "downloading $URL"
 curl --fail --silent --show-error --location --retry 5 --retry-delay 3 \
   "$URL" -o "$ARCHIVE"
+echo "downloaded $(wc -c < "$ARCHIVE") bytes"
 
-python - "$ARCHIVE" "$WORK/raylib.a" <<'PY'
+"$PYTHON_BIN" - "$ARCHIVE" "$WORK/raylib.a" <<'PY'
 import hashlib
 import pathlib
 import sys
@@ -69,7 +79,7 @@ else:
 print(f"extracted {output} ({output.stat().st_size} bytes)")
 PY
 
-ACTUAL="$(python - "$ARCHIVE" <<'PY'
+ACTUAL="$("$PYTHON_BIN" - "$ARCHIVE" <<'PY'
 import hashlib
 import pathlib
 import sys

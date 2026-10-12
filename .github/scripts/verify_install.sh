@@ -94,6 +94,29 @@ else
   bad "toolchain/cc missing from the bundle"
 fi
 
+# Test the native compiler/linker directly before involving Tusmo. This keeps
+# a platform toolchain failure separate from a Tusmo code-generation failure.
+step "compiling and running a native C toolchain smoke test"
+cat > "$SCRATCH/toolchain-smoke.c" <<'C'
+#include <stdio.h>
+int main(void) {
+    puts("Tusmo toolchain smoke test");
+    return 0;
+}
+C
+if (cd "$SCRATCH" && "$TUSMO_HOME_DIR/toolchain/cc" -O2 -o toolchain-smoke toolchain-smoke.c >"$WORK/toolchain-smoke.log" 2>&1); then
+  if [ -x "$SCRATCH/toolchain-smoke" ] && [ "$("$SCRATCH/toolchain-smoke")" = "Tusmo toolchain smoke test" ]; then
+    ok "bundled compiler and linker produced a runnable native binary"
+  else
+    bad "bundled compiler produced no runnable native binary"
+    ls -la "$SCRATCH"
+    cat "$WORK/toolchain-smoke.log" 2>/dev/null || true
+  fi
+else
+  bad "bundled compiler/linker smoke test failed"
+  cat "$WORK/toolchain-smoke.log" 2>/dev/null || true
+fi
+
 # The VS Code extension needs the frozen language server next to the CLI.
 if [ -x "$TUSMO_HOME_DIR/bin/tusmo-hover" ]; then
   ok "language server (bin/tusmo-hover) is installed"
@@ -142,10 +165,13 @@ else
   cat "$WORK/compile.log" 2>/dev/null || true
 fi
 
-if out="$("$SCRATCH/hello" 2>&1)" && [ "$out" = "Salaan Tusmo!" ]; then
+out=""
+if [ -x "$SCRATCH/hello" ] && out="$("$SCRATCH/hello" 2>&1)" && [ "$out" = "Salaan Tusmo!" ]; then
   ok "binary runs and prints: $out"
 else
-  bad "binary output mismatch: '$out'"
+  out_display="$out"
+  [ -n "$out_display" ] || out_display="<not produced>"
+  bad "binary did not run or output mismatch: '$out_display'"
 fi
 
 # ------------------------------------- language features that pull in headers

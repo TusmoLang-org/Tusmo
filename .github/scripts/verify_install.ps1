@@ -81,6 +81,32 @@ if (Test-Path $cc) {
   Bad "toolchain\cc.bat missing from the bundle"
 }
 
+# Test the native compiler/linker directly before involving Tusmo. This keeps
+# a Windows toolchain failure separate from a Tusmo code-generation failure.
+Step "compiling and running a native C toolchain smoke test"
+@
+#include <stdio.h>
+int main(void) {
+    puts("Tusmo toolchain smoke test");
+    return 0;
+}
+@ | Set-Content -Path (Join-Path $scratch "toolchain-smoke.c") -Encoding ASCII
+$smokeExe = Join-Path $scratch "toolchain-smoke.exe"
+$smokeLog = Join-Path $work "toolchain-smoke.log"
+Push-Location $scratch
+try {
+  & $cc -O2 -o $smokeExe (Join-Path $scratch "toolchain-smoke.c") 2>&1 | Tee-Object -FilePath $smokeLog | Out-Null
+  $smokeExit = $LASTEXITCODE
+} finally { Pop-Location }
+if ($smokeExit -eq 0 -and (Test-Path $smokeExe)) {
+  $smokeOut = (& $smokeExe 2>&1 | Out-String).Trim()
+  if ($smokeOut -eq "Tusmo toolchain smoke test") { Ok "bundled compiler and linker produced a runnable native binary" }
+  else { Bad "native smoke-test output mismatch: '$smokeOut'" }
+} else {
+  Bad "bundled compiler/linker smoke test failed"
+  Get-Content $smokeLog -ErrorAction SilentlyContinue
+}
+
 if (Test-Path (Join-Path $tusmoHome "bin\tusmo-hover.exe")) {
   Ok "language server (bin\tusmo-hover.exe) is installed"
 } else {

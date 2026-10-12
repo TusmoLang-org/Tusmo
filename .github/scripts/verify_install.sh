@@ -136,6 +136,10 @@ if [ -x "$SCRATCH/hello" ]; then
 else
   bad "no binary next to the source"
   ls -la "$SCRATCH"
+  echo "TUSMO_CC=${TUSMO_CC:-<unset>}"
+  echo "TUSMO_HOME=${TUSMO_HOME:-<unset>}"
+  echo "compiler output:"
+  cat "$WORK/compile.log" 2>/dev/null || true
 fi
 
 if out="$("$SCRATCH/hello" 2>&1)" && [ "$out" = "Salaan Tusmo!" ]; then

@@ -103,10 +103,12 @@ if [ "$TRIPLET" = "macos-arm64" ] && command -v clang >/dev/null 2>&1; then
   BUILD_AR="$(command -v ar)"
 fi
 PLATFORM_ARGS=()
+CUSTOM_CFLAGS_ARGS=()
 if [ "$TRIPLET" = "windows-x86_64" ]; then
   # Use Raylib's native Win32 backend. It avoids importing a prebuilt GLFW
   # object archive and is linkable with the bundled Zig GNU target.
   PLATFORM_ARGS+=("PLATFORM=PLATFORM_DESKTOP_WIN32")
+  CUSTOM_CFLAGS_ARGS+=("CUSTOM_CFLAGS=-D_WIN32_WINNT=0x0A00")
 fi
 "$MAKE_BIN" -C "$SRC" \
   CC="$BUILD_CC" \
@@ -117,6 +119,7 @@ fi
   RAYLIB_MODULE_AUDIO=TRUE \
   RAYLIB_MODULE_MODELS=TRUE \
   "${PLATFORM_ARGS[@]}" \
+  "${CUSTOM_CFLAGS_ARGS[@]}" \
   clean all
 
 NATIVE_LIBRARY="$BUILD/libraylib.a"

@@ -23,6 +23,30 @@ esac
 RAYLIB_VERSION="6.0"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
+
+if [ "$TRIPLET" = "linux-x86_64" ]; then
+  # The official Linux archive already matches the Linux runner ABI and was
+  # the previously passing path. Keep it isolated from the native rebuilds
+  # required by Windows and macOS.
+  ASSET="raylib-6.0_linux_amd64.tar.gz"
+  ASSET_SHA256="b64ba618a19e7da9e9c0e09bb398ecfd477a77d2d7231901bafc8739d27c08d2"
+  ARCHIVE="$WORK/$ASSET"
+  curl --fail --silent --show-error --location --retry 5 --retry-delay 3 \
+    "https://github.com/raysan5/raylib/releases/download/$RAYLIB_VERSION/$ASSET" \
+    -o "$ARCHIVE"
+  ACTUAL="$(sha256sum "$ARCHIVE" | awk '{print $1}')"
+  [ "$ACTUAL" = "$ASSET_SHA256" ] || {
+    echo "prepare_raylib: Linux Raylib SHA-256 mismatch" >&2
+    exit 1
+  }
+  DEST="$BUNDLE/stdlib/raylib/libraylib.a"
+  mkdir -p "$(dirname "$DEST")"
+  tar -xOzf "$ARCHIVE" "raylib-6.0/lib/libraylib.a" > "$DEST"
+  echo "installed native Raylib $RAYLIB_VERSION at $DEST"
+  file "$DEST" 2>/dev/null || true
+  exit 0
+fi
+
 SOURCE_DIR="$WORK/raylib"
 echo "checking out Raylib tag $RAYLIB_VERSION"
 git clone --depth 1 --branch "$RAYLIB_VERSION" --single-branch \

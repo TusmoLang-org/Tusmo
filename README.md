@@ -165,6 +165,12 @@ Linux:
 curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash
 ```
 
+macOS (Apple Silicon / ARM64):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash
+```
+
 Windows PowerShell:
 
 ```powershell
@@ -181,7 +187,7 @@ The release installer provides the Tusmo CLI, runtime files, standard library, a
 
 ### Download a release
 
-Visit the [GitHub Releases page](https://github.com/TusmoLang-org/Tusmo/releases) and choose an available package for your operating system. Follow the instructions included with that release.
+Visit the [GitHub Releases page](https://github.com/TusmoLang-org/Tusmo/releases) to download a precompiled package directly. Current asset names are `tusmo-linux-x86_64.tar.gz`, `tusmo-macos-arm64.tar.gz`, and `tusmo-windows-x86_64.tar.gz`. The one-line installers above download and install the matching package automatically.
 
 The [online documentation](https://tusmolang-org.github.io/Tusmo/) is deployed automatically from the `main` branch. Release packages are built by GitHub Actions when a version tag such as `v2.0.0` is pushed.
 

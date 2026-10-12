@@ -37,6 +37,12 @@ Windows source builds waxay u baahan yihiin GCC/MinGW ama toolchain-ka ku jira r
 curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash
 ```
 
+### macOS (Apple Silicon / ARM64)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash
+```
+
 ### Windows PowerShell
 
 ```powershell
@@ -50,6 +56,8 @@ tusmo --version
 ```
 
 Release installer-ku wuxuu bixiyaa Tusmo CLI, runtime files, standard library, iyo toolchain-ka loo baahan yahay marka release asset-ka la isticmaalo.
+
+Haddii aad rabto inaad release-ka gacanta ka soo dejisato, ka dooro [GitHub Releases](https://github.com/TusmoLang-org/Tusmo/releases) asset-ka ku habboon: `tusmo-linux-x86_64.tar.gz`, `tusmo-macos-arm64.tar.gz`, ama `tusmo-windows-x86_64.tar.gz`. Installer-rada kore ayaa soo dejinaya oo rakibaya package-ka saxda ah.
 
 ## Source development
 

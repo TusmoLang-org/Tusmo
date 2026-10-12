@@ -18,20 +18,46 @@ Markaad soo degsato faylka la soo xiray ee Tusmo ee ka soo baxa GitHub Releases,
 ## Sida loo Rakibo (Installation Guide)
 
 ### 1. Rakibaadda Caadiga ah (Precompiled Releases)
-Kani waa habka ugu habboon ee loogu talagalay dhammaan isticmaalayaasha:
+Kani waa habka loogu talagalay dadka raba inay Tusmo isticmaalaan. Looma baahna in repository-ga la clone-gareeyo ama Python, GCC, ama Zig gooni loo rakibo. Installer-ku wuxuu soo dejinayaa release-ka precompiled-ka ah, wuxuuna ku rakibayaa kombiyuutarkaaga.
 
-1. Booqo bogga **GitHub Releases** ee mashruuca Tusmo.
-2. Soo degso faylka u dhigma nidaamkaaga hawlgalka:
-   - **Linux**: `tusmo-linux-x86_64.tar.gz`
-   - **macOS**: `tusmo-mac-x86_64.tar.gz`
-   - **Windows**: `tusmo-windows-x86_64.zip`
-3. Soo saar (extract) faylka aad soo dejisay.
-4. Ku dar galka `bin/` nidaamkaaga **Environment Path (PATH)** si aad amarka `tusmo` uga waci karto terminal kasta.
+#### Linux (x86_64)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash
+```
+
+#### macOS (Apple Silicon / ARM64)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash
+```
+
+#### Windows (x86_64, PowerShell)
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.ps1 | iex
+```
+
+Marka rakibiddu dhammaato, fur terminal cusub oo hubi:
+
+```bash
+tusmo --version
+```
+
+Haddii aad rabto inaad release-ka gacanta ka doorato, ka soo degso [GitHub Releases](https://github.com/TusmoLang-org/Tusmo/releases) faylka ku habboon:
+
+| Nidaamka | Release asset |
+| --- | --- |
+| Linux x86_64 | `tusmo-linux-x86_64.tar.gz` |
+| macOS ARM64 | `tusmo-macos-arm64.tar.gz` |
+| Windows x86_64 | `tusmo-windows-x86_64.tar.gz` |
+
+Intel macOS hadda lama taageero. Habka hoose ee `git clone` waa keliya dadka raba inay source-ka wax ka beddelaan ama horumariyaan.
 
 ---
 
 ### 2. Habka Horumarinta (Developer / Source Build Mode)
-Haddii aad tahay borogaraamye raba inuu wax ka beddelo compiler-ka laftiisa ama koodhka ka socodsiiyo source-ka:
+Haddii aad tahay borogaraamye raba inuu wax ka beddelo compiler-ka laftiisa ama koodhka ka socodsiiyo source-ka, marka hore clone-garee repository-ga:
 
 #### A. Linux (Debian, Ubuntu, Kali, Fedora)
 ```bash

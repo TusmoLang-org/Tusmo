@@ -85,6 +85,15 @@ fi
 
 DEST="$BUNDLE/stdlib/raylib/libraylib.a"
 mkdir -p "$(dirname "$DEST")"
-cp "$WORK/raylib.a" "$DEST"
+NATIVE_LIBRARY="$WORK/raylib.a"
+if [ "$TRIPLET" = "macos-arm64" ]; then
+  if ! command -v lipo >/dev/null 2>&1; then
+    echo "prepare_raylib: lipo is required to select the macOS arm64 archive slice" >&2
+    exit 1
+  fi
+  lipo "$WORK/raylib.a" -thin arm64 -output "$WORK/raylib-arm64.a"
+  NATIVE_LIBRARY="$WORK/raylib-arm64.a"
+fi
+cp "$NATIVE_LIBRARY" "$DEST"
 echo "installed Raylib $VERSION for $TRIPLET at $DEST"
 file "$DEST" 2>/dev/null || true

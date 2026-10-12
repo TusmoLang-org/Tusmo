@@ -152,7 +152,7 @@ if exist "%TUSMO_ZIG%" (
   set "TUSMO_ARGS=!TUSMO_ARGS:-lrt=!"
   set "TUSMO_ARGS=!TUSMO_ARGS:-lm=!"
   set "TUSMO_ARGS=!TUSMO_ARGS! -lopengl32 -lgdi32 -lwinmm -lshell32"
-  "%TUSMO_ZIG%" cc -target x86_64-windows-gnu !TUSMO_ARGS!
+  "%TUSMO_ZIG%" cc !TUSMO_ARGS!
   exit /b !errorlevel!
 )
 where gcc >nul 2>nul && (gcc %* & exit /b !errorlevel!)
@@ -183,7 +183,7 @@ if [ -x "$here/zig/zig" ]; then
     args+=("$arg")
   done
   if [ "$(uname -s)" = "Darwin" ] && [ "$needs_raylib" -eq 1 ]; then
-    args+=("-framework" "Cocoa" "-framework" "IOKit" "-framework" "OpenGL" "-framework" "CoreVideo")
+    args+=("-framework" "Cocoa" "-framework" "IOKit" "-framework" "OpenGL" "-framework" "CoreVideo" "-lobjc")
   fi
   exec "$here/zig/zig" cc "${args[@]}"
 fi

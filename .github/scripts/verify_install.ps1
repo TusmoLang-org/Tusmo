@@ -118,7 +118,8 @@ int main(void) {
     return 0;
 }
 "@ | Set-Content -Path (Join-Path $scratch "raylib-smoke.c") -Encoding ASCII
-$raylib = Join-Path $tusmoHome "stdlib\raylib\libraylib.a"
+$raylibName = if ($env:TRIPLET -eq "windows-x86_64") { "libraylib.a.lib" } else { "libraylib.a" }
+$raylib = Join-Path $tusmoHome "stdlib\raylib\$raylibName"
 $raylibExe = Join-Path $scratch "raylib-smoke.exe"
 $raylibLog = Join-Path $work "raylib-smoke.log"
 $raylibArgs = @(

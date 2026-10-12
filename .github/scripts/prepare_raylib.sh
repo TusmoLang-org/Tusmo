@@ -27,8 +27,8 @@ case "$TRIPLET" in
     SHA256="6ae5947fbd36aee4c280e3a2b3e1893316c433e292bda6e94e0f2b037498ad70"
     ;;
   windows-x86_64)
-    ASSET="raylib-6.0_win64_mingw-w64.zip"
-    SHA256="69688e025812c8132634c609c30938eda4a3fa14d63c4031108873a4d797e2d3"
+    ASSET="raylib-6.0_win64_msvc16.zip"
+    SHA256="c93c7dc74576e00e3ee57fa2bd5fd109fbfc5aca87e12046dd7ec2c2268b3f78"
     ;;
   *)
     echo "prepare_raylib: unsupported triplet: $TRIPLET" >&2
@@ -66,7 +66,10 @@ output = pathlib.Path(sys.argv[2])
 
 if archive.suffix == ".zip":
     with zipfile.ZipFile(archive) as package:
-        member = next(name for name in package.namelist() if name.endswith("/lib/libraylib.a"))
+        member = next(
+            name for name in package.namelist()
+            if name.endswith("/lib/raylib.lib") or name.endswith("/lib/libraylib.a")
+        )
         output.write_bytes(package.read(member))
 else:
     with tarfile.open(archive) as package:
@@ -93,7 +96,12 @@ if [ "$ACTUAL" != "$SHA256" ]; then
   exit 1
 fi
 
-DEST="$BUNDLE/stdlib/raylib/libraylib.a"
+if [ "$TRIPLET" = "windows-x86_64" ]; then
+  # The Tusmo metadata ends in .a and Windows normalizes it to .lib.
+  DEST="$BUNDLE/stdlib/raylib/libraylib.a.lib"
+else
+  DEST="$BUNDLE/stdlib/raylib/libraylib.a"
+fi
 mkdir -p "$(dirname "$DEST")"
 NATIVE_LIBRARY="$WORK/raylib.a"
 if [ "$TRIPLET" = "macos-arm64" ]; then

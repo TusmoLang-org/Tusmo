@@ -126,13 +126,20 @@ try {
   & $tusmoCmd hello.tus 2>&1 | Tee-Object -FilePath (Join-Path $work "compile.log") | Out-Null
 } finally { Pop-Location }
 
-if (Test-Path (Join-Path $scratch "hello.exe")) {
+$helloBinary = Join-Path $scratch "hello.exe"
+if (-not (Test-Path $helloBinary)) {
+  # Some Windows linkers keep the output name without adding .exe.
+  $extensionlessHello = Join-Path $scratch "hello"
+  if (Test-Path $extensionlessHello) { $helloBinary = $extensionlessHello }
+}
+if (Test-Path $helloBinary) {
   Ok "native binary produced"
-  $out = (& (Join-Path $scratch "hello.exe") 2>&1 | Out-String).Trim()
+  $out = (& $helloBinary 2>&1 | Out-String).Trim()
   if ($out -eq "Salaan Tusmo!") { Ok "binary runs and prints: $out" }
   else { Bad "binary output mismatch: '$out'" }
 } else {
-  Bad "no hello.exe produced"
+  Bad "no hello binary produced"
+  Get-ChildItem -Force $scratch | Format-Table -AutoSize | Out-String | Write-Host
   Get-Content (Join-Path $work "compile.log") -ErrorAction SilentlyContinue
 }
 
@@ -155,12 +162,18 @@ try {
   & $tusmoCmd features.tus 2>&1 | Tee-Object -FilePath (Join-Path $work "features.log") | Out-Null
 } finally { Pop-Location }
 
-if (Test-Path (Join-Path $scratch "features.exe")) {
+$featuresBinary = Join-Path $scratch "features.exe"
+if (-not (Test-Path $featuresBinary)) {
+  $extensionlessFeatures = Join-Path $scratch "features"
+  if (Test-Path $extensionlessFeatures) { $featuresBinary = $extensionlessFeatures }
+}
+if (Test-Path $featuresBinary) {
   Ok "arrays/dicts/strings compile and link"
-  $out = (& (Join-Path $scratch "features.exe") 2>&1 | Out-String).Trim()
+  $out = (& $featuresBinary 2>&1 | Out-String).Trim()
   Ok "feature program output: $($out -replace "`r?`n", ' ')"
 } else {
   Bad "array/dict program failed to compile"
+  Get-ChildItem -Force $scratch | Format-Table -AutoSize | Out-String | Write-Host
   Get-Content (Join-Path $work "features.log") -ErrorAction SilentlyContinue
 }
 

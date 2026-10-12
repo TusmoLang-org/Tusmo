@@ -176,7 +176,12 @@ def classify(name: str, entry: dict, workdir: Path) -> tuple[str, str]:
             (ln for ln in compile_out.splitlines() if ln.strip()),
             "<no diagnostics>",
         )
-        return "mismatch", f"no binary produced: {head.strip()[:160]}"
+        detail = f"no binary produced: {head.strip()[:160]}"
+        # Keep expected-pass failures actionable in CI. Known-fail tests retain
+        # the compact one-line output so the suite stays readable.
+        if entry.get("expect", "pass") == "pass" and compile_out.strip():
+            detail += "\n" + compile_out.strip()[-4000:]
+        return "mismatch", detail
 
     if entry.get("run", True) is False:
         return "ok", "compiled (run disabled in baseline)"

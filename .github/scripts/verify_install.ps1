@@ -107,6 +107,40 @@ if ($smokeExit -eq 0 -and (Test-Path $smokeExe)) {
   Get-Content $smokeLog -ErrorAction SilentlyContinue
 }
 
+# Link Raylib without opening a window. This verifies that the release contains
+# the native library and platform linker inputs required by Raylib programs.
+Step "linking a Raylib program"
+@"
+#include "raylib/raylib.h"
+int main(void) {
+    InitWindow(1, 1, "Tusmo Raylib smoke test");
+    CloseWindow();
+    return 0;
+}
+"@ | Set-Content -Path (Join-Path $scratch "raylib-smoke.c") -Encoding ASCII
+$raylib = Join-Path $tusmoHome "stdlib\raylib\libraylib.a"
+$raylibExe = Join-Path $scratch "raylib-smoke.exe"
+$raylibLog = Join-Path $work "raylib-smoke.log"
+$raylibArgs = @(
+  "-O2",
+  "-I$(Join-Path $tusmoHome "stdlib")",
+  "-o",
+  $raylibExe,
+  (Join-Path $scratch "raylib-smoke.c"),
+  $raylib
+)
+Push-Location $scratch
+try {
+  & $cc @raylibArgs 2>&1 | Tee-Object -FilePath $raylibLog | Out-Null
+  $raylibExit = $LASTEXITCODE
+} finally { Pop-Location }
+if ($raylibExit -eq 0 -and (Test-Path $raylibExe)) {
+  Ok "platform Raylib library links successfully"
+} else {
+  Bad "platform Raylib library failed to link"
+  Get-Content $raylibLog -ErrorAction SilentlyContinue
+}
+
 if (Test-Path (Join-Path $tusmoHome "bin\tusmo-hover.exe")) {
   Ok "language server (bin\tusmo-hover.exe) is installed"
 } else {

@@ -117,6 +117,37 @@ else
   cat "$WORK/toolchain-smoke.log" 2>/dev/null || true
 fi
 
+# Link Raylib without opening a window. This verifies that the release contains
+# the native library and platform linker inputs required by Raylib programs.
+step "linking a Raylib program"
+cat > "$SCRATCH/raylib-smoke.c" <<'C'
+#include "raylib/raylib.h"
+int main(void) {
+    InitWindow(1, 1, "Tusmo Raylib smoke test");
+    CloseWindow();
+    return 0;
+}
+C
+raylib_flags=""
+case "$(uname -s)" in
+  Linux) raylib_flags="-lm -lGL -lX11 -lpthread -ldl -lrt" ;;
+esac
+if [ -f "$TUSMO_HOME_DIR/stdlib/raylib/libraylib.a" ] &&
+   (cd "$SCRATCH" && "$TUSMO_HOME_DIR/toolchain/cc" -O2 \
+      -I"$TUSMO_HOME_DIR/stdlib" -o raylib-smoke raylib-smoke.c \
+      "$TUSMO_HOME_DIR/stdlib/raylib/libraylib.a" $raylib_flags \
+      >"$WORK/raylib-smoke.log" 2>&1); then
+  if [ -x "$SCRATCH/raylib-smoke" ]; then
+    ok "platform Raylib library links successfully"
+  else
+    bad "Raylib linker produced no native binary"
+    cat "$WORK/raylib-smoke.log" 2>/dev/null || true
+  fi
+else
+  bad "platform Raylib library failed to link"
+  cat "$WORK/raylib-smoke.log" 2>/dev/null || true
+fi
+
 # The VS Code extension needs the frozen language server next to the CLI.
 if [ -x "$TUSMO_HOME_DIR/bin/tusmo-hover" ]; then
   ok "language server (bin/tusmo-hover) is installed"

@@ -37,6 +37,7 @@ required_paths=(
   install.ps1
   Extension/package.json
   .github/scripts/build_bundle.sh
+  .github/scripts/prepare_raylib.sh
   .github/scripts/verify_install.sh
   .github/scripts/run_tests.py
 )
@@ -61,7 +62,7 @@ fi
 if git rev-parse --git-dir >/dev/null 2>&1; then
   ignored=()
   untracked=()
-  for p in tusmo.py tusmo_cli.py install.sh install.ps1 .github/scripts/build_bundle.sh .github/scripts/verify_install.sh; do
+  for p in tusmo.py tusmo_cli.py install.sh install.ps1 .github/scripts/build_bundle.sh .github/scripts/prepare_raylib.sh .github/scripts/verify_install.sh; do
     [ -e "$p" ] || continue
     if git check-ignore -q "$p"; then
       ignored+=("$p")

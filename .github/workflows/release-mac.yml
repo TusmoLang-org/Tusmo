@@ -81,6 +81,9 @@ jobs:
             --out bundle \
             --triplet "$TRIPLET"
 
+      - name: Install platform Raylib
+        run: bash .github/scripts/prepare_raylib.sh --bundle bundle --triplet "$TRIPLET"
+
       - name: Verify the install end to end (offline sandbox)
         run: bash .github/scripts/verify_install.sh "tusmo-${TRIPLET}.tar.gz"
 

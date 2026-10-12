@@ -145,6 +145,13 @@ if exist "%TUSMO_ZIG%" (
   rem Tusmo passes -flto unconditionally, so remove that one flag here.
   set "TUSMO_ARGS=%*"
   set "TUSMO_ARGS=!TUSMO_ARGS:-flto=!"
+  set "TUSMO_ARGS=!TUSMO_ARGS:-lGL=!"
+  set "TUSMO_ARGS=!TUSMO_ARGS:-lX11=!"
+  set "TUSMO_ARGS=!TUSMO_ARGS:-lpthread=!"
+  set "TUSMO_ARGS=!TUSMO_ARGS:-ldl=!"
+  set "TUSMO_ARGS=!TUSMO_ARGS:-lrt=!"
+  set "TUSMO_ARGS=!TUSMO_ARGS:-lm=!"
+  set "TUSMO_ARGS=!TUSMO_ARGS! -lopengl32 -lgdi32 -lwinmm -lshell32"
   "%TUSMO_ZIG%" cc !TUSMO_ARGS!
   exit /b !errorlevel!
 )
@@ -160,14 +167,24 @@ else
 here="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 if [ -x "$here/zig/zig" ]; then
   args=()
+  needs_raylib=0
   for arg in "$@"; do
     # Zig 0.11 does not support LTO with the Mach-O object format.
     # Tusmo passes -flto unconditionally, so remove that one flag on macOS.
     if [ "$(uname -s)" = "Darwin" ] && [ "$arg" = "-flto" ]; then
       continue
     fi
+    case "$arg" in
+      *libraylib.a) needs_raylib=1 ;;
+    esac
+    if [ "$(uname -s)" = "Darwin" ] && case "$arg" in -lGL|-lX11|-lpthread|-ldl|-lrt) true ;; *) false ;; esac; then
+      continue
+    fi
     args+=("$arg")
   done
+  if [ "$(uname -s)" = "Darwin" ] && [ "$needs_raylib" -eq 1 ]; then
+    args+=("-framework" "Cocoa" "-framework" "IOKit" "-framework" "OpenGL" "-framework" "CoreVideo")
+  fi
   exec "$here/zig/zig" cc "${args[@]}"
 fi
 for candidate in gcc clang cc; do

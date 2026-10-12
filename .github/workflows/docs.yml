@@ -39,6 +39,13 @@ jobs:
       - name: Build documentation
         run: mkdocs build --strict
 
+      - name: Verify documentation contains no emoji
+        run: |
+          if rg -n -P '[\x{1F000}-\x{1FAFF}\x{2600}-\x{27BF}\x{2300}-\x{23FF}]' site; then
+            echo "Documentation contains emoji characters."
+            exit 1
+          fi
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

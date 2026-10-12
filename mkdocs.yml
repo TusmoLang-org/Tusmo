@@ -1,5 +1,8 @@
 site_name: Tusmo
 site_description: Luuqadda Rasmiga ah ee Tusmo - A General Purpose Somali Programming Language.
+site_url: https://tusmolang-org.github.io/Tusmo/
+repo_url: https://github.com/TusmoLang-org/Tusmo
+repo_name: TusmoLang-org/Tusmo
 theme:
   name: material
   palette:

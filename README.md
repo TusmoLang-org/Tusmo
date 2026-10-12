@@ -14,7 +14,7 @@
 <p align="center">
   <a href="https://github.com/TusmoLang-org/Tusmo">Source code</a> ·
   <a href="https://github.com/TusmoLang-org/Tusmo/releases">Releases</a> ·
-  <a href="https://github.com/TusmoLang-org/Tusmo/tree/main/docs">Documentation</a> ·
+  <a href="https://tusmolang-org.github.io/Tusmo/">Documentation</a> ·
   <a href="https://github.com/TusmoLang-org/tusmo-examples">Examples</a>
 </p>
 
@@ -182,6 +182,8 @@ The release installer provides the Tusmo CLI, runtime files, standard library, a
 ### Download a release
 
 Visit the [GitHub Releases page](https://github.com/TusmoLang-org/Tusmo/releases) and choose an available package for your operating system. Follow the instructions included with that release.
+
+The [online documentation](https://tusmolang-org.github.io/Tusmo/) is deployed automatically from the `main` branch. Release packages are built by GitHub Actions when a version tag such as `v2.0.0` is pushed.
 
 Release assets and platform support can change. Check the release notes and available files rather than assuming every platform has a current package.
 

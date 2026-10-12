@@ -37,11 +37,16 @@ mkdocs serve
 Fur cinwaanka `http://127.0.0.1:8000` si aad u aragto dukumiintiyada oo si qurux badan u naqshadaysan oo leh dark mode, dynamic tabs, iyo syntax midab leh!
 
 ### 2. Martigelinta GitHub Pages (GitHub Hosting)
-Haddii aad leedahay xuquuqda maamulka (repository admin), waxaad si toos ah dukumiintiyadan ugu daabici kartaa GitHub Pages adigoo orodaya hal amar oo kaliya:
+GitHub Actions ayaa si otomaatig ah u dhisaya una daabacaya dukumiintiyada marka isbeddel lagu diro `main`. Workflow-ga wuxuu ku jiraa `.github/workflows/docs.yml`.
+
+Marka ugu horreysa, maamulaha repository-ga waa inuu GitHub-ka ka doortaa **Settings → Pages → Source: GitHub Actions**. Kadib bogga wuxuu ka muuqanayaa:
+
+`https://tusmolang-org.github.io/Tusmo/`
+
+Haddii aad rabto preview maxalli ah, wali waxaad isticmaali kartaa:
 ```bash
-mkdocs gh-deploy
+mkdocs serve
 ```
-MkDocs wuxuu si toos ah u dhisayaa faylalka HTML wuxuuna u push-garaynayaa branch-ka `gh-pages` ee repo-gaaga si website-ku u noqdo mid toos ah!
 
 ---
 

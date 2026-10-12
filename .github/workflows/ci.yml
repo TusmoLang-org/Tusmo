@@ -56,7 +56,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y xz-utils curl
+          sudo apt-get install -y xz-utils curl libgl1-mesa-dev libx11-dev
           python -m pip install --upgrade pip
           python -m pip install pyinstaller ply requests pygls lsprotocol
 
@@ -114,6 +114,9 @@ jobs:
             --zig "$ZIG_DIR" \
             --out bundle \
             --triplet linux-x86_64
+
+      - name: Install platform Raylib
+        run: bash .github/scripts/prepare_raylib.sh --bundle bundle --triplet linux-x86_64
 
       - name: Verify the install end to end (offline sandbox)
         run: bash .github/scripts/verify_install.sh tusmo-linux-x86_64.tar.gz

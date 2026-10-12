@@ -130,7 +130,10 @@ $helloBinary = Join-Path $scratch "hello.exe"
 if (-not (Test-Path $helloBinary)) {
   # Some Windows linkers keep the output name without adding .exe.
   $extensionlessHello = Join-Path $scratch "hello"
-  if (Test-Path $extensionlessHello) { $helloBinary = $extensionlessHello }
+  if (Test-Path $extensionlessHello) {
+    $helloBinary = Join-Path $scratch "hello.exe"
+    Copy-Item $extensionlessHello $helloBinary -Force
+  }
 }
 if (Test-Path $helloBinary) {
   Ok "native binary produced"
@@ -165,7 +168,10 @@ try {
 $featuresBinary = Join-Path $scratch "features.exe"
 if (-not (Test-Path $featuresBinary)) {
   $extensionlessFeatures = Join-Path $scratch "features"
-  if (Test-Path $extensionlessFeatures) { $featuresBinary = $extensionlessFeatures }
+  if (Test-Path $extensionlessFeatures) {
+    $featuresBinary = Join-Path $scratch "features.exe"
+    Copy-Item $extensionlessFeatures $featuresBinary -Force
+  }
 }
 if (Test-Path $featuresBinary) {
   Ok "arrays/dicts/strings compile and link"

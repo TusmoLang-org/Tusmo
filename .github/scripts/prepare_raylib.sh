@@ -21,29 +21,13 @@ case "$TRIPLET" in
 esac
 
 RAYLIB_VERSION="6.0"
-SOURCE_SHA256="2b3ee1e2120c7a0796b33062c7e9a694dd8a8caa56a96319ac8c8ecf54a90d0b"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
-ARCHIVE="$WORK/raylib-$RAYLIB_VERSION.tar.gz"
-SOURCE_URL="https://github.com/raysan5/raylib/archive/refs/tags/$RAYLIB_VERSION.tar.gz"
-
-echo "downloading $SOURCE_URL"
-curl --fail --silent --show-error --location --retry 5 --retry-delay 3 \
-  "$SOURCE_URL" -o "$ARCHIVE"
-if command -v sha256sum >/dev/null 2>&1; then
-  ACTUAL="$(sha256sum "$ARCHIVE" | awk '{print $1}')"
-else
-  ACTUAL="$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')"
-fi
-if [ "$ACTUAL" != "$SOURCE_SHA256" ]; then
-  echo "prepare_raylib: SHA-256 mismatch for Raylib source" >&2
-  echo "expected: $SOURCE_SHA256" >&2
-  echo "actual:   $ACTUAL" >&2
-  exit 1
-fi
-
-tar -xzf "$ARCHIVE" -C "$WORK"
-SRC="$WORK/raylib-$RAYLIB_VERSION/src"
+SOURCE_DIR="$WORK/raylib"
+echo "checking out Raylib tag $RAYLIB_VERSION"
+git clone --depth 1 --branch "$RAYLIB_VERSION" --single-branch \
+  https://github.com/raysan5/raylib.git "$SOURCE_DIR"
+SRC="$SOURCE_DIR/src"
 BUILD="$WORK/raylib-build"
 mkdir -p "$BUILD"
 

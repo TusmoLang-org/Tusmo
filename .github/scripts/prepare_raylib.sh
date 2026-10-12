@@ -116,16 +116,31 @@ if [ "$TRIPLET" = "windows-x86_64" ]; then
   CUSTOM_CFLAGS_ARGS+=("CUSTOM_CFLAGS=-D_WIN32_WINNT=0x0A00")
 fi
 "$MAKE_BIN" -C "$SRC" \
-  CC="$BUILD_CC" \
-  AR="$BUILD_AR" \
-  RAYLIB_RELEASE_PATH="$BUILD" \
-  RAYLIB_LIBTYPE=STATIC \
-  RAYLIB_BUILD_MODE=RELEASE \
-  RAYLIB_MODULE_AUDIO=TRUE \
-  RAYLIB_MODULE_MODELS=TRUE \
-  "${PLATFORM_ARGS[@]}" \
-  "${CUSTOM_CFLAGS_ARGS[@]}" \
-  clean all
+  CC="$BUILD_CC" AR="$BUILD_AR" RAYLIB_RELEASE_PATH="$BUILD" \
+  RAYLIB_LIBTYPE=STATIC RAYLIB_BUILD_MODE=RELEASE \
+  RAYLIB_MODULE_AUDIO=TRUE RAYLIB_MODULE_MODELS=TRUE \
+  "${PLATFORM_ARGS[@]}" "${CUSTOM_CFLAGS_ARGS[@]}" clean
+
+if [ "$TRIPLET" = "windows-x86_64" ]; then
+  # mingw32-make invokes the archive recipe from a different Windows path
+  # context, so its relative rcore.o arguments are not found by ar. Compile
+  # the objects through Make, then archive them using absolute paths.
+  "$MAKE_BIN" -C "$SRC" \
+    CC="$BUILD_CC" AR="$BUILD_AR" RAYLIB_RELEASE_PATH="$BUILD" \
+    RAYLIB_LIBTYPE=STATIC RAYLIB_BUILD_MODE=RELEASE \
+    RAYLIB_MODULE_AUDIO=TRUE RAYLIB_MODULE_MODELS=TRUE \
+    "${PLATFORM_ARGS[@]}" "${CUSTOM_CFLAGS_ARGS[@]}" \
+    rcore.o rshapes.o rtextures.o rtext.o rmodels.o raudio.o
+  "$BUILD_AR" rcs "$BUILD/libraylib.a" \
+    "$SRC/rcore.o" "$SRC/rshapes.o" "$SRC/rtextures.o" \
+    "$SRC/rtext.o" "$SRC/rmodels.o" "$SRC/raudio.o"
+else
+  "$MAKE_BIN" -C "$SRC" \
+    CC="$BUILD_CC" AR="$BUILD_AR" RAYLIB_RELEASE_PATH="$BUILD" \
+    RAYLIB_LIBTYPE=STATIC RAYLIB_BUILD_MODE=RELEASE \
+    RAYLIB_MODULE_AUDIO=TRUE RAYLIB_MODULE_MODELS=TRUE \
+    "${PLATFORM_ARGS[@]}" "${CUSTOM_CFLAGS_ARGS[@]}" all
+fi
 
 NATIVE_LIBRARY="$BUILD/libraylib.a"
 [ -f "$NATIVE_LIBRARY" ] || {

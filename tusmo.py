@@ -181,15 +181,15 @@ def get_static_lib():
 
         # Hubi in faylku dhab ahaan u jiro ka hor intaanan ku darin flags
         if os.path.exists(file_name):
-            flags.append(f'"{file_name}"')
+            flags.append(file_name)
         else:
             # Haddii uusan jirin waddada tooska ah, isku day inaad ka raadiso .lib/
             alt_path = os.path.join(".lib", file_name)
             if os.path.exists(alt_path):
-                flags.append(f'"{alt_path}"')
+                flags.append(alt_path)
             else:
                 # Haddii wali la waayo, iska daa saas (GCC ayaa error soo saari doona)
-                flags.append(f'"{file_name}"')
+                flags.append(file_name)
                 
     return " ".join(flags)
 
@@ -291,35 +291,41 @@ def main():
                     if os.path.exists(source_path):
                         source_files_to_compile.append(source_path)
 
-        all_sources_str = " ".join([f'"{path}"' for path in source_files_to_compile])
-
         # Compiler and Flags
         cc = os.environ.get("TUSMO_CC", "gcc")
         lib_dir_override = os.environ.get("TUSMO_LIB_DIR")
         include_override = os.environ.get("TUSMO_INCLUDE_DIR")
 
-        if include_override:
-            include_flag = f'-I"{include_override}" -I"{project_root}" -I"{stdlib_dir}"'
-        else:
-            include_flag = f'-I"{project_root}" -I"{stdlib_dir}"'
-        lib_flag = f' -L"{lib_dir_override}"' if lib_dir_override else ""
-        math_flag = " -lm" if "math" in used_features else ""
-
-        
-
         strict_flags = " -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable"
 
-        compile_command = (
-            f'"{cc}" -O3 -march=native -flto{strict_flags} -o "{binary}" '
-            f'{all_sources_str} '
-            f'{include_flag} '
-            # Halkan hoose ayaa isbeddelka lagu sameeyay:
-            f'{get_static_lib()} ' 
-            f'{lib_flag}  {math_flag}'
-        )
+        # Build an argument vector instead of a shell command string. The old
+        # string-based invocation was fragile on macOS and Windows: paths and
+        # batch-file wrappers could be parsed differently by each platform's
+        # shell, and a successful compiler return could leave no output file.
+        compile_args = [
+            cc, "-O3", "-march=native", "-flto",
+            *strict_flags.split(), "-o", binary,
+            *source_files_to_compile,
+            "-I", project_root,
+            "-I", stdlib_dir,
+            *get_static_lib(),
+        ]
+        if include_override:
+            compile_args.extend(["-I", include_override])
+        if lib_dir_override:
+            compile_args.extend(["-L", lib_dir_override])
+        if "math" in used_features:
+            compile_args.append("-lm")
+
         import subprocess
         import re
-        result = subprocess.run(compile_command, shell=True, capture_output=True, text=True)
+        if platform.system() == "Windows":
+            # Windows uses the bundled cc.bat wrapper; invoke it through cmd
+            # while still quoting every argument safely.
+            compile_command = subprocess.list2cmdline(compile_args)
+            result = subprocess.run(compile_command, shell=True, capture_output=True, text=True)
+        else:
+            result = subprocess.run(compile_args, capture_output=True, text=True)
         compile_result = result.returncode
 
         if compile_result != 0:

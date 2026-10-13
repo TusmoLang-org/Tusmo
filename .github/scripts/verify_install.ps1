@@ -79,7 +79,7 @@ $env:TUSMO_INCLUDE_DIR = $null
 $env:TUSMO_LIB_DIR = $null
 
 $versionLog = & $tusmoCmd --version 2>&1 | Out-String
-if ($versionLog -match "Tusmo Version: 2\.0\.2-beta") {
+if ($versionLog -match "Tusmo Version: 2\.0\.3-beta") {
   Ok "tusmo --version works without any environment set: $($versionLog.Trim())"
 } else {
   Bad "tusmo --version failed: $versionLog"

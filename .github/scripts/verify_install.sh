@@ -63,10 +63,10 @@ env -u TUSMO_CC -u TUSMO_INCLUDE_DIR -u TUSMO_LIB_DIR -u TUSMO_HOME "$TUSMO" --v
   && ok "tusmo --version works without any environment set" \
   || { bad "tusmo --version failed"; cat "$WORK/version.log"; }
 
-if grep -q "Tusmo Version: 2\.0\.2-beta" "$WORK/version.log"; then
+if grep -q "Tusmo Version: 2\.0\.3-beta" "$WORK/version.log"; then
   ok "version string reported: $(grep -m1 'Tusmo Version' "$WORK/version.log")"
 else
-  bad "expected Tusmo Version: 2.0.2-beta"
+  bad "expected Tusmo Version: 2.0.3-beta"
   cat "$WORK/version.log"
 fi
 

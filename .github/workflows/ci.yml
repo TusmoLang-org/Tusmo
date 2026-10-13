@@ -37,6 +37,9 @@ jobs:
       - name: Updater regression tests
         run: python3 .github/scripts/test_updater.py
 
+      - name: Selective import regression tests
+        run: python3 .github/scripts/test_selective_imports.py
+
       - name: Language test suite
         run: python3 .github/scripts/run_tests.py
 

@@ -35,7 +35,7 @@ from compiler.midend.docstring_utils import (
 )
 
 
-LOCAL_VERSION = "2.0.2"
+LOCAL_VERSION = "2.0.3"
 REPO_URL = "https://api.github.com/repos/TusmoLang-org/Tusmo/releases/latest"
 UPDATE_INSTALL_SH_URL = "https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh"
 UPDATE_INSTALL_PS1_URL = "https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.ps1"

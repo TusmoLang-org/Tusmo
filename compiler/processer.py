@@ -53,45 +53,6 @@ def _get_top_level_name(node):
     if isinstance(node, QeexNode): return node.name
     return None
 
-def _find_c_calls_in_node(node, visited=None):
-    if visited is None:
-        visited = set()
-    if id(node) in visited:
-        return set()
-    visited.add(id(node))
-
-    c_ids = set()
-    if isinstance(node, (list, tuple)):
-        for item in node:
-            c_ids.update(_find_c_calls_in_node(item, visited))
-        return c_ids
-    elif isinstance(node, dict):
-        for val in node.values():
-            c_ids.update(_find_c_calls_in_node(val, visited))
-        return c_ids
-
-    cls_name = node.__class__.__name__
-    if cls_name == "CCallNode":
-        if hasattr(node, "c_function_name") and isinstance(node.c_function_name, str):
-            c_ids.add(node.c_function_name.strip("\"'"))
-
-    for attr in dir(node):
-        if attr.startswith("__") or attr in ("line", "filename", "lineno"):
-            continue
-        try:
-            val = getattr(node, attr, None)
-        except Exception:
-            continue
-        if val is None:
-            continue
-        if isinstance(val, (list, tuple)):
-            for v in val:
-                if v is not None and not isinstance(v, (str, int, float, bool)):
-                    c_ids.update(_find_c_calls_in_node(v, visited))
-        elif not isinstance(val, (str, int, float, bool)):
-            c_ids.update(_find_c_calls_in_node(val, visited))
-    return c_ids
-
 def _find_function_calls(node, visited=None):
     if visited is None:
         visited = set()
@@ -142,7 +103,7 @@ def _find_method_enclosing_class(resolved_imported_ast, method_name):
                     return imported_node.name
     return None
 
-def _select_requested_nodes(resolved_imported_ast, requested_names, seen_metadata, is_partial=False):
+def _select_requested_nodes(resolved_imported_ast, requested_names, seen_metadata):
     selected_nodes = []
     found_names = set()
     requested_name_set = set(requested_names)
@@ -198,28 +159,17 @@ def _select_requested_nodes(resolved_imported_ast, requested_names, seen_metadat
                                 if m_ref in name_to_nodes and m_ref not in processed:
                                     queue.append(m_ref)
 
-    # 2. Identify C-call dependencies
-    needed_c_identifiers = set()
-    if is_partial:
-        for node in selected_nodes:
-            needed_c_identifiers.update(_find_c_calls_in_node(node))
-
-    # 3. Select metadata
+    # 2. Select module metadata
     for imported_node in resolved_imported_ast:
         if not isinstance(imported_node, (EmbeddedCNode, Xidid)): continue
         content = getattr(imported_node, 'code', None) or getattr(imported_node, 'aqoonsi', None)
 
-        # For partial imports, keep module-level C support code and linker
-        # metadata together with the selected symbols.
-        if isinstance(imported_node, EmbeddedCNode):
-            if is_partial:
-                has_needed_c = False
-                for c_id in needed_c_identifiers:
-                    if re.search(rf"\b{re.escape(c_id)}\b", content or ""):
-                        has_needed_c = True
-                        break
-                if not has_needed_c: continue
-        else:
+        # Embedded C is module-level support, not an exported Tusmo symbol.
+        # It can provide headers, type definitions, or wrappers needed by a
+        # selected declaration (including declarations selected from another
+        # module), so C-call text matching is not a safe way to prune it.
+        # The code generator deduplicates identical embedded blocks later.
+        if isinstance(imported_node, Xidid):
             # Xidid (library linking) should still use global seen_metadata to prevent duplicates.
             if content in seen_metadata: continue
             seen_metadata.add(content)
@@ -373,7 +323,7 @@ def process_imports(initial_ast_nodes, base_directory, stdlib_path="stdlib", pro
                     final_ast.extend(resolved_imported_ast)
                 else:
                     selected, found_list = _select_requested_nodes(
-                        resolved_imported_ast, node.names or [], seen_metadata, is_partial=True
+                        resolved_imported_ast, node.names or [], seen_metadata
                     )
                     
                     found_set = set(found_list)

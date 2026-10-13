@@ -191,8 +191,18 @@ installed=0
 if "$TUSMO_HOME/bin/tusmo" --version >/dev/null 2>&1; then
   installed=1
 fi
+if [ "$installed" -eq 1 ] && [ -n "${TUSMO_EXPECT_VERSION:-}" ]; then
+  version_output=$("$TUSMO_HOME/bin/tusmo" --version 2>&1) || installed=0
+  if ! grep -Fq "Tusmo Version: ${TUSMO_EXPECT_VERSION}-beta" <<<"$version_output"; then
+    installed=0
+  fi
+fi
 if [ "$installed" -ne 1 ]; then
   echo "Digniin: 'tusmo --version' ma shaqeeyn; fadlan xakamee $TUSMO_HOME" >&2
+  if [ -n "${TUSMO_EXPECT_VERSION:-}" ]; then
+    echo "Khalad: nooca Tusmo ee la rakibay lama xaqiijin; cusboonaysiintu ma dhammaystirna." >&2
+    exit 1
+  fi
 fi
 
 # ------------------------------------------------- 6. banner

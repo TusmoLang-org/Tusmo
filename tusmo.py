@@ -6,6 +6,7 @@ import traceback
 import subprocess
 import json
 import platform
+import tempfile
 import urllib.request
 import urllib.error
 import requests
@@ -34,8 +35,10 @@ from compiler.midend.docstring_utils import (
 )
 
 
-LOCAL_VERSION = "2.0.1"
+LOCAL_VERSION = "2.0.2"
 REPO_URL = "https://api.github.com/repos/TusmoLang-org/Tusmo/releases/latest"
+UPDATE_INSTALL_SH_URL = "https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh"
+UPDATE_INSTALL_PS1_URL = "https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.ps1"
 
 
 
@@ -108,29 +111,128 @@ def version(command=None):
         sys.exit(0)
 
 
+def _path_is_within(path, parent):
+    try:
+        return os.path.commonpath((os.path.abspath(path), os.path.abspath(parent))) == os.path.abspath(parent)
+    except (OSError, ValueError):
+        return False
+
+
+def _update_subprocess_environment():
+    """Keep system installer tools from loading libraries bundled with Tusmo."""
+    env = os.environ.copy()
+    if not getattr(sys, "frozen", False):
+        return env
+
+    if sys.platform.startswith("linux"):
+        original = env.get("LD_LIBRARY_PATH_ORIG")
+        if original is None:
+            env.pop("LD_LIBRARY_PATH", None)
+        else:
+            env["LD_LIBRARY_PATH"] = original
+    elif sys.platform == "darwin":
+        bundle_dir = getattr(sys, "_MEIPASS", None)
+        for variable in ("DYLD_LIBRARY_PATH", "DYLD_FRAMEWORK_PATH", "DYLD_FALLBACK_LIBRARY_PATH"):
+            original = env.get(f"{variable}_ORIG")
+            if original is not None:
+                env[variable] = original
+            elif bundle_dir and env.get(variable):
+                entries = [
+                    entry for entry in env[variable].split(os.pathsep)
+                    if entry and not _path_is_within(entry, bundle_dir)
+                ]
+                if entries:
+                    env[variable] = os.pathsep.join(entries)
+                else:
+                    env.pop(variable, None)
+    elif sys.platform == "win32":
+        # PyInstaller uses this process-wide DLL search path; child processes
+        # inherit it unless it is reset before they are created.
+        import ctypes
+
+        set_dll_directory = ctypes.WinDLL("kernel32", use_last_error=True).SetDllDirectoryW
+        set_dll_directory.argtypes = [ctypes.c_wchar_p]
+        set_dll_directory.restype = ctypes.c_int
+        if not set_dll_directory(None):
+            raise OSError(ctypes.get_last_error(), "Could not reset the Windows DLL search path")
+
+    return env
+
+
+def _run_unix_update(env):
+    """Download and run the installer as separately checked processes."""
+    with tempfile.TemporaryDirectory(prefix="tusmo-update-") as temp_dir:
+        installer = os.path.join(temp_dir, "install.sh")
+        subprocess.run(
+            ["curl", "-fsSL", "--retry", "3", "--retry-delay", "2", UPDATE_INSTALL_SH_URL, "-o", installer],
+            check=True,
+            env=env,
+        )
+        if not os.path.isfile(installer) or os.path.getsize(installer) == 0:
+            raise RuntimeError("Installer download completed without a usable install.sh file.")
+        subprocess.run(["bash", installer], check=True, env=env)
+
+
+def _start_windows_update(env):
+    """Hand off file replacement so the running Windows executable can exit."""
+    env = env.copy()
+    env["TUSMO_UPDATE_WAIT_PID"] = str(os.getpid())
+    env["TUSMO_EXPECT_VERSION"] = LOCAL_VERSION
+    command = (
+        "$ErrorActionPreference = 'Stop'; "
+        "try { "
+        f"$response = Invoke-WebRequest -Uri '{UPDATE_INSTALL_PS1_URL}' -UseBasicParsing -ErrorAction Stop; "
+        "if (-not $response.Content) { throw 'The Tusmo installer download was empty.' }; "
+        "Invoke-Expression $response.Content "
+        "} catch { [Console]::Error.WriteLine($_.Exception.Message); exit 1 }"
+    )
+    powershell = os.path.join(
+        os.environ.get("SystemRoot", r"C:\Windows"),
+        "System32", "WindowsPowerShell", "v1.0", "powershell.exe",
+    )
+    if not os.path.isfile(powershell):
+        powershell = "powershell.exe"
+    return subprocess.Popen(
+        [powershell, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", command],
+        env=env,
+    )
+
+
 def update_tusmo(command=None):
-    import platform
     if command in ["update", "cusboonaysii", "casriyee"]:
         os_type = platform.system() # Linux, Windows, or Darwin
         print(f"Nidaamkaaga waa: {os_type}")
-        
+
         try:
-            # Linux and MacOS share very similar command structures
-            if os_type == "Linux" or os_type == "Darwin":
+            env = _update_subprocess_environment()
+            if os_type in ("Linux", "Darwin"):
                 print("Tusmo waxay isku dayaysaa inay is casriyeyso (Unix)...")
-                cmd = "curl -fsSL https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh | bash"
-                subprocess.run(cmd, shell=True, check=True)
-            
+                env["TUSMO_EXPECT_VERSION"] = LOCAL_VERSION
+                _run_unix_update(env)
+                tusmo_home = env.get("TUSMO_HOME", os.path.join(os.path.expanduser("~"), ".tusmo"))
+                installed_cli = os.path.join(tusmo_home, "bin", "tusmo")
+                if not os.path.isfile(installed_cli):
+                    raise RuntimeError(f"Updated Tusmo launcher was not found: {installed_cli}")
+                verification = subprocess.run(
+                    [installed_cli, "--version"], check=True, env=env,
+                    capture_output=True, text=True,
+                )
+                if f"Tusmo Version: {LOCAL_VERSION}-beta" not in (verification.stdout + verification.stderr):
+                    raise RuntimeError("The installed Tusmo version did not match the requested update.")
+                print("\nTusmo waa la cusboonaysiiyay oo nooca cusub waa la xaqiijiyay!")
             elif os_type == "Windows":
                 print("Tusmo waxay isku dayaysaa inay is casriyeyso (Windows)...")
-                cmd = "irm https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.ps1 | iex"
-                subprocess.run(["powershell", "-Command", cmd], check=True)
-            
-            print("\nTusmo waa la cusboonaysiiyay!")
-            
+                _start_windows_update(env)
+                print("Cusboonaysiiyaha Windows waa la bilaabay. Wuxuu rakibidda dhamaystirayaa marka Tusmo xirmo.")
+            else:
+                raise RuntimeError(f"Tusmo update is not supported on {os_type}.")
         except subprocess.CalledProcessError as e:
-            print(f"\nKhalad ayaa dhacay: {e}")
-        
+            print(f"\nCusboonaysiinta way fashilantay (exit code {e.returncode}); nooca cusub lama xaqiijin.")
+            sys.exit(e.returncode or 1)
+        except (OSError, RuntimeError) as e:
+            print(f"\nCusboonaysiinta way fashilantay: {e}")
+            sys.exit(1)
+
         sys.exit(0)
 
 def update_libraries(command=None):

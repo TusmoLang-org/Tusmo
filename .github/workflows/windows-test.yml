@@ -43,6 +43,10 @@ jobs:
         shell: bash
         run: bash .github/scripts/preflight.sh
 
+      - name: Updater regression tests
+        shell: pwsh
+        run: python .github/scripts/test_updater.py
+
       - name: Run Windows smoke tests
         shell: pwsh
         run: .\windows\test_windows.ps1

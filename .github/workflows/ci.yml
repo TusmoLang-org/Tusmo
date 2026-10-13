@@ -34,6 +34,9 @@ jobs:
       - name: Repository preflight
         run: bash .github/scripts/preflight.sh
 
+      - name: Updater regression tests
+        run: python3 .github/scripts/test_updater.py
+
       - name: Language test suite
         run: python3 .github/scripts/run_tests.py
 

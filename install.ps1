@@ -90,6 +90,14 @@ if (-not ((Test-Path "$extract\bin\tusmo.cmd") -or (Test-Path "$extract\bin\tusm
   Write-Error "Khalad: tarball-ku ma jiro bin\tusmo - qalabkan waa xumaaday."
 }
 
+# A Windows executable cannot reliably replace the directory it is currently
+# running from. The updater starts this installer separately and passes its PID.
+$updateWaitPid = 0
+if ([int]::TryParse($env:TUSMO_UPDATE_WAIT_PID, [ref]$updateWaitPid) -and $updateWaitPid -gt 0) {
+  Write-Host "Waxaan sugayaa in Tusmo xirmo ka hor inta aan la beddelin faylasha..."
+  Wait-Process -Id $updateWaitPid -ErrorAction SilentlyContinue
+}
+
 Remove-Item -Recurse -Force $tusmoHome -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $tusmoHome | Out-Null
 Get-ChildItem -Force -Path $extract | Move-Item -Destination $tusmoHome
@@ -189,12 +197,20 @@ $env:TUSMO_CC = "$tusmoHome\toolchain\cc.bat"
 $env:TUSMO_INCLUDE_DIR = "$tusmoHome\stdlib"
 $env:TUSMO_LIB_DIR = "$tusmoHome\lib"
 $installed = $false
+$versionOutput = ""
 try {
-  & "$binPath\tusmo.cmd" --version | Out-Null
-  if ($LASTEXITCODE -eq 0) { $installed = $true }
+  $versionOutput = & "$binPath\tusmo.cmd" --version 2>&1 | Out-String
+  if ($LASTEXITCODE -eq 0) {
+    if (-not $env:TUSMO_EXPECT_VERSION -or $versionOutput -match [regex]::Escape("Tusmo Version: $($env:TUSMO_EXPECT_VERSION)-beta")) {
+      $installed = $true
+    }
+  }
 } catch {}
 if (-not $installed) {
   Write-Warning "Digniin: 'tusmo --version' ma shaqeeyn; fadlan xakamee $tusmoHome"
+  if ($env:TUSMO_EXPECT_VERSION) {
+    Write-Error "Khalad: nooca Tusmo ee la rakibay lama xaqiijin; cusboonaysiintu ma dhammaystirna. $versionOutput"
+  }
 }
 
 Remove-Item -Recurse -Force $temp -ErrorAction SilentlyContinue

@@ -1,0 +1,7 @@
+isticmaal {Midab, Boos2D, AfarGees} kujira "raylib/types";
+isticmaal {bilowDaaqada, xirDaaqada} kujira "raylib/window";
+
+hawl main(): waxbo {
+    bilowDaaqada(1, 1, "Tusmo Raylib link check");
+    xirDaaqada();
+}

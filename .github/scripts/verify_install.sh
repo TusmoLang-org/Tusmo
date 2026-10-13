@@ -63,10 +63,10 @@ env -u TUSMO_CC -u TUSMO_INCLUDE_DIR -u TUSMO_LIB_DIR -u TUSMO_HOME "$TUSMO" --v
   && ok "tusmo --version works without any environment set" \
   || { bad "tusmo --version failed"; cat "$WORK/version.log"; }
 
-if grep -q "Tusmo Version: 2\.0\.3-beta" "$WORK/version.log"; then
+if grep -q "Tusmo Version: 2\.0\.4-beta" "$WORK/version.log"; then
   ok "version string reported: $(grep -m1 'Tusmo Version' "$WORK/version.log")"
 else
-  bad "expected Tusmo Version: 2.0.3-beta"
+  bad "expected Tusmo Version: 2.0.4-beta"
   cat "$WORK/version.log"
 fi
 
@@ -146,6 +146,23 @@ if [ -f "$TUSMO_HOME_DIR/stdlib/raylib/libraylib.a" ] &&
 else
   bad "platform Raylib library failed to link"
   cat "$WORK/raylib-smoke.log" 2>/dev/null || true
+fi
+
+# Exercise the real Tusmo metadata path from a project directory outside the
+# installation. This catches regressions that a direct C link cannot detect.
+step "compiling a Tusmo Raylib program from outside the installation"
+cp "$REPO_ROOT/.github/scripts/raylib_link_smoke.tus" "$SCRATCH/raylib-link-smoke.tus"
+if (cd "$SCRATCH" && env -u TUSMO_CC -u TUSMO_INCLUDE_DIR -u TUSMO_LIB_DIR -u TUSMO_HOME \
+     "$TUSMO" raylib-link-smoke.tus >"$WORK/raylib-tusmo.log" 2>&1); then
+  if [ -x "$SCRATCH/raylib-link-smoke" ]; then
+    ok "Tusmo resolved and linked its installed Raylib library"
+  else
+    bad "Tusmo did not produce the Raylib smoke binary"
+    cat "$WORK/raylib-tusmo.log"
+  fi
+else
+  bad "Tusmo Raylib import/link smoke test failed"
+  cat "$WORK/raylib-tusmo.log"
 fi
 
 # The VS Code extension needs the frozen language server next to the CLI.

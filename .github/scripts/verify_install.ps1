@@ -79,7 +79,7 @@ $env:TUSMO_INCLUDE_DIR = $null
 $env:TUSMO_LIB_DIR = $null
 
 $versionLog = & $tusmoCmd --version 2>&1 | Out-String
-if ($versionLog -match "Tusmo Version: 2\.0\.3-beta") {
+if ($versionLog -match "Tusmo Version: 2\.0\.4-beta") {
   Ok "tusmo --version works without any environment set: $($versionLog.Trim())"
 } else {
   Bad "tusmo --version failed: $versionLog"
@@ -153,6 +153,25 @@ if ($raylibExit -eq 0 -and (Test-Path $raylibExe)) {
 } else {
   Bad "platform Raylib library failed to link"
   Get-Content $raylibLog -ErrorAction SilentlyContinue
+}
+
+# Exercise Tusmo's own TUSMO_XIDID metadata from a project outside the install
+# directory; the direct C check above cannot catch a relative metadata path.
+Step "compiling a Tusmo Raylib program from outside the installation"
+$raylibTus = Join-Path $scratch "raylib-link-smoke.tus"
+Copy-Item (Join-Path $PSScriptRoot "raylib_link_smoke.tus") $raylibTus
+$raylibTusLog = Join-Path $work "raylib-tusmo.log"
+Push-Location $scratch
+try {
+  & $tusmoCmd raylib-link-smoke.tus 2>&1 | Tee-Object -FilePath $raylibTusLog | Out-Null
+  $raylibTusExit = $LASTEXITCODE
+} finally { Pop-Location }
+$raylibTusExe = Join-Path $scratch "raylib-link-smoke.exe"
+if ($raylibTusExit -eq 0 -and (Test-Path $raylibTusExe)) {
+  Ok "Tusmo resolved and linked its installed Raylib library"
+} else {
+  Bad "Tusmo Raylib import/link smoke test failed"
+  Get-Content $raylibTusLog -ErrorAction SilentlyContinue
 }
 
 if (Test-Path (Join-Path $tusmoHome "bin\tusmo-hover.exe")) {

@@ -35,7 +35,7 @@ from compiler.midend.docstring_utils import (
 )
 
 
-LOCAL_VERSION = "2.0.3"
+LOCAL_VERSION = "2.0.4"
 REPO_URL = "https://api.github.com/repos/TusmoLang-org/Tusmo/releases/latest"
 UPDATE_INSTALL_SH_URL = "https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.sh"
 UPDATE_INSTALL_PS1_URL = "https://raw.githubusercontent.com/TusmoLang-org/Tusmo/main/install.ps1"
@@ -253,46 +253,93 @@ def list_libraries(command=None):
         print("- opengl: Waxay la xiriirtaa sawirid (graphics), daaqad, iyo game-loop.")
         sys.exit(0)
    
-def get_static_lib():
+def get_static_lib(stdlib_dir=None, project_root=None, include_dir=None):
+    """Build linker arguments, resolving bundled libraries independently of cwd.
+
+    TUSMO_XIDID entries such as ``stdlib/raylib/libraylib.a`` are written
+    relative to Tusmo's standard-library tree, not the user's project. The
+    compiler is commonly run from an unrelated directory, so resolve those
+    paths against the installed stdlib root (or the source checkout) first.
+    """
     flags = []
     seen = set()
-    for lib in Xidid.dhamaan_xogta:
-        file_name = lib
-        os_type = platform.system()
-        os_name = _platform_key(os_type)
+    os_type = platform.system()
+    os_name = _platform_key(os_type)
+    project_root = os.path.abspath(project_root or os.path.dirname(os.path.abspath(__file__)))
+    stdlib_dir = os.path.abspath(stdlib_dir or os.path.join(project_root, "stdlib"))
 
-        # Waa inaad variable-ka dib u qeexdaa (re-assign)
+    stdlib_roots = []
+    for root in (
+        include_dir,
+        os.path.join(os.environ.get("TUSMO_HOME", ""), "stdlib") if os.environ.get("TUSMO_HOME") else None,
+        stdlib_dir,
+        os.path.join(project_root, "stdlib"),
+    ):
+        if root:
+            absolute_root = os.path.abspath(root)
+            if absolute_root not in stdlib_roots:
+                stdlib_roots.append(absolute_root)
+
+    for lib in Xidid.dhamaan_xogta:
+        file_name = lib.removesuffix(".maya")
+
+        # -lfoo, -pthread, and other linker options are already complete
+        # arguments. In particular, do not turn -lm into the bogus -lm.a or
+        # -lm.lib; platform wrappers handle Raylib's native system libraries.
+        if file_name.startswith("-"):
+            if file_name not in seen:
+                flags.append(file_name)
+                seen.add(file_name)
+            continue
+
         if os_name == "windows":
-            if file_name.endswith(".maya"):
-                file_name = file_name.removesuffix(".maya")
+            if file_name.endswith(".a"):
+                file_name += ".lib"
             elif not file_name.endswith(".lib"):
                 file_name += ".lib"
-
         else:  # linux or macos
-            if file_name.endswith(".maya"):
-                file_name = file_name.removesuffix(".maya")
-            elif not file_name.endswith(".a"):
+            if not file_name.endswith(".a"):
                 file_name += ".a"
-            
 
-        
-        # De-duplicate clean/normalized flags
-        if file_name in seen:
-            continue
-        seen.add(file_name)
-
-        # Hubi in faylku dhab ahaan u jiro ka hor intaanan ku darin flags
-        if os.path.exists(file_name):
-            flags.append(f'"{file_name}"')
+        normalized_path = file_name.replace("\\", os.sep).replace("/", os.sep)
+        # A stdlib/ prefix is rooted at the installation's stdlib directory;
+        # other relative paths (for example project-local .lib entries) keep
+        # their conventional current-directory meaning.
+        if os.path.isabs(normalized_path):
+            candidates = [os.path.normpath(normalized_path)]
+        elif normalized_path.startswith("stdlib" + os.sep):
+            relative_path = normalized_path[len("stdlib" + os.sep):]
+            candidates = [os.path.join(root, relative_path) for root in stdlib_roots]
+            candidates.extend((
+                os.path.join(os.getcwd(), normalized_path),
+                os.path.join(project_root, normalized_path),
+            ))
         else:
-            # Haddii uusan jirin waddada tooska ah, isku day inaad ka raadiso .lib/
-            alt_path = os.path.join(".lib", file_name)
-            if os.path.exists(alt_path):
-                flags.append(f'"{alt_path}"')
-            else:
-                # Haddii wali la waayo, iska daa saas (GCC ayaa error soo saari doona)
-                flags.append(f'"{file_name}"')
-                
+            candidates = [
+                os.path.join(os.getcwd(), normalized_path),
+                os.path.join(project_root, normalized_path),
+            ]
+            candidates.extend(
+                os.path.join(base, ".lib", normalized_path)
+                for base in (os.getcwd(), project_root)
+            )
+            candidates.extend(os.path.join(root, normalized_path) for root in stdlib_roots)
+
+        # Prefer the first real file. If none exists, retain an absolute path
+        # rooted at Tusmo's stdlib so the linker error points to the actual
+        # expected asset instead of depending on the caller's working dir.
+        resolved_path = next((candidate for candidate in candidates if os.path.isfile(candidate)), None)
+        if resolved_path is None:
+            resolved_path = candidates[0]
+        file_name = os.path.abspath(resolved_path)
+
+        # De-duplicate clean/normalized arguments, including Windows casing.
+        dedupe_key = os.path.normcase(file_name)
+        if dedupe_key in seen:
+            continue
+        seen.add(dedupe_key)
+        flags.append(f'"{file_name}"')
+
     return " ".join(flags)
 
 def main():
@@ -416,7 +463,7 @@ def main():
             f'{all_sources_str} '
             f'{include_flag} '
             # Halkan hoose ayaa isbeddelka lagu sameeyay:
-            f'{get_static_lib()} '
+            f'{get_static_lib(stdlib_dir, project_root, include_override)} '
             f'{lib_flag}  {math_flag}'
         )
         import subprocess

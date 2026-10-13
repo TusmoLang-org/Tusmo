@@ -37,6 +37,11 @@ $env:TUSMO_NO_VSCODE = "1"
 $oldLocalAppData = $env:LOCALAPPDATA
 $env:LOCALAPPDATA = $sandboxLocalAppData
 $oldPath = $env:Path
+$oldUserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+$oldUserTusmoHome = [Environment]::GetEnvironmentVariable("TUSMO_HOME", "User")
+$oldUserTusmoCc = [Environment]::GetEnvironmentVariable("TUSMO_CC", "User")
+$oldUserTusmoIncludeDir = [Environment]::GetEnvironmentVariable("TUSMO_INCLUDE_DIR", "User")
+$oldUserTusmoLibDir = [Environment]::GetEnvironmentVariable("TUSMO_LIB_DIR", "User")
 
 try {
   & pwsh -NoProfile -File (Join-Path $repoRoot "install.ps1") 2>&1 | Tee-Object -FilePath (Join-Path $work "install.log")
@@ -59,6 +64,14 @@ $tusmoCmd = Join-Path $tusmoHome "bin\tusmo.cmd"
 if (Test-Path $tusmoCmd) { Ok "bin\tusmo.cmd exists" } else { Bad "bin\tusmo.cmd missing"; Get-ChildItem -Recurse $tusmoHome -ErrorAction SilentlyContinue | Select-Object -First 40 }
 if (Test-Path (Join-Path $tusmoHome "bin\tusmo-app.exe")) { Ok "bin\tusmo-app.exe exists" } else { Bad "bin\tusmo-app.exe missing" }
 
+$expectedBinPath = Join-Path $tusmoHome "bin"
+$installedUserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if (@($installedUserPath -split ';') -contains $expectedBinPath) {
+  Ok "Tusmo bin directory was persisted in the user PATH"
+} else {
+  Bad "Tusmo bin directory was not persisted in the user PATH"
+}
+
 # The launcher must work with no environment set at all.
 $env:TUSMO_HOME = $null
 $env:TUSMO_CC = $null
@@ -66,7 +79,7 @@ $env:TUSMO_INCLUDE_DIR = $null
 $env:TUSMO_LIB_DIR = $null
 
 $versionLog = & $tusmoCmd --version 2>&1 | Out-String
-if ($versionLog -match "Tusmo Version") {
+if ($versionLog -match "Tusmo Version: 2\.0\.1-beta") {
   Ok "tusmo --version works without any environment set: $($versionLog.Trim())"
 } else {
   Bad "tusmo --version failed: $versionLog"
@@ -162,14 +175,6 @@ try {
 } finally { Pop-Location }
 
 $helloBinary = Join-Path $scratch "hello.exe"
-if (-not (Test-Path $helloBinary)) {
-  # Some Windows linkers keep the output name without adding .exe.
-  $extensionlessHello = Join-Path $scratch "hello"
-  if (Test-Path $extensionlessHello) {
-    $helloBinary = Join-Path $scratch "hello.exe"
-    Copy-Item $extensionlessHello $helloBinary -Force
-  }
-}
 if (Test-Path $helloBinary) {
   Ok "native binary produced"
   $out = (& $helloBinary 2>&1 | Out-String).Trim()
@@ -201,13 +206,6 @@ try {
 } finally { Pop-Location }
 
 $featuresBinary = Join-Path $scratch "features.exe"
-if (-not (Test-Path $featuresBinary)) {
-  $extensionlessFeatures = Join-Path $scratch "features"
-  if (Test-Path $extensionlessFeatures) {
-    $featuresBinary = Join-Path $scratch "features.exe"
-    Copy-Item $extensionlessFeatures $featuresBinary -Force
-  }
-}
 if (Test-Path $featuresBinary) {
   Ok "arrays/dicts/strings compile and link"
   $out = (& $featuresBinary 2>&1 | Out-String).Trim()
@@ -241,6 +239,11 @@ if (Test-Path (Join-Path $scratch "broken.exe")) {
 
 # --------------------------------------------------------------- summary
 Write-Host "`n==> verify_install: $script:pass passed, $script:fail failed"
+[Environment]::SetEnvironmentVariable("Path", $oldUserPath, "User")
+[Environment]::SetEnvironmentVariable("TUSMO_HOME", $oldUserTusmoHome, "User")
+[Environment]::SetEnvironmentVariable("TUSMO_CC", $oldUserTusmoCc, "User")
+[Environment]::SetEnvironmentVariable("TUSMO_INCLUDE_DIR", $oldUserTusmoIncludeDir, "User")
+[Environment]::SetEnvironmentVariable("TUSMO_LIB_DIR", $oldUserTusmoLibDir, "User")
 Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue
 if ($script:fail -ne 0) { exit 1 }
 exit 0

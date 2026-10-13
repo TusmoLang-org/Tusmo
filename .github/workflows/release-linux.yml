@@ -78,12 +78,11 @@ jobs:
 
       - name: Build VS Code extension (VSIX)
         id: vsix
-        continue-on-error: true
         run: |
           cd Extension
-          npm install
+          npm ci
           npx --yes @vscode/vsce package --out ../tusmo-vscode.vsix \
-            --allow-missing-repository --no-git
+            --allow-missing-repository
 
       - name: Assemble release bundle
         run: |

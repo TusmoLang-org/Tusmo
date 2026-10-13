@@ -189,7 +189,7 @@ The release installer provides the Tusmo CLI, runtime files, standard library, a
 
 Visit the [GitHub Releases page](https://github.com/TusmoLang-org/Tusmo/releases) to download a precompiled package directly. Current asset names are `tusmo-linux-x86_64.tar.gz`, `tusmo-macos-arm64.tar.gz`, and `tusmo-windows-x86_64.tar.gz`. The one-line installers above download and install the matching package automatically.
 
-The [online documentation](https://tusmolang-org.github.io/Tusmo/) is deployed automatically from the `main` branch. Release packages are built by GitHub Actions when a version tag such as `v2.0.0` is pushed.
+The [online documentation](https://tusmolang-org.github.io/Tusmo/) is deployed automatically from the `main` branch. Release packages are built by GitHub Actions when a version tag such as `v2.0.1` is pushed.
 
 Release assets and platform support can change. Check the release notes and available files rather than assuming every platform has a current package.
 
@@ -226,6 +226,8 @@ tusmo hello.tus --c
 - `--help` — show available commands and options.
 - `--version` — show the installed compiler version.
 - `--c` — keep the generated C source instead of removing it after compilation.
+
+Compiling `main.tus` creates `main.exe` on Windows (and `main` on Unix-like systems). The generated `main.c` is removed after a successful compile unless `--c` is supplied.
 
 The CLI also includes commands for discovering and managing supported libraries. Run `tusmo --help` for the options available in your installed version.
 

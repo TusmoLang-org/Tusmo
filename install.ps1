@@ -13,6 +13,56 @@ $temp = New-TemporaryFile
 Remove-Item $temp
 New-Item -ItemType Directory -Force -Path $temp | Out-Null
 
+function Get-VSCodeCliPaths {
+  $paths = @()
+  foreach ($commandName in @("code", "code-insiders")) {
+    $command = Get-Command $commandName -ErrorAction SilentlyContinue
+    if ($command -and $command.Source -and (Test-Path $command.Source)) {
+      $paths += $command.Source
+    }
+  }
+
+  $candidates = @()
+  if ($env:LOCALAPPDATA) {
+    $candidates += Join-Path $env:LOCALAPPDATA "Programs\Microsoft VS Code\bin\code.cmd"
+    $candidates += Join-Path $env:LOCALAPPDATA "Programs\Microsoft VS Code Insiders\bin\code-insiders.cmd"
+  }
+  if ($env:ProgramFiles) {
+    $candidates += Join-Path $env:ProgramFiles "Microsoft VS Code\bin\code.cmd"
+    $candidates += Join-Path $env:ProgramFiles "Microsoft VS Code Insiders\bin\code-insiders.cmd"
+  }
+  if (${env:ProgramFiles(x86)}) {
+    $candidates += Join-Path ${env:ProgramFiles(x86)} "Microsoft VS Code\bin\code.cmd"
+  }
+
+  foreach ($candidate in $candidates) {
+    if ((Test-Path $candidate) -and $paths -notcontains $candidate) {
+      $paths += $candidate
+    }
+  }
+  return $paths
+}
+
+function Broadcast-UserEnvironmentChange {
+  $source = @"
+using System;
+using System.Runtime.InteropServices;
+public static class TusmoEnvironmentNotifier {
+  [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+  public static extern IntPtr SendMessageTimeout(
+    IntPtr hWnd, UInt32 Msg, UIntPtr wParam, string lParam,
+    UInt32 fuFlags, UInt32 uTimeout, out UIntPtr lpdwResult);
+}
+"@
+  if (-not ("TusmoEnvironmentNotifier" -as [type])) {
+    Add-Type -TypeDefinition $source
+  }
+  [UIntPtr]$result = [UIntPtr]::Zero
+  [void][TusmoEnvironmentNotifier]::SendMessageTimeout(
+    [IntPtr]0xffff, [uint32]0x001A, [UIntPtr]::Zero, "Environment",
+    [uint32]0x0002, [uint32]5000, [ref]$result)
+}
+
 # --------------------------------------------- 1. fetch the release asset
 if ($env:TUSMO_INSTALL_FROM) {
   Write-Host "Waxaan isticmaalayaa faylka deegaanka: $env:TUSMO_INSTALL_FROM"
@@ -47,30 +97,55 @@ Get-ChildItem -Force -Path $extract | Move-Item -Destination $tusmoHome
 # ------------------------------------------------- 3. VS Code extension
 if ($env:TUSMO_NO_VSCODE -ne "1") {
   $vsix = "tusmo-vscode.vsix"
-  if (Get-Command code -ErrorAction SilentlyContinue) {
+  $vsixPath = Join-Path $temp $vsix
+  $vsixDownloaded = $false
+  try {
     Write-Host "Waxaa la soo dejinnaa VS Code extension..."
-    $vsixPath = Join-Path $temp $vsix
-    try {
-      Invoke-WebRequest -Uri "https://github.com/$repo/releases/latest/download/$vsix" -OutFile $vsixPath -ErrorAction Stop -UseBasicParsing
-      $ids = @("tusmolang-org.tusmo-language-support","TusmoLang-org.tusmo-language-support","tusmo-official.tusmo-language-support")
-      foreach ($id in $ids) { code --uninstall-extension $id *> $null }
-      Get-ChildItem -Path "$env:USERPROFILE\.vscode\extensions" -Directory -Filter "tusmo*-language-support*" -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-      try {
-        code --install-extension $vsixPath --force | Out-Null
-      } catch {
-        $fallback = Join-Path $tusmoHome $vsix
-        Copy-Item $vsixPath $fallback -Force
-        Write-Host "Ma suurtagelin in VSIX si toos ah loo rakibo. Ku rakib: code --install-extension `"$fallback`" --force"
+    Invoke-WebRequest -Uri "https://github.com/$repo/releases/latest/download/$vsix" -OutFile $vsixPath -ErrorAction Stop -UseBasicParsing
+    if (-not (Test-Path $vsixPath) -or (Get-Item $vsixPath).Length -lt 1024) {
+      throw "VSIX-ka la soo dejiyey waa madhan ama ma dhammaystirna."
+    }
+    $vsixDownloaded = $true
+  } catch {
+    Write-Warning "VS Code extension lama soo dejin: $($_.Exception.Message)"
+  }
+
+  if ($vsixDownloaded) {
+    $codeCliPaths = @(Get-VSCodeCliPaths)
+    $extensionId = "tusmolang-org.tusmo-language-support"
+    $installedInEditor = $false
+
+    if ($codeCliPaths.Count -gt 0) {
+      foreach ($codeCli in $codeCliPaths) {
+        try {
+          Write-Host "Waxaa Tusmo extension-ka lagu rakibayaa: $codeCli"
+          $installOutput = & $codeCli --install-extension $vsixPath --force 2>&1
+          $installExitCode = $LASTEXITCODE
+          if ($installExitCode -ne 0) {
+            Write-Warning "VS Code wuu diiday rakibidda extension-ka (exit $installExitCode): $installOutput"
+            continue
+          }
+
+          $installedExtensions = & $codeCli --list-extensions 2>$null
+          $listExitCode = $LASTEXITCODE
+          if ($listExitCode -eq 0 -and @($installedExtensions) -contains $extensionId) {
+            $installedInEditor = $true
+            Write-Host "Tusmo syntax highlighter waa lagu rakibay VS Code. Dib u fur VS Code ama samee 'Developer: Reload Window'."
+          } else {
+            Write-Warning "VS Code ma xaqiijin in extension-ka '$extensionId' la rakibay."
+          }
+        } catch {
+          Write-Warning "Rakibidda VS Code extension-ka way fashilantay: $($_.Exception.Message)"
+        }
       }
-    } catch {}
-  } else {
-    Get-ChildItem -Path "$env:USERPROFILE\.vscode\extensions" -Directory -Filter "tusmo*-language-support*" -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-    $vsixPath = Join-Path $tusmoHome $vsix
-    try {
-      Invoke-WebRequest -Uri "https://github.com/$repo/releases/latest/download/$vsix" -OutFile $vsixPath -ErrorAction Stop -UseBasicParsing
-      Write-Host "VSIX waa la soo dejiyey: $vsixPath"
-      Write-Host "   Ku rakib gacanta: code --install-extension `"$vsixPath`" --force"
-    } catch {}
+    }
+
+    if (-not $installedInEditor) {
+      $fallback = Join-Path $tusmoHome $vsix
+      Copy-Item $vsixPath $fallback -Force
+      Write-Warning "VS Code CLI lama helin ama rakibiddu way fashilantay. VSIX-ku halkan ayuu yaal: $fallback"
+      Write-Host "Gacanta ugu rakib: code --install-extension `"$fallback`" --force"
+    }
   }
 }
 
@@ -83,14 +158,30 @@ $userEntries = @($userPath -split ';' | Where-Object { $_ })
 if ($userEntries -notcontains $binPath) {
   $newUserPath = if ($userEntries.Count -gt 0) { "$binPath;$userPath" } else { $binPath }
   [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
-  $env:Path = "$binPath;$env:Path"
-  Write-Host "Waxaa PATH-ka user-ka ku daray $binPath (fur terminal cusub si ay u shaqeeyo)."
+  Write-Host "Waxaa Tusmo PATH-ka user-ka ku daray: $binPath"
+}
+
+# Update this PowerShell process too, so programs started from it can find Tusmo.
+$processEntries = @($env:Path -split ';' | Where-Object { $_ })
+if ($processEntries -notcontains $binPath) {
+  $env:Path = if ($env:Path) { "$binPath;$env:Path" } else { $binPath }
+}
+$resolvedTusmo = Get-Command tusmo -ErrorAction SilentlyContinue
+if ($resolvedTusmo -and $resolvedTusmo.Source -ieq "$binPath\tusmo.cmd") {
+  Write-Host "Tusmo hadda waxaa laga heli karaa PowerShell iyo apps laga bilaabo shell-kan."
+} else {
+  Write-Warning "PowerShell ma helin tusmo.cmd gudaha PATH-ka cusub: $binPath"
 }
 
 [Environment]::SetEnvironmentVariable("TUSMO_HOME", $tusmoHome, "User")
 [Environment]::SetEnvironmentVariable("TUSMO_CC", "$tusmoHome\toolchain\cc.bat", "User")
 [Environment]::SetEnvironmentVariable("TUSMO_INCLUDE_DIR", "$tusmoHome\stdlib", "User")
 [Environment]::SetEnvironmentVariable("TUSMO_LIB_DIR", "$tusmoHome\lib", "User")
+try {
+  Broadcast-UserEnvironmentChange
+} catch {
+  Write-Warning "Environment-ka user-ka waa la keydiyey, laakiin ogeysiinta Windows way fashilantay: $($_.Exception.Message)"
+}
 
 # --------------------------------------------- 5. sanity check (current session)
 $env:TUSMO_HOME = $tusmoHome
@@ -108,7 +199,7 @@ if (-not $installed) {
 
 Remove-Item -Recurse -Force $temp -ErrorAction SilentlyContinue
 
-Write-Host "Waxaa la shubay $tusmoHome. Mar kale fur terminal-ka (shell) ka dibna qor 'tusmo'."
+Write-Host "Waxaa la shubay $tusmoHome. Fur app cusub ama dib u bilow apps-ka furnaa ka hor intaadan qorin 'tusmo'."
 
 # ------------------------------------------------- banner
 try { Clear-Host } catch {}

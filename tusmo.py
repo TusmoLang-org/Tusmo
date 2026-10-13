@@ -34,7 +34,7 @@ from compiler.midend.docstring_utils import (
 )
 
 
-LOCAL_VERSION = "2.0.0"
+LOCAL_VERSION = "2.0.1"
 REPO_URL = "https://api.github.com/repos/TusmoLang-org/Tusmo/releases/latest"
 
 
@@ -271,11 +271,13 @@ def main():
         c_code, final_used_features = transpiler.transpile(final_ast)
         used_features.update(final_used_features)
                 
-        out_file = filename.replace(".tus", ".c")
+        out_file = os.path.splitext(filename)[0] + ".c"
         with open(out_file, "w") as f:
             f.write(c_code)
 
-        binary = out_file.replace(".c", "")
+        binary = os.path.splitext(out_file)[0]
+        if os.name == "nt" and not binary.lower().endswith(".exe"):
+            binary += ".exe"
 
         # Dynamically build the list of source files to compile
         source_files_to_compile = [out_file]
